@@ -1,17 +1,18 @@
 use std::sync::Arc;
 
-use chrono::Utc;
-
 mod data;
 mod execution;
 mod markets;
+mod model;
 
 use data::market_enrichment::{EnrichmentConfig, MarketEnricher};
 use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
 use execution::client::KalshiClient;
 use execution::engine::{ExecutionEngine, ExecutionMode};
-use execution::types::{EngineConfig, Side, TradeSignal};
+use execution::types::EngineConfig;
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
+use model::allocator::{AllocationConfig, PortfolioAllocator};
+use model::valuation::{ClaudeValuationEngine, ValuationConfig, ValuationInput};
 
 #[tokio::main]
 async fn main() {
@@ -63,33 +64,70 @@ async fn main() {
         }
     }
 
-    let mut signal = TradeSignal {
-        market_id: selected[0].ticker.clone(),
-        outcome_id: "yes".to_string(),
-        side: Side::Buy,
-        fair_price: 0.62,
-        observed_price: 0.53,
-        edge_pct: 0.09,
-        confidence: 0.78,
-        signal_timestamp: Utc::now(),
-    };
-    let mapper = KalshiMarketMapper::from_env();
-    let resolution_mode = resolution_mode_from_env();
-    match mapper.resolve_market_ticker(&signal.market_id).await {
-        Ok(ticker) => signal.market_id = ticker,
-        Err(err) if resolution_mode == ResolutionMode::BestEffort => {
-            eprintln!("market resolution warning (best-effort): {err}");
-        }
-        Err(err) => {
-            eprintln!("market resolution failed (strict mode): {err}");
-            return;
-        }
+    let mut enrichment_by_ticker = std::collections::HashMap::new();
+    for e in enrichments {
+        enrichment_by_ticker.insert(e.ticker.clone(), e);
     }
 
-    let bankroll = 10_000.0;
-    match engine.execute_signal(&signal, bankroll).await {
-        Ok(report) => println!("order executed: {:?}", report),
-        Err(err) => eprintln!("execution failed: {err}"),
+    let valuation_limit = valuation_market_limit_from_env().min(selected.len());
+    let valuation_inputs: Vec<ValuationInput> = selected
+        .iter()
+        .take(valuation_limit)
+        .map(|m| ValuationInput {
+            market: m.clone(),
+            enrichment: enrichment_by_ticker.get(&m.ticker).cloned(),
+        })
+        .collect();
+
+    let valuator = ClaudeValuationEngine::new(ValuationConfig::default());
+    let valuations = match valuator.value_markets(&valuation_inputs).await {
+        Ok(v) => v,
+        Err(err) => {
+            eprintln!("valuation failed: {err}");
+            return;
+        }
+    };
+    println!("valued {} markets", valuations.len());
+
+    let candidates = valuator.generate_candidates(&valuations);
+    if candidates.is_empty() {
+        eprintln!("no mispricing candidates above threshold");
+        return;
+    }
+    println!("generated {} candidates", candidates.len());
+    println!("top candidate rationale: {}", candidates[0].rationale);
+    let mapper = KalshiMarketMapper::from_env();
+    let resolution_mode = resolution_mode_from_env();
+
+    let bankroll = bankroll_from_env();
+    let allocator = PortfolioAllocator::new(allocation_config_from_env());
+    let allocations = allocator.allocate(bankroll, candidates);
+    if allocations.is_empty() {
+        eprintln!("allocator produced no trades");
+        return;
+    }
+    println!("allocator selected {} trades", allocations.len());
+
+    for allocated in allocations {
+        let mut signal = valuator.candidate_to_signal(&allocated.candidate);
+        match mapper.resolve_market_ticker(&signal.market_id).await {
+            Ok(ticker) => signal.market_id = ticker,
+            Err(err) if resolution_mode == ResolutionMode::BestEffort => {
+                eprintln!("market resolution warning (best-effort): {err}");
+            }
+            Err(err) => {
+                eprintln!("market resolution failed (strict mode): {err}");
+                continue;
+            }
+        }
+
+        match engine.execute_signal(&signal, allocated.notional).await {
+            Ok(report) => println!(
+                "order executed: ticker={} notional={:.2} report={:?}",
+                allocated.candidate.ticker, allocated.notional, report
+            ),
+            Err(err) => eprintln!("execution failed for {}: {err}", allocated.candidate.ticker),
+        }
     }
 }
 
@@ -138,4 +176,43 @@ fn smoke_test_enabled() -> bool {
             .as_str(),
         "1" | "true" | "yes"
     )
+}
+
+fn valuation_market_limit_from_env() -> usize {
+    std::env::var("BOT_VALUATION_MARKETS")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(250)
+}
+
+fn bankroll_from_env() -> f64 {
+    std::env::var("BOT_BANKROLL")
+        .ok()
+        .and_then(|v| v.parse::<f64>().ok())
+        .unwrap_or(10_000.0)
+}
+
+fn allocation_config_from_env() -> AllocationConfig {
+    let mut cfg = AllocationConfig::default();
+    if let Ok(v) = std::env::var("BOT_MAX_TRADES_PER_CYCLE") {
+        if let Ok(parsed) = v.parse::<usize>() {
+            cfg.max_trades_per_cycle = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_MAX_FRACTION_PER_TRADE") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.max_fraction_per_trade = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_MAX_TOTAL_FRACTION_PER_CYCLE") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.max_total_fraction_per_cycle = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_MIN_FRACTION_PER_TRADE") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.min_fraction_per_trade = parsed;
+        }
+    }
+    cfg
 }

@@ -21,7 +21,7 @@ Autonomous trading agent for event markets, built in Rust for low-latency execut
 
 - `src/main.rs`: scheduler + orchestration entrypoint
 - `src/data/`: market ingestion + source adapters (NOAA, sports, on-chain)
-- `src/model/`: Claude valuation prompts and response parsing
+- `src/model/`: Claude valuation prompts, caching, and candidate generation
 - `src/risk/`: Kelly sizing + bankroll constraints
 - `src/execution/`: order routing + fill handling
 - `src/accounting/`: PnL + API bill coverage logic
@@ -66,6 +66,15 @@ The live Kalshi client reads auth and routing from environment variables:
 - `NOAA_POINT` (default `39.7456,-97.0892`)
 - `SPORTS_INJURY_API_URL` (optional)
 - `CRYPTO_SENTIMENT_API_URL` (optional; defaults to Alternative.me FNG)
+- `BOT_BANKROLL` (default `10000`)
+- `BOT_VALUATION_MARKETS` (default `250`)
+- `CLAUDE_MODEL` (default `claude-3-5-sonnet-latest`)
+- `ANTHROPIC_BASE_URL` (default `https://api.anthropic.com`)
+- `ANTHROPIC_API_KEY` (optional; without it, heuristic valuation fallback is used)
+- `BOT_MAX_TRADES_PER_CYCLE` (default `5`)
+- `BOT_MAX_FRACTION_PER_TRADE` (default `0.06`)
+- `BOT_MAX_TOTAL_FRACTION_PER_CYCLE` (default `0.20`)
+- `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -110,6 +119,25 @@ Implemented: `src/data/market_enrichment.rs`
 - Sports: configurable injury feed (`SPORTS_INJURY_API_URL`)
 - Crypto: sentiment feed (`CRYPTO_SENTIMENT_API_URL`, defaults to Alternative.me Fear & Greed)
 3. Caches enrichment by ticker with TTL (default 300s).
+
+## Valuation + Candidate Generation
+
+Implemented: `src/model/valuation.rs`
+
+1. Batch valuation (default 32 markets/request) with timeout/retry limits.
+2. Claude inference path via Anthropic Messages API.
+3. Heuristic fallback when API is unavailable.
+4. Prompt-size cap and per-batch token cap.
+5. Cache of unchanged market/enrichment inputs.
+6. Mispricing candidate generation with fee/slippage-adjusted edge threshold.
+
+## Portfolio Allocation
+
+Implemented: `src/model/allocator.rs`
+
+1. Ranks candidates by edge * confidence.
+2. Applies Kelly-style sizing with per-trade and per-cycle bankroll caps.
+3. Filters tiny allocations and returns executable trade basket for the cycle.
 
 ## Trading Safety Controls
 
