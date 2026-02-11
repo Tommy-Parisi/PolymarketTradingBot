@@ -1,6 +1,6 @@
-# PolymarketTradingBot
+# EventTradingBot
 
-Autonomous trading agent for [Polymarket](https://polymarket.com), built in Rust for low-latency execution.
+Autonomous trading agent for event markets, built in Rust for low-latency execution.
 
 ## Strategy Loop (every 10 minutes)
 
@@ -13,7 +13,7 @@ Autonomous trading agent for [Polymarket](https://polymarket.com), built in Rust
 
 ## Market Verticals
 
-- Weather markets: parse NOAA data before Polymarket updates.
+- Weather markets: parse NOAA data before exchange prices fully react.
 - Sports markets: scrape injury reports and price lag.
 - Crypto markets: combine on-chain metrics and sentiment signals.
 
@@ -26,8 +26,41 @@ Autonomous trading agent for [Polymarket](https://polymarket.com), built in Rust
 - `src/execution/`: order routing + fill handling
 - `src/accounting/`: PnL + API bill coverage logic
 
+## Execution Engine Design
+
+Order execution is implemented in `src/execution/` with three layers:
+
+- `types.rs`: strict contracts for `TradeSignal`, `OrderRequest`, `ExecutionReport`, and failure modes.
+- `client.rs`: `ExchangeClient` trait and `KalshiClient` adapter boundary for API integration.
+- `engine.rs`: `ExecutionEngine` that enforces:
+  - minimum edge threshold (default 8%)
+  - stale signal rejection
+  - Kelly-based sizing with hard cap (default max 6% bankroll/trade)
+  - max notional per market guardrail
+  - retry logic for retryable exchange failures
+
+Execution flow:
+
+1. Validate signal freshness and edge.
+2. Compute position size from bankroll and Kelly fraction.
+3. Build IOC limit order with idempotent client order ID.
+4. Submit order and fetch order state/report.
+
+## Kalshi Client Setup
+
+The live Kalshi client reads auth and routing from environment variables:
+
+- `KALSHI_API_BASE_URL` (default `https://demo-api.kalshi.co`)
+- `KALSHI_API_KEY_ID`
+- `KALSHI_PRIVATE_KEY_PEM` or `KALSHI_PRIVATE_KEY_PATH`
+
+The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
+- `KALSHI-ACCESS-KEY`
+- `KALSHI-ACCESS-TIMESTAMP`
+- `KALSHI-ACCESS-SIGNATURE`
+
 ## Notes
 
 This repository is initialized and connected to:
 
-`https://github.com/Tommy-Parisi/PolymarketTradingBot.git`
+`origin` remote on GitHub.
