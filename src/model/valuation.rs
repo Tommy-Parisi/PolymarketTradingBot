@@ -47,6 +47,38 @@ impl Default for ValuationConfig {
     }
 }
 
+impl ValuationConfig {
+    pub fn from_env() -> Self {
+        let mut cfg = Self::default();
+        if let Ok(v) = std::env::var("BOT_MISPRICING_THRESHOLD") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.mispricing_threshold = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_FEE_BPS") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.fee_bps = parsed.max(0.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_SLIPPAGE_BPS") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.slippage_bps = parsed.max(0.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_VALUATION_BATCH_SIZE") {
+            if let Ok(parsed) = v.parse::<usize>() {
+                cfg.batch_size = parsed.max(1);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_VALUATION_TIMEOUT_MS") {
+            if let Ok(parsed) = v.parse::<u64>() {
+                cfg.timeout_ms = parsed.max(100);
+            }
+        }
+        cfg
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ValuationInput {
     pub market: ScannedMarket,

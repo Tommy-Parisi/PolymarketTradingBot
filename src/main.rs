@@ -58,7 +58,7 @@ async fn main() {
         engine,
         scanner: KalshiMarketScanner::new(ScannerConfig::default()),
         enricher: MarketEnricher::new(EnrichmentConfig::default()),
-        valuator: ClaudeValuationEngine::new(ValuationConfig::default()),
+        valuator: ClaudeValuationEngine::new(ValuationConfig::from_env()),
         allocator: PortfolioAllocator::new(allocation_config_from_env()),
         mapper: KalshiMarketMapper::from_env(),
         resolution_mode: resolution_mode_from_env(),
