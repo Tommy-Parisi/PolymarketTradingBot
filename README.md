@@ -68,6 +68,7 @@ The live Kalshi client reads auth and routing from environment variables:
 - `CRYPTO_SENTIMENT_API_URL` (optional; defaults to Alternative.me FNG)
 - `BOT_BANKROLL` (default `10000`)
 - `BOT_VALUATION_MARKETS` (default `250`)
+- `BOT_ENRICHMENT_MARKETS` (default `25`)
 - `CLAUDE_MODEL` (default `claude-3-5-sonnet-latest`)
 - `ANTHROPIC_BASE_URL` (default `https://api.anthropic.com`)
 - `ANTHROPIC_API_KEY` (optional; without it, heuristic valuation fallback is used)
@@ -75,6 +76,8 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_MAX_FRACTION_PER_TRADE` (default `0.06`)
 - `BOT_MAX_TOTAL_FRACTION_PER_CYCLE` (default `0.20`)
 - `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
+- `BOT_CYCLE_SECONDS` (default `600`, i.e. 10 minutes)
+- `BOT_RUN_ONCE` (`true/false`, default `false`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -138,6 +141,19 @@ Implemented: `src/model/allocator.rs`
 1. Ranks candidates by edge * confidence.
 2. Applies Kelly-style sizing with per-trade and per-cycle bankroll caps.
 3. Filters tiny allocations and returns executable trade basket for the cycle.
+
+## Orchestrator Loop
+
+`src/main.rs` now runs the full pipeline on a continuous loop:
+
+1. snapshot + websocket delta scan
+2. enrichment
+3. valuation
+4. candidate generation
+5. allocation
+6. execution
+
+Default cadence is every 600 seconds (10 minutes). Use `BOT_RUN_ONCE=true` for single-cycle dry runs.
 
 ## Trading Safety Controls
 
