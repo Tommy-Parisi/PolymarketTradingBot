@@ -54,11 +54,24 @@ The live Kalshi client reads auth and routing from environment variables:
 - `KALSHI_API_KEY_ID`
 - `KALSHI_PRIVATE_KEY_PEM` or `KALSHI_PRIVATE_KEY_PATH`
 - `BOT_EXECUTION_MODE` (`paper` default, set `live` to place real orders)
+- `KALSHI_MARKET_ALIASES` (optional): comma-separated alias map, e.g. `btc120k=KXBTC-26DEC31-B120000,nyc90f=KXWEATHER-NYC-90F`
+- `BOT_MARKET_RESOLUTION`: `best_effort` (default) or `strict`
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
 - `KALSHI-ACCESS-TIMESTAMP`
 - `KALSHI-ACCESS-SIGNATURE`
+
+## Market Symbol Mapper
+
+`src/markets/kalshi_mapper.rs` resolves strategy market inputs to Kalshi tickers by:
+
+1. Checking alias overrides from `KALSHI_MARKET_ALIASES`
+2. Accepting already ticker-shaped inputs directly
+3. Querying `GET /trade-api/v2/markets` and matching against ticker/title/subtitle/event/series fields
+
+In `best_effort`, unresolved inputs log a warning and continue with the original value.
+In `strict`, unresolved or ambiguous inputs fail fast before order placement.
 
 ## Notes
 
