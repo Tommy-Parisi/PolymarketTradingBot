@@ -16,6 +16,7 @@ pub struct ValuationConfig {
     pub model: String,
     pub anthropic_base_url: String,
     pub anthropic_api_key: Option<String>,
+    pub allow_heuristic_in_live: bool,
     pub batch_size: usize,
     pub max_retries: u32,
     pub timeout_ms: u64,
@@ -23,6 +24,8 @@ pub struct ValuationConfig {
     pub max_prompt_chars: usize,
     pub cache_ttl_secs: u64,
     pub mispricing_threshold: f64,
+    pub min_candidates: usize,
+    pub fallback_mispricing_threshold: f64,
     pub fee_bps: f64,
     pub slippage_bps: f64,
 }
@@ -34,6 +37,13 @@ impl Default for ValuationConfig {
             anthropic_base_url: std::env::var("ANTHROPIC_BASE_URL")
                 .unwrap_or_else(|_| "https://api.anthropic.com".to_string()),
             anthropic_api_key: std::env::var("ANTHROPIC_API_KEY").ok(),
+            allow_heuristic_in_live: matches!(
+                std::env::var("BOT_ALLOW_HEURISTIC_IN_LIVE")
+                    .unwrap_or_else(|_| "false".to_string())
+                    .to_ascii_lowercase()
+                    .as_str(),
+                "1" | "true" | "yes"
+            ),
             batch_size: 32,
             max_retries: 2,
             timeout_ms: 8_000,
@@ -41,6 +51,8 @@ impl Default for ValuationConfig {
             max_prompt_chars: 32_000,
             cache_ttl_secs: 600,
             mispricing_threshold: 0.08,
+            min_candidates: 0,
+            fallback_mispricing_threshold: 0.02,
             fee_bps: 15.0,
             slippage_bps: 20.0,
         }
@@ -53,6 +65,16 @@ impl ValuationConfig {
         if let Ok(v) = std::env::var("BOT_MISPRICING_THRESHOLD") {
             if let Ok(parsed) = v.parse::<f64>() {
                 cfg.mispricing_threshold = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_MIN_CANDIDATES") {
+            if let Ok(parsed) = v.parse::<usize>() {
+                cfg.min_candidates = parsed;
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_FALLBACK_MISPRICING_THRESHOLD") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.fallback_mispricing_threshold = parsed.clamp(0.0, 1.0);
             }
         }
         if let Ok(v) = std::env::var("BOT_FEE_BPS") {
@@ -74,6 +96,12 @@ impl ValuationConfig {
             if let Ok(parsed) = v.parse::<u64>() {
                 cfg.timeout_ms = parsed.max(100);
             }
+        }
+        if let Ok(v) = std::env::var("BOT_ALLOW_HEURISTIC_IN_LIVE") {
+            cfg.allow_heuristic_in_live = matches!(
+                v.to_ascii_lowercase().as_str(),
+                "1" | "true" | "yes"
+            );
         }
         cfg
     }
@@ -107,10 +135,37 @@ pub struct CandidateTrade {
     pub rationale: String,
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct ValuationRunSummary {
+    pub used_claude: bool,
+    pub used_heuristic: bool,
+    pub fallback_reasons: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CandidateEdgeSnapshot {
+    pub ticker: String,
+    pub raw_edge: f64,
+    pub adjusted_edge: f64,
+    pub confidence: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct CandidateDiagnostics {
+    pub strict_threshold: f64,
+    pub fallback_threshold: f64,
+    pub min_candidates: usize,
+    pub total_cost_prob: f64,
+    pub strict_count: usize,
+    pub relaxed_count: usize,
+    pub top_edges: Vec<CandidateEdgeSnapshot>,
+}
+
 pub struct ClaudeValuationEngine {
     cfg: ValuationConfig,
     http: Client,
     cache: Mutex<HashMap<String, CacheEntry>>,
+    last_run_summary: Mutex<ValuationRunSummary>,
 }
 
 #[derive(Debug, Clone)]
@@ -125,6 +180,7 @@ impl ClaudeValuationEngine {
             cfg,
             http: Client::new(),
             cache: Mutex::new(HashMap::new()),
+            last_run_summary: Mutex::new(ValuationRunSummary::default()),
         }
     }
 
@@ -132,6 +188,7 @@ impl ClaudeValuationEngine {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
+        self.reset_last_run_summary();
 
         let mut out = Vec::with_capacity(inputs.len());
         for chunk in inputs.chunks(self.cfg.batch_size) {
@@ -148,7 +205,8 @@ impl ClaudeValuationEngine {
                 continue;
             }
 
-            let inferred = self.infer_batch(&unresolved).await?;
+            let (inferred, mode) = self.infer_batch(&unresolved).await?;
+            self.record_batch_mode(mode);
             let input_by_ticker: HashMap<String, ValuationInput> =
                 unresolved.iter().map(|i| (i.market.ticker.clone(), i.clone())).collect();
             for v in inferred {
@@ -162,12 +220,42 @@ impl ClaudeValuationEngine {
     }
 
     pub fn generate_candidates(&self, valuations: &[MarketValuation]) -> Vec<CandidateTrade> {
+        let mut out = self.generate_candidates_with_threshold(
+            valuations,
+            self.cfg.mispricing_threshold,
+            false,
+        );
+
+        if self.cfg.min_candidates > out.len() {
+            let mut relaxed = self.generate_candidates_with_threshold(
+                valuations,
+                self.cfg.fallback_mispricing_threshold,
+                true,
+            );
+            relaxed.retain(|r| {
+                !out.iter()
+                    .any(|o| o.ticker == r.ticker && o.outcome_id == r.outcome_id)
+            });
+            out.extend(relaxed);
+            out.sort_by(|a, b| b.edge_pct.total_cmp(&a.edge_pct));
+            out.truncate(self.cfg.min_candidates);
+        }
+
+        out
+    }
+
+    fn generate_candidates_with_threshold(
+        &self,
+        valuations: &[MarketValuation],
+        threshold: f64,
+        relaxed_mode: bool,
+    ) -> Vec<CandidateTrade> {
         let mut out = Vec::new();
         let total_cost_prob = (self.cfg.fee_bps + self.cfg.slippage_bps) / 10_000.0;
         for v in valuations {
             let raw_edge = v.fair_prob_yes - v.market_mid_prob_yes;
             let adjusted = raw_edge.abs() - total_cost_prob;
-            if adjusted < self.cfg.mispricing_threshold {
+            if adjusted < threshold {
                 continue;
             }
 
@@ -187,6 +275,11 @@ impl ClaudeValuationEngine {
                 )
             };
 
+            let mut rationale = v.rationale.clone();
+            if relaxed_mode {
+                rationale = format!("{rationale} [relaxed-threshold-candidate]");
+            }
+
             out.push(CandidateTrade {
                 ticker: v.ticker.clone(),
                 side,
@@ -195,7 +288,7 @@ impl ClaudeValuationEngine {
                 observed_price,
                 edge_pct: adjusted,
                 confidence: v.confidence,
-                rationale: v.rationale.clone(),
+                rationale,
             });
         }
 
@@ -216,21 +309,82 @@ impl ClaudeValuationEngine {
         }
     }
 
-    async fn infer_batch(&self, inputs: &[ValuationInput]) -> Result<Vec<MarketValuation>, ExecutionError> {
+    pub fn candidate_diagnostics(&self, valuations: &[MarketValuation], top_n: usize) -> CandidateDiagnostics {
+        let strict = self.generate_candidates_with_threshold(
+            valuations,
+            self.cfg.mispricing_threshold,
+            false,
+        );
+        let relaxed = self.generate_candidates_with_threshold(
+            valuations,
+            self.cfg.fallback_mispricing_threshold,
+            true,
+        );
+        let total_cost_prob = (self.cfg.fee_bps + self.cfg.slippage_bps) / 10_000.0;
+
+        let mut edges: Vec<CandidateEdgeSnapshot> = valuations
+            .iter()
+            .map(|v| {
+                let raw_edge = v.fair_prob_yes - v.market_mid_prob_yes;
+                CandidateEdgeSnapshot {
+                    ticker: v.ticker.clone(),
+                    raw_edge,
+                    adjusted_edge: raw_edge.abs() - total_cost_prob,
+                    confidence: v.confidence,
+                }
+            })
+            .collect();
+        edges.sort_by(|a, b| b.adjusted_edge.total_cmp(&a.adjusted_edge));
+        edges.truncate(top_n.max(1));
+
+        CandidateDiagnostics {
+            strict_threshold: self.cfg.mispricing_threshold,
+            fallback_threshold: self.cfg.fallback_mispricing_threshold,
+            min_candidates: self.cfg.min_candidates,
+            total_cost_prob,
+            strict_count: strict.len(),
+            relaxed_count: relaxed.len(),
+            top_edges: edges,
+        }
+    }
+
+    pub fn last_run_summary(&self) -> ValuationRunSummary {
+        self.last_run_summary
+            .lock()
+            .map(|g| g.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn allow_heuristic_in_live(&self) -> bool {
+        self.cfg.allow_heuristic_in_live
+    }
+
+    async fn infer_batch(
+        &self,
+        inputs: &[ValuationInput],
+    ) -> Result<(Vec<MarketValuation>, BatchMode), ExecutionError> {
         if self.cfg.anthropic_api_key.is_none() {
-            return Ok(self.heuristic_batch(inputs));
+            return Ok((
+                self.heuristic_batch(inputs),
+                BatchMode::Heuristic("missing ANTHROPIC_API_KEY".to_string()),
+            ));
         }
 
         let mut attempt = 0;
         loop {
             attempt += 1;
             match self.try_infer_claude(inputs).await {
-                Ok(v) => return Ok(v),
+                Ok(v) => return Ok((v, BatchMode::Claude)),
                 Err(err @ ExecutionError::RetryableExchange(_)) if attempt <= self.cfg.max_retries => {
                     let _ = err;
                     tokio::time::sleep(Duration::from_millis(250 * attempt as u64)).await;
                 }
-                Err(_) => return Ok(self.heuristic_batch(inputs)),
+                Err(err) => {
+                    return Ok((
+                        self.heuristic_batch(inputs),
+                        BatchMode::Heuristic(format!("claude fallback: {err}")),
+                    ))
+                }
             }
         }
     }
@@ -380,6 +534,32 @@ impl ClaudeValuationEngine {
             );
         }
     }
+
+    fn reset_last_run_summary(&self) {
+        if let Ok(mut g) = self.last_run_summary.lock() {
+            *g = ValuationRunSummary::default();
+        }
+    }
+
+    fn record_batch_mode(&self, mode: BatchMode) {
+        if let Ok(mut g) = self.last_run_summary.lock() {
+            match mode {
+                BatchMode::Claude => g.used_claude = true,
+                BatchMode::Heuristic(reason) => {
+                    g.used_heuristic = true;
+                    if !g.fallback_reasons.iter().any(|r| r == &reason) {
+                        g.fallback_reasons.push(reason);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+enum BatchMode {
+    Claude,
+    Heuristic(String),
 }
 
 fn build_prompt(inputs: &[ValuationInput], max_chars: usize) -> String {
@@ -487,6 +667,30 @@ mod tests {
         let c = engine.generate_candidates(&vals);
         assert_eq!(c.len(), 1);
         assert_eq!(c[0].outcome_id, "yes");
+    }
+
+    #[test]
+    fn candidate_generation_can_backfill_with_relaxed_threshold() {
+        let cfg = ValuationConfig {
+            mispricing_threshold: 0.08,
+            min_candidates: 1,
+            fallback_mispricing_threshold: 0.01,
+            fee_bps: 0.0,
+            slippage_bps: 0.0,
+            ..ValuationConfig::default()
+        };
+        let engine = ClaudeValuationEngine::new(cfg);
+        let vals = vec![MarketValuation {
+            ticker: "KX".to_string(),
+            fair_prob_yes: 0.53,
+            market_mid_prob_yes: 0.50,
+            confidence: 0.8,
+            rationale: "x".to_string(),
+            stale_after: Utc::now(),
+        }];
+        let c = engine.generate_candidates(&vals);
+        assert_eq!(c.len(), 1);
+        assert!(c[0].rationale.contains("relaxed-threshold-candidate"));
     }
 
     #[tokio::test]

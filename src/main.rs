@@ -1,6 +1,10 @@
+use std::fs;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 use tokio::time::MissedTickBehavior;
 
 mod data;
@@ -17,7 +21,7 @@ use execution::paper_sim::{PaperSimClient, PaperSimConfig};
 use execution::types::EngineConfig;
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
 use model::allocator::{AllocationConfig, PortfolioAllocator};
-use model::valuation::{ClaudeValuationEngine, ValuationConfig, ValuationInput};
+use model::valuation::{CandidateTrade, ClaudeValuationEngine, MarketValuation, ValuationConfig, ValuationInput};
 
 struct BotRuntime {
     mode: ExecutionMode,
@@ -95,18 +99,41 @@ async fn main() {
 }
 
 async fn run_cycle(runtime: &BotRuntime) {
+    let started_at = Utc::now();
     println!("starting cycle");
 
     let scanned = match runtime.scanner.scan_snapshot_with_deltas().await {
         Ok(markets) => markets,
         Err(err) => {
             eprintln!("market scan failed: {err}");
+            persist_cycle_artifact(CycleArtifact {
+                started_at,
+                finished_at: Utc::now(),
+                status: "scan_failed".to_string(),
+                message: Some(err.to_string()),
+                selected_markets: Vec::new(),
+                valuations: Vec::new(),
+                candidates: Vec::new(),
+                allocations: Vec::new(),
+                executions: Vec::new(),
+            });
             return;
         }
     };
     let selected = runtime.scanner.select_for_valuation(scanned);
     if selected.is_empty() {
         eprintln!("no markets selected for valuation");
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "no_markets".to_string(),
+            message: Some("no markets selected for valuation".to_string()),
+            selected_markets: Vec::new(),
+            valuations: Vec::new(),
+            candidates: Vec::new(),
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
         return;
     }
     println!("selected {} markets for valuation", selected.len());
@@ -116,6 +143,21 @@ async fn run_cycle(runtime: &BotRuntime) {
         Ok(v) => v,
         Err(err) => {
             eprintln!("enrichment failed: {err}");
+            persist_cycle_artifact(CycleArtifact {
+                started_at,
+                finished_at: Utc::now(),
+                status: "enrichment_failed".to_string(),
+                message: Some(err.to_string()),
+                selected_markets: selected
+                    .iter()
+                    .map(|m| artifact_market(m))
+                    .take(100)
+                    .collect(),
+                valuations: Vec::new(),
+                candidates: Vec::new(),
+                allocations: Vec::new(),
+                executions: Vec::new(),
+            });
             return;
         }
     };
@@ -140,26 +182,132 @@ async fn run_cycle(runtime: &BotRuntime) {
         Ok(v) => v,
         Err(err) => {
             eprintln!("valuation failed: {err}");
+            persist_cycle_artifact(CycleArtifact {
+                started_at,
+                finished_at: Utc::now(),
+                status: "valuation_failed".to_string(),
+                message: Some(err.to_string()),
+                selected_markets: selected
+                    .iter()
+                    .map(|m| artifact_market(m))
+                    .take(100)
+                    .collect(),
+                valuations: Vec::new(),
+                candidates: Vec::new(),
+                allocations: Vec::new(),
+                executions: Vec::new(),
+            });
             return;
         }
     };
     println!("valued {} markets", valuations.len());
+    let valuation_summary = runtime.valuator.last_run_summary();
+    let fallback_reason_text = if valuation_summary.fallback_reasons.is_empty() {
+        "none".to_string()
+    } else {
+        valuation_summary.fallback_reasons.join(" | ")
+    };
+    println!(
+        "valuation mode: used_claude={} used_heuristic={} fallback_reasons={}",
+        valuation_summary.used_claude, valuation_summary.used_heuristic, fallback_reason_text
+    );
+    if runtime.mode == ExecutionMode::Live
+        && valuation_summary.used_heuristic
+        && !runtime.valuator.allow_heuristic_in_live()
+    {
+        eprintln!(
+            "live cycle aborted: heuristic valuation fallback was used and BOT_ALLOW_HEURISTIC_IN_LIVE is false"
+        );
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "valuation_fail_closed_live".to_string(),
+            message: Some("heuristic valuation fallback used in live mode".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: Vec::new(),
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
+        return;
+    }
 
-    let candidates = runtime.valuator.generate_candidates(&valuations);
+    let mut candidates = runtime.valuator.generate_candidates(&valuations);
+    if candidates.is_empty() && force_test_candidate_enabled() {
+        if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
+            println!(
+                "injecting deterministic test candidate: ticker={} edge={:.4}",
+                injected.ticker, injected.edge_pct
+            );
+            candidates.push(injected);
+        }
+    }
     if candidates.is_empty() {
+        let diagnostics = runtime.valuator.candidate_diagnostics(&valuations, 5);
         eprintln!("no mispricing candidates above threshold");
+        eprintln!(
+            "candidate diagnostics: strict_threshold={:.4} fallback_threshold={:.4} min_candidates={} total_cost_prob={:.4} strict_count={} relaxed_count={}",
+            diagnostics.strict_threshold,
+            diagnostics.fallback_threshold,
+            diagnostics.min_candidates,
+            diagnostics.total_cost_prob,
+            diagnostics.strict_count,
+            diagnostics.relaxed_count
+        );
+        for edge in diagnostics.top_edges {
+            eprintln!(
+                "top edge: ticker={} raw_edge={:.4} adjusted_edge={:.4} confidence={:.2}",
+                edge.ticker, edge.raw_edge, edge.adjusted_edge, edge.confidence
+            );
+        }
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "no_candidates".to_string(),
+            message: Some("no mispricing candidates above threshold".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: Vec::new(),
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
         return;
     }
     println!("generated {} candidates", candidates.len());
     println!("top candidate rationale: {}", candidates[0].rationale);
 
+    let candidate_artifacts: Vec<ArtifactCandidate> = candidates.iter().map(artifact_candidate).collect();
     let allocations = runtime.allocator.allocate(runtime.bankroll, candidates);
     if allocations.is_empty() {
         eprintln!("allocator produced no trades");
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "no_allocations".to_string(),
+            message: Some("allocator produced no trades".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: candidate_artifacts,
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
         return;
     }
     println!("allocator selected {} trades", allocations.len());
 
+    let mut execution_artifacts = Vec::new();
     for allocated in allocations {
         let mut signal = runtime.valuator.candidate_to_signal(&allocated.candidate);
         match runtime.mapper.resolve_market_ticker(&signal.market_id).await {
@@ -169,18 +317,72 @@ async fn run_cycle(runtime: &BotRuntime) {
             }
             Err(err) => {
                 eprintln!("market resolution failed (strict mode): {err}");
+                execution_artifacts.push(ArtifactExecution {
+                    source_ticker: allocated.candidate.ticker.clone(),
+                    resolved_market_id: signal.market_id.clone(),
+                    bankroll_fraction: allocated.bankroll_fraction,
+                    notional: allocated.notional,
+                    result: "resolution_failed".to_string(),
+                    error: Some(err.to_string()),
+                    report: None,
+                });
                 continue;
             }
         }
 
         match runtime.engine.execute_signal(&signal, allocated.notional).await {
-            Ok(report) => println!(
-                "order executed: ticker={} fraction={:.4} notional={:.2} report={:?}",
-                allocated.candidate.ticker, allocated.bankroll_fraction, allocated.notional, report
-            ),
-            Err(err) => eprintln!("execution failed for {}: {err}", allocated.candidate.ticker),
+            Ok(report) => {
+                println!(
+                    "order executed: ticker={} fraction={:.4} notional={:.2} report={:?}",
+                    allocated.candidate.ticker, allocated.bankroll_fraction, allocated.notional, report
+                );
+                execution_artifacts.push(ArtifactExecution {
+                    source_ticker: allocated.candidate.ticker.clone(),
+                    resolved_market_id: signal.market_id.clone(),
+                    bankroll_fraction: allocated.bankroll_fraction,
+                    notional: allocated.notional,
+                    result: "executed".to_string(),
+                    error: None,
+                    report: Some(report),
+                });
+            }
+            Err(err) => {
+                eprintln!("execution failed for {}: {err}", allocated.candidate.ticker);
+                execution_artifacts.push(ArtifactExecution {
+                    source_ticker: allocated.candidate.ticker.clone(),
+                    resolved_market_id: signal.market_id.clone(),
+                    bankroll_fraction: allocated.bankroll_fraction,
+                    notional: allocated.notional,
+                    result: "execution_failed".to_string(),
+                    error: Some(err.to_string()),
+                    report: None,
+                });
+            }
         }
     }
+
+    persist_cycle_artifact(CycleArtifact {
+        started_at,
+        finished_at: Utc::now(),
+        status: "completed".to_string(),
+        message: None,
+        selected_markets: selected
+            .iter()
+            .map(|m| artifact_market(m))
+            .take(100)
+            .collect(),
+        valuations: valuations.iter().map(artifact_valuation).collect(),
+        candidates: candidate_artifacts,
+        allocations: execution_artifacts
+            .iter()
+            .map(|e| ArtifactAllocation {
+                ticker: e.source_ticker.clone(),
+                bankroll_fraction: e.bankroll_fraction,
+                notional: e.notional,
+            })
+            .collect(),
+        executions: execution_artifacts,
+    });
 }
 
 fn execution_mode_from_env() -> ExecutionMode {
@@ -230,6 +432,11 @@ fn cycle_seconds_from_env() -> u64 {
 
 fn engine_config_from_env() -> EngineConfig {
     let mut cfg = EngineConfig::default();
+    if let Ok(v) = std::env::var("BOT_MIN_EDGE_PCT") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.min_edge_pct = parsed.clamp(0.0, 1.0);
+        }
+    }
     if let Ok(v) = std::env::var("BOT_MAX_DAILY_LOSS") {
         if let Ok(parsed) = v.parse::<f64>() {
             cfg.max_daily_loss = parsed;
@@ -308,4 +515,212 @@ fn allocation_config_from_env() -> AllocationConfig {
         }
     }
     cfg
+}
+
+fn force_test_candidate_enabled() -> bool {
+    matches!(
+        std::env::var("BOT_FORCE_TEST_CANDIDATE")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn cycle_artifacts_enabled() -> bool {
+    !matches!(
+        std::env::var("BOT_CYCLE_ARTIFACTS_ENABLED")
+            .unwrap_or_else(|_| "true".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "0" | "false" | "no"
+    )
+}
+
+fn cycle_artifacts_dir() -> String {
+    std::env::var("BOT_CYCLE_ARTIFACTS_DIR").unwrap_or_else(|_| "var/cycles".to_string())
+}
+
+fn build_forced_test_candidate(
+    selected: &[data::market_scanner::ScannedMarket],
+    valuations: &[MarketValuation],
+) -> Option<CandidateTrade> {
+    if let Some(v) = valuations.first() {
+        let observed_yes = v.market_mid_prob_yes.clamp(0.01, 0.99);
+        if observed_yes <= 0.95 {
+            let fair = (observed_yes + 0.03).clamp(0.01, 0.99);
+            return Some(CandidateTrade {
+                ticker: v.ticker.clone(),
+                side: execution::types::Side::Buy,
+                outcome_id: "yes".to_string(),
+                fair_price: fair,
+                observed_price: observed_yes,
+                edge_pct: (fair - observed_yes).abs().max(0.01),
+                confidence: 0.70,
+                rationale: "forced deterministic test candidate".to_string(),
+            });
+        }
+        let observed_no = (1.0 - observed_yes).clamp(0.01, 0.99);
+        let fair_no = (observed_no + 0.03).clamp(0.01, 0.99);
+        return Some(CandidateTrade {
+            ticker: v.ticker.clone(),
+            side: execution::types::Side::Buy,
+            outcome_id: "no".to_string(),
+            fair_price: fair_no,
+            observed_price: observed_no,
+            edge_pct: (fair_no - observed_no).abs().max(0.01),
+            confidence: 0.70,
+            rationale: "forced deterministic test candidate".to_string(),
+        });
+    }
+
+    let first = selected.first()?;
+    let observed_yes = midpoint_prob_from_market(first)?;
+    let fair_yes = (observed_yes + 0.03).clamp(0.01, 0.99);
+    Some(CandidateTrade {
+        ticker: first.ticker.clone(),
+        side: execution::types::Side::Buy,
+        outcome_id: "yes".to_string(),
+        fair_price: fair_yes,
+        observed_price: observed_yes,
+        edge_pct: (fair_yes - observed_yes).abs().max(0.01),
+        confidence: 0.70,
+        rationale: "forced deterministic test candidate".to_string(),
+    })
+}
+
+fn midpoint_prob_from_market(market: &data::market_scanner::ScannedMarket) -> Option<f64> {
+    let bid = market.yes_bid_cents?;
+    let ask = market.yes_ask_cents?;
+    if ask < bid {
+        return None;
+    }
+    Some((((bid + ask) / 2.0) / 100.0).clamp(0.01, 0.99))
+}
+
+fn persist_cycle_artifact(artifact: CycleArtifact) {
+    if !cycle_artifacts_enabled() {
+        return;
+    }
+    let dir = cycle_artifacts_dir();
+    if let Err(err) = fs::create_dir_all(&dir) {
+        eprintln!("cycle artifact warning: failed to create dir {dir}: {err}");
+        return;
+    }
+    let filename = format!(
+        "{}_{}.json",
+        artifact.started_at.format("%Y%m%dT%H%M%S"),
+        artifact.finished_at.timestamp_subsec_millis()
+    );
+    let path = Path::new(&dir).join(filename);
+    let json = match serde_json::to_vec_pretty(&artifact) {
+        Ok(j) => j,
+        Err(err) => {
+            eprintln!("cycle artifact warning: failed to serialize artifact: {err}");
+            return;
+        }
+    };
+    if let Err(err) = fs::write(&path, json) {
+        eprintln!(
+            "cycle artifact warning: failed to write {}: {}",
+            path.display(),
+            err
+        );
+    }
+}
+
+fn artifact_market(m: &data::market_scanner::ScannedMarket) -> ArtifactMarket {
+    ArtifactMarket {
+        ticker: m.ticker.clone(),
+        title: m.title.clone(),
+        yes_bid_cents: m.yes_bid_cents,
+        yes_ask_cents: m.yes_ask_cents,
+        volume: m.volume,
+    }
+}
+
+fn artifact_valuation(v: &MarketValuation) -> ArtifactValuation {
+    ArtifactValuation {
+        ticker: v.ticker.clone(),
+        fair_prob_yes: v.fair_prob_yes,
+        market_mid_prob_yes: v.market_mid_prob_yes,
+        confidence: v.confidence,
+        rationale: v.rationale.clone(),
+        stale_after: v.stale_after,
+    }
+}
+
+fn artifact_candidate(c: &CandidateTrade) -> ArtifactCandidate {
+    ArtifactCandidate {
+        ticker: c.ticker.clone(),
+        outcome_id: c.outcome_id.clone(),
+        side: c.side,
+        fair_price: c.fair_price,
+        observed_price: c.observed_price,
+        edge_pct: c.edge_pct,
+        confidence: c.confidence,
+        rationale: c.rationale.clone(),
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct CycleArtifact {
+    started_at: DateTime<Utc>,
+    finished_at: DateTime<Utc>,
+    status: String,
+    message: Option<String>,
+    selected_markets: Vec<ArtifactMarket>,
+    valuations: Vec<ArtifactValuation>,
+    candidates: Vec<ArtifactCandidate>,
+    allocations: Vec<ArtifactAllocation>,
+    executions: Vec<ArtifactExecution>,
+}
+
+#[derive(Debug, Serialize)]
+struct ArtifactMarket {
+    ticker: String,
+    title: String,
+    yes_bid_cents: Option<f64>,
+    yes_ask_cents: Option<f64>,
+    volume: f64,
+}
+
+#[derive(Debug, Serialize)]
+struct ArtifactValuation {
+    ticker: String,
+    fair_prob_yes: f64,
+    market_mid_prob_yes: f64,
+    confidence: f64,
+    rationale: String,
+    stale_after: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize)]
+struct ArtifactCandidate {
+    ticker: String,
+    outcome_id: String,
+    side: execution::types::Side,
+    fair_price: f64,
+    observed_price: f64,
+    edge_pct: f64,
+    confidence: f64,
+    rationale: String,
+}
+
+#[derive(Debug, Serialize)]
+struct ArtifactAllocation {
+    ticker: String,
+    bankroll_fraction: f64,
+    notional: f64,
+}
+
+#[derive(Debug, Serialize)]
+struct ArtifactExecution {
+    source_ticker: String,
+    resolved_market_id: String,
+    bankroll_fraction: f64,
+    notional: f64,
+    result: String,
+    error: Option<String>,
+    report: Option<execution::types::ExecutionReport>,
 }
