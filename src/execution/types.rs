@@ -79,8 +79,17 @@ pub struct EngineConfig {
     pub min_edge_pct: f64,
     pub max_bankroll_fraction_per_trade: f64,
     pub max_market_notional: f64,
+    pub min_order_quantity: f64,
+    pub max_order_quantity: f64,
     pub stale_signal_after_secs: i64,
     pub max_retries: u32,
+    pub reconcile_poll_attempts: u32,
+    pub reconcile_poll_interval_ms: u64,
+    pub max_open_exposure_notional: f64,
+    pub max_daily_loss: f64,
+    pub max_orders_per_minute: usize,
+    pub state_path: String,
+    pub journal_path: String,
 }
 
 impl Default for EngineConfig {
@@ -89,8 +98,17 @@ impl Default for EngineConfig {
             min_edge_pct: 0.08,
             max_bankroll_fraction_per_trade: 0.06,
             max_market_notional: 1_000.0,
+            min_order_quantity: 1.0,
+            max_order_quantity: 10_000.0,
             stale_signal_after_secs: 60,
             max_retries: 2,
+            reconcile_poll_attempts: 4,
+            reconcile_poll_interval_ms: 500,
+            max_open_exposure_notional: 15_000.0,
+            max_daily_loss: 500.0,
+            max_orders_per_minute: 20,
+            state_path: "var/state/runtime_state.json".to_string(),
+            journal_path: "var/logs/trade_journal.jsonl".to_string(),
         }
     }
 }
@@ -111,6 +129,18 @@ pub enum ExecutionError {
 
     #[error("notional {notional:.4} exceeds market cap {cap:.4}")]
     NotionalCapExceeded { notional: f64, cap: f64 },
+
+    #[error("order quantity {quantity:.4} out of bounds [{min:.4}, {max:.4}]")]
+    QuantityOutOfBounds { quantity: f64, min: f64, max: f64 },
+
+    #[error("insufficient capital: required_notional={required_notional:.4}, bankroll={bankroll:.4}")]
+    InsufficientCapital { required_notional: f64, bankroll: f64 },
+
+    #[error("kill switch triggered: {reason}")]
+    KillSwitch { reason: String },
+
+    #[error("duplicate client order id blocked: {client_order_id}")]
+    DuplicateClientOrderId { client_order_id: String },
 
     #[error("exchange error: {0}")]
     Exchange(String),

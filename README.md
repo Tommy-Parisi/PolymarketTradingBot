@@ -56,6 +56,12 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_EXECUTION_MODE` (`paper` default, set `live` to place real orders)
 - `KALSHI_MARKET_ALIASES` (optional): comma-separated alias map, e.g. `btc120k=KXBTC-26DEC31-B120000,nyc90f=KXWEATHER-NYC-90F`
 - `BOT_MARKET_RESOLUTION`: `best_effort` (default) or `strict`
+- `BOT_MAX_DAILY_LOSS` (default `500`)
+- `BOT_MAX_OPEN_EXPOSURE` (default `15000`)
+- `BOT_MAX_ORDERS_PER_MIN` (default `20`)
+- `BOT_STATE_PATH` (default `var/state/runtime_state.json`)
+- `BOT_JOURNAL_PATH` (default `var/logs/trade_journal.jsonl`)
+- `BOT_RUN_SMOKE_TEST` (`true/false`, default `false`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -72,6 +78,27 @@ The client signs each request using Kalshi's `timestamp + METHOD + path` convent
 
 In `best_effort`, unresolved inputs log a warning and continue with the original value.
 In `strict`, unresolved or ambiguous inputs fail fast before order placement.
+
+## Trading Safety Controls
+
+The execution engine now includes production-oriented controls:
+
+1. Pre-trade checks:
+- edge, staleness, size bounds, bankroll sufficiency
+2. Kill switches:
+- daily loss cap, open exposure cap, order-rate cap
+3. Post-trade controls:
+- poll/reconcile partial orders, auto-cancel lingering orders, startup open-order reconciliation
+4. Idempotency and dedupe:
+- persistent `client_order_id` memory across restarts
+5. Persistent audit trail:
+- JSON runtime state and JSONL journal under `BOT_STATE_PATH` / `BOT_JOURNAL_PATH`
+
+Recommended rollout:
+
+1. Run in `paper` mode until journal and state behavior look correct.
+2. Switch to Kalshi demo credentials in `live` with `BOT_RUN_SMOKE_TEST=true` first.
+3. Promote to production credentials only after a successful demo burn-in period.
 
 ## Notes
 

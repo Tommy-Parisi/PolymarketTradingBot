@@ -21,7 +21,18 @@ async fn main() {
     };
 
     let mode = execution_mode_from_env();
-    let engine = ExecutionEngine::new(client, EngineConfig::default(), mode);
+    let engine = ExecutionEngine::new(client, engine_config_from_env(), mode);
+    if mode == ExecutionMode::Live && smoke_test_enabled() {
+        if let Err(err) = engine.run_smoke_test().await {
+            eprintln!("kalshi smoke test failed: {err}");
+            return;
+        }
+    }
+    if mode == ExecutionMode::Live {
+        if let Err(err) = engine.reconcile_open_orders().await {
+            eprintln!("startup reconcile warning: {err}");
+        }
+    }
 
     let mut signal = TradeSignal {
         market_id: "market-123".to_string(),
@@ -62,4 +73,40 @@ fn execution_mode_from_env() -> ExecutionMode {
         "live" => ExecutionMode::Live,
         _ => ExecutionMode::Paper,
     }
+}
+
+fn engine_config_from_env() -> EngineConfig {
+    let mut cfg = EngineConfig::default();
+    if let Ok(v) = std::env::var("BOT_MAX_DAILY_LOSS") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.max_daily_loss = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_MAX_OPEN_EXPOSURE") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.max_open_exposure_notional = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_MAX_ORDERS_PER_MIN") {
+        if let Ok(parsed) = v.parse::<usize>() {
+            cfg.max_orders_per_minute = parsed;
+        }
+    }
+    if let Ok(v) = std::env::var("BOT_STATE_PATH") {
+        cfg.state_path = v;
+    }
+    if let Ok(v) = std::env::var("BOT_JOURNAL_PATH") {
+        cfg.journal_path = v;
+    }
+    cfg
+}
+
+fn smoke_test_enabled() -> bool {
+    matches!(
+        std::env::var("BOT_RUN_SMOKE_TEST")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
 }

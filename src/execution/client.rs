@@ -22,6 +22,7 @@ pub trait ExchangeClient: Send + Sync {
     async fn place_order(&self, request: &OrderRequest) -> Result<OrderAck, ExecutionError>;
     async fn get_order(&self, order_id: &str) -> Result<ExecutionReport, ExecutionError>;
     async fn cancel_order(&self, order_id: &str) -> Result<(), ExecutionError>;
+    async fn smoke_test(&self) -> Result<(), ExecutionError>;
 }
 
 #[derive(Debug, Clone)]
@@ -82,14 +83,20 @@ impl ExchangeClient for KalshiClient {
             Side::Buy => "buy",
             Side::Sell => "sell",
         };
+        let price_cents = request.limit_price.map(|p| prob_to_cents(p) as u32);
+        let (yes_price, no_price) = if side == "yes" {
+            (price_cents, None)
+        } else {
+            (None, price_cents)
+        };
         let body = CreateOrderRequest {
             ticker: request.market_id.clone(),
             client_order_id: request.client_order_id.clone(),
             side,
             action: action.to_string(),
             count: request.quantity.max(0.0).round() as u64,
-            yes_price: request.limit_price.map(|p| prob_to_cents(p) as u32),
-            no_price: None,
+            yes_price,
+            no_price,
             order_type: "limit".to_string(),
         };
         let body_text = serde_json::to_string(&body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
@@ -199,6 +206,30 @@ impl ExchangeClient for KalshiClient {
             return Ok(());
         }
         Err(build_http_error("DELETE", &path, status, &text))
+    }
+
+    async fn smoke_test(&self) -> Result<(), ExecutionError> {
+        let path = "/trade-api/v2/portfolio/orders?limit=1";
+        let auth_path = "/trade-api/v2/portfolio/orders";
+        let url = format!("{}{}", self.config.api_base_url, path);
+        let headers = self.auth_headers(Method::GET, auth_path)?;
+        let mut req = self.http.get(url);
+        for (k, v) in headers {
+            req = req.header(k, v);
+        }
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| ExecutionError::RetryableExchange(e.to_string()))?;
+        let status = resp.status();
+        let text = resp
+            .text()
+            .await
+            .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        if !status.is_success() {
+            return Err(build_http_error("GET", path, status, &text));
+        }
+        Ok(())
     }
 }
 
