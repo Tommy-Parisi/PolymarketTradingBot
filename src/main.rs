@@ -2,9 +2,12 @@ use std::sync::Arc;
 
 use chrono::Utc;
 
+mod data;
 mod execution;
 mod markets;
 
+use data::market_enrichment::{EnrichmentConfig, MarketEnricher};
+use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
 use execution::client::KalshiClient;
 use execution::engine::{ExecutionEngine, ExecutionMode};
 use execution::types::{EngineConfig, Side, TradeSignal};
@@ -22,6 +25,32 @@ async fn main() {
 
     let mode = execution_mode_from_env();
     let engine = ExecutionEngine::new(client, engine_config_from_env(), mode);
+
+    let scanner = KalshiMarketScanner::new(ScannerConfig::default());
+    let scanned = match scanner.scan_snapshot_with_deltas().await {
+        Ok(markets) => markets,
+        Err(err) => {
+            eprintln!("market scan failed: {err}");
+            return;
+        }
+    };
+    let selected = scanner.select_for_valuation(scanned);
+    if selected.is_empty() {
+        eprintln!("no markets selected for valuation");
+        return;
+    }
+    println!("selected {} markets for valuation", selected.len());
+
+    let enricher = MarketEnricher::new(EnrichmentConfig::default());
+    let sample_size = selected.len().min(25);
+    let enrichments = match enricher.enrich_batch(&selected[..sample_size]).await {
+        Ok(v) => v,
+        Err(err) => {
+            eprintln!("enrichment failed: {err}");
+            return;
+        }
+    };
+    println!("enriched {} markets", enrichments.len());
     if mode == ExecutionMode::Live && smoke_test_enabled() {
         if let Err(err) = engine.run_smoke_test().await {
             eprintln!("kalshi smoke test failed: {err}");
@@ -35,7 +64,7 @@ async fn main() {
     }
 
     let mut signal = TradeSignal {
-        market_id: "market-123".to_string(),
+        market_id: selected[0].ticker.clone(),
         outcome_id: "yes".to_string(),
         side: Side::Buy,
         fair_price: 0.62,

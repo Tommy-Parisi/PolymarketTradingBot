@@ -95,8 +95,11 @@ impl ExchangeClient for KalshiClient {
             side,
             action: action.to_string(),
             count: request.quantity.max(0.0).round() as u64,
+            count_fp: Some(to_fp_string(request.quantity)),
             yes_price,
             no_price,
+            yes_price_dollars: yes_price.map(cents_to_dollars_string),
+            no_price_dollars: no_price.map(cents_to_dollars_string),
             order_type: "limit".to_string(),
         };
         let body_text = serde_json::to_string(&body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
@@ -176,8 +179,17 @@ impl ExchangeClient for KalshiClient {
                 .unwrap_or_else(|| order_id.to_string()),
             client_order_id: order.client_order_id.unwrap_or_default(),
             status: map_order_status(order.status.as_deref()),
-            filled_qty: order.filled_count.unwrap_or(0.0),
-            avg_fill_price: order.yes_price_cents.map(cents_to_prob),
+            filled_qty: order
+                .filled_count_fp
+                .as_deref()
+                .and_then(parse_fp_string)
+                .or(order.filled_count)
+                .unwrap_or(0.0),
+            avg_fill_price: order
+                .yes_price_dollars
+                .as_deref()
+                .and_then(parse_prob_dollars_string)
+                .or_else(|| order.yes_price_cents.map(cents_to_prob)),
             fee_paid: order.fee.unwrap_or(0.0),
             updated_at: Utc::now(),
         })
@@ -274,8 +286,24 @@ fn prob_to_cents(prob: f64) -> u8 {
     cents as u8
 }
 
+fn cents_to_dollars_string(cents: u32) -> String {
+    format!("{:.4}", (cents as f64) / 100.0)
+}
+
 fn cents_to_prob(cents: u32) -> f64 {
     (cents as f64) / 100.0
+}
+
+fn parse_prob_dollars_string(raw: &str) -> Option<f64> {
+    raw.parse::<f64>().ok()
+}
+
+fn to_fp_string(v: f64) -> String {
+    format!("{:.4}", v.max(0.0))
+}
+
+fn parse_fp_string(raw: &str) -> Option<f64> {
+    raw.parse::<f64>().ok()
 }
 
 fn map_order_status(status: Option<&str>) -> OrderStatus {
@@ -304,8 +332,14 @@ struct CreateOrderRequest {
     side: String,
     action: String,
     count: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    count_fp: Option<String>,
     yes_price: Option<u32>,
     no_price: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    yes_price_dollars: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    no_price_dollars: Option<String>,
     order_type: String,
 }
 
@@ -329,7 +363,11 @@ struct KalshiOrderPayload {
     status: Option<String>,
     #[serde(alias = "filled_count", alias = "filledCount")]
     filled_count: Option<f64>,
+    #[serde(alias = "filled_count_fp", alias = "filledCountFp")]
+    filled_count_fp: Option<String>,
     #[serde(alias = "yes_price", alias = "yesPrice")]
     yes_price_cents: Option<u32>,
+    #[serde(alias = "yes_price_dollars", alias = "yesPriceDollars")]
+    yes_price_dollars: Option<String>,
     fee: Option<f64>,
 }

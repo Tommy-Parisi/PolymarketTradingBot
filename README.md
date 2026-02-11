@@ -51,6 +51,7 @@ Execution flow:
 The live Kalshi client reads auth and routing from environment variables:
 
 - `KALSHI_API_BASE_URL` (default `https://demo-api.kalshi.co`)
+- `KALSHI_WS_URL` (default `wss://demo-api.kalshi.co/trade-api/ws/v2`)
 - `KALSHI_API_KEY_ID`
 - `KALSHI_PRIVATE_KEY_PEM` or `KALSHI_PRIVATE_KEY_PATH`
 - `BOT_EXECUTION_MODE` (`paper` default, set `live` to place real orders)
@@ -62,6 +63,9 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_STATE_PATH` (default `var/state/runtime_state.json`)
 - `BOT_JOURNAL_PATH` (default `var/logs/trade_journal.jsonl`)
 - `BOT_RUN_SMOKE_TEST` (`true/false`, default `false`)
+- `NOAA_POINT` (default `39.7456,-97.0892`)
+- `SPORTS_INJURY_API_URL` (optional)
+- `CRYPTO_SENTIMENT_API_URL` (optional; defaults to Alternative.me FNG)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -78,6 +82,34 @@ The client signs each request using Kalshi's `timestamp + METHOD + path` convent
 
 In `best_effort`, unresolved inputs log a warning and continue with the original value.
 In `strict`, unresolved or ambiguous inputs fail fast before order placement.
+
+## Market Scanning (Fastest Access Path)
+
+Implemented scanner: `src/data/market_scanner.rs`
+
+Current flow:
+
+1. Pull open markets from `GET /trade-api/v2/markets` with cursor pagination and up to 1000 markets/page.
+2. Merge short-window WebSocket deltas (`ticker_v2`, `trade`) via `src/data/ws_delta.rs`.
+3. Filter to liquid + tight markets (volume + spread thresholds).
+4. Pass selected tickers to valuation.
+
+Reasoning for speed:
+
+1. Single large REST snapshots are fastest way to bootstrap 500-1000 markets.
+2. WebSocket deltas remove stale quotes between scan windows.
+3. Feature enrichment now uses provider-native APIs with in-process caching.
+
+## Enrichment Layer
+
+Implemented: `src/data/market_enrichment.rs`
+
+1. Detects market vertical (weather/sports/crypto).
+2. Fetches vertical signals:
+- Weather: NOAA (`api.weather.gov`)
+- Sports: configurable injury feed (`SPORTS_INJURY_API_URL`)
+- Crypto: sentiment feed (`CRYPTO_SENTIMENT_API_URL`, defaults to Alternative.me Fear & Greed)
+3. Caches enrichment by ticker with TTL (default 300s).
 
 ## Trading Safety Controls
 
