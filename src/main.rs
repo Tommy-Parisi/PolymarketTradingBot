@@ -7,11 +7,13 @@ mod data;
 mod execution;
 mod markets;
 mod model;
+mod replay;
 
 use data::market_enrichment::{EnrichmentConfig, MarketEnricher};
 use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
-use execution::client::KalshiClient;
+use execution::client::{ExchangeClient, KalshiClient};
 use execution::engine::{ExecutionEngine, ExecutionMode};
+use execution::paper_sim::{PaperSimClient, PaperSimConfig};
 use execution::types::EngineConfig;
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
 use model::allocator::{AllocationConfig, PortfolioAllocator};
@@ -33,12 +35,20 @@ struct BotRuntime {
 
 #[tokio::main]
 async fn main() {
-    let client = match KalshiClient::from_env() {
-        Ok(client) => Arc::new(client),
-        Err(err) => {
-            eprintln!("missing/invalid Kalshi env config: {err}");
-            return;
-        }
+    if replay_mode_enabled() {
+        replay::run_multi_day_replay().await;
+        return;
+    }
+
+    let client: Arc<dyn ExchangeClient> = match exchange_backend_from_env().as_str() {
+        "paper_sim" => Arc::new(PaperSimClient::new(PaperSimConfig::default())),
+        _ => match KalshiClient::from_env() {
+            Ok(client) => Arc::new(client),
+            Err(err) => {
+                eprintln!("missing/invalid Kalshi env config: {err}");
+                return;
+            }
+        },
     };
 
     let mode = execution_mode_from_env();
@@ -192,6 +202,22 @@ fn run_once_mode() -> bool {
             .as_str(),
         "1" | "true" | "yes"
     )
+}
+
+fn replay_mode_enabled() -> bool {
+    matches!(
+        std::env::var("BOT_RUN_REPLAY")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn exchange_backend_from_env() -> String {
+    std::env::var("BOT_EXCHANGE_BACKEND")
+        .unwrap_or_else(|_| "kalshi".to_string())
+        .to_ascii_lowercase()
 }
 
 fn cycle_seconds_from_env() -> u64 {

@@ -78,6 +78,11 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
 - `BOT_CYCLE_SECONDS` (default `600`, i.e. 10 minutes)
 - `BOT_RUN_ONCE` (`true/false`, default `false`)
+- `BOT_EXCHANGE_BACKEND` (`kalshi` default, `paper_sim` optional)
+- `BOT_RUN_REPLAY` (`true/false`, default `false`)
+- `BOT_REPLAY_DAYS` (default `3`)
+- `BOT_REPLAY_CYCLES_PER_DAY` (default `144`)
+- `BOT_REPLAY_BANKROLL` (default `10000`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -154,6 +159,27 @@ Implemented: `src/model/allocator.rs`
 6. execution
 
 Default cadence is every 600 seconds (10 minutes). Use `BOT_RUN_ONCE=true` for single-cycle dry runs.
+
+## Deterministic Paper Simulation + Replay
+
+Implemented:
+
+- Paper exchange backend: `src/execution/paper_sim.rs`
+- Multi-day replay harness: `src/replay/mod.rs`
+
+Simulation model includes:
+
+1. deterministic per-order latency
+2. deterministic slippage
+3. deterministic partial-fill / cancel outcomes
+4. fee model
+
+Replay mode (`BOT_RUN_REPLAY=true`) runs synthetic multi-day cycles and prints:
+
+1. total orders
+2. fill/partial/cancel counts
+3. fees paid
+4. edge-PnL net fees
 
 ## Trading Safety Controls
 
