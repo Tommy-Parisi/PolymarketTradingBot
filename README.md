@@ -53,6 +53,7 @@ The live Kalshi client reads auth and routing from environment variables:
 - `KALSHI_API_BASE_URL` (default `https://demo-api.kalshi.co`)
 - `KALSHI_API_KEY_ID`
 - `KALSHI_PRIVATE_KEY_PEM` or `KALSHI_PRIVATE_KEY_PATH`
+- `BOT_EXECUTION_MODE` (`paper` default, set `live` to place real orders)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`

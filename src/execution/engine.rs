@@ -7,17 +7,24 @@ use tokio::time::sleep;
 use crate::execution::client::ExchangeClient;
 use crate::execution::types::{
     new_client_order_id, EngineConfig, ExecutionError, ExecutionReport, OrderRequest, OrderType, Side,
-    TimeInForce, TradeSignal,
+    OrderStatus, TimeInForce, TradeSignal,
 };
 
 pub struct ExecutionEngine {
     client: Arc<dyn ExchangeClient>,
     config: EngineConfig,
+    mode: ExecutionMode,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExecutionMode {
+    Paper,
+    Live,
 }
 
 impl ExecutionEngine {
-    pub fn new(client: Arc<dyn ExchangeClient>, config: EngineConfig) -> Self {
-        Self { client, config }
+    pub fn new(client: Arc<dyn ExchangeClient>, config: EngineConfig, mode: ExecutionMode) -> Self {
+        Self { client, config, mode }
     }
 
     pub async fn execute_signal(
@@ -29,6 +36,18 @@ impl ExecutionEngine {
 
         let quantity = self.compute_position_size(signal, bankroll)?;
         let order = self.build_order(signal, quantity)?;
+
+        if self.mode == ExecutionMode::Paper {
+            return Ok(ExecutionReport {
+                order_id: format!("paper-{}", order.client_order_id),
+                client_order_id: order.client_order_id,
+                status: OrderStatus::Filled,
+                filled_qty: order.quantity,
+                avg_fill_price: order.limit_price,
+                fee_paid: 0.0,
+                updated_at: Utc::now(),
+            });
+        }
 
         self.submit_with_retries(&order).await
     }
@@ -162,6 +181,7 @@ mod tests {
         let engine = ExecutionEngine {
             client: Arc::new(NoopClient),
             config: cfg,
+            mode: ExecutionMode::Paper,
         };
         let mut signal = base_signal();
         signal.edge_pct = 0.04;
@@ -175,6 +195,7 @@ mod tests {
         let engine = ExecutionEngine {
             client: Arc::new(NoopClient),
             config: cfg,
+            mode: ExecutionMode::Paper,
         };
         let mut signal = base_signal();
         signal.signal_timestamp = Utc::now() - chrono::Duration::seconds(120);
@@ -188,6 +209,7 @@ mod tests {
         let engine = ExecutionEngine {
             client: Arc::new(NoopClient),
             config: cfg,
+            mode: ExecutionMode::Paper,
         };
         let signal = base_signal();
         let size = engine
