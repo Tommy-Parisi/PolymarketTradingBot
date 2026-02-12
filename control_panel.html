@@ -66,6 +66,14 @@
       font: inherit;
     }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .preset-help {
+      margin-top: 10px;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .preset-help b { color: var(--ink); }
     button {
       border: 1px solid #34404f;
       background: #111a26;
@@ -92,6 +100,39 @@
       font-size: 12px;
     }
     .note { color: var(--warn); font-size: 12px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .kpi {
+      border: 1px solid #253140;
+      background: #0a1016;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .kpi .k {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .kpi .v {
+      font-size: 18px;
+      margin-top: 3px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      background: #0a1016;
+      color: var(--ink);
+      border: 1px solid #283241;
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -108,6 +149,11 @@
         <button id="presetPaper">Preset: Paper Replay</button>
         <button id="reset">Reset</button>
       </div>
+      <div class="preset-help">
+        <div><b>Live Safe:</b> strict thresholds, fail-closed on heuristic fallback, intended for guarded real-exchange dry runs.</div>
+        <div><b>Aggressive Test:</b> lower thresholds + adaptive floor to force more candidates and surface execution path issues faster.</div>
+        <div><b>Paper Replay:</b> paper backend profile for fast loop testing without risking capital.</div>
+      </div>
     </div>
 
     <div class="card grid" id="fields"></div>
@@ -119,6 +165,16 @@
       </div>
       <pre id="out"></pre>
       <div class="note">Run in repo root after `set -a; source .env; set +a`.</div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <input type="file" id="artifactFile" accept=".json,application/json" />
+        <button id="parsePaste">Parse Pasted JSON</button>
+      </div>
+      <textarea id="artifactPaste" placeholder="Paste cycle artifact JSON here"></textarea>
+      <div class="kpis" id="kpis"></div>
+      <pre id="artifactOut">No artifact loaded.</pre>
     </div>
   </div>
 
@@ -145,6 +201,8 @@
     const stateKey = "kalshi-bot-control-v1";
     const $fields = document.getElementById("fields");
     const $out = document.getElementById("out");
+    const $artifactOut = document.getElementById("artifactOut");
+    const $kpis = document.getElementById("kpis");
     const map = new Map();
 
     function load() {
@@ -253,6 +311,79 @@
       BOT_ADAPTIVE_THRESHOLD_ENABLED: "true",
       BOT_ADAPTIVE_THRESHOLD_FLOOR: "0.005"
     });
+
+    function renderKpis(rows) {
+      $kpis.innerHTML = "";
+      for (const [k, v] of rows) {
+        const card = document.createElement("div");
+        card.className = "kpi";
+        card.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
+        $kpis.appendChild(card);
+      }
+    }
+
+    function summarizeArtifact(json) {
+      const status = json.status ?? "unknown";
+      const message = json.message ?? "";
+      const selected = (json.selected_markets || []).length;
+      const valuations = (json.valuations || []).length;
+      const candidates = (json.candidates || []).length;
+      const allocations = (json.allocations || []).length;
+      const executions = json.executions || [];
+      const execOk = executions.filter(e => e.result === "executed").length;
+      const execFail = executions.filter(e => e.result !== "executed").length;
+      const topCandidate = (json.candidates || [])[0];
+      const topExecErr = executions.find(e => e.error)?.error;
+
+      renderKpis([
+        ["Status", status],
+        ["Selected", String(selected)],
+        ["Valuations", String(valuations)],
+        ["Candidates", String(candidates)],
+        ["Allocations", String(allocations)],
+        ["Exec OK", String(execOk)],
+        ["Exec Fail", String(execFail)]
+      ]);
+
+      const lines = [
+        `status: ${status}`,
+        message ? `message: ${message}` : null,
+        `selected_markets: ${selected}`,
+        `valuations: ${valuations}`,
+        `candidates: ${candidates}`,
+        `allocations: ${allocations}`,
+        `executions: ${executions.length}`,
+        topCandidate ? `top_candidate: ${topCandidate.ticker} edge=${Number(topCandidate.edge_pct || 0).toFixed(4)}` : null,
+        topExecErr ? `first_execution_error: ${topExecErr}` : null
+      ].filter(Boolean);
+      $artifactOut.textContent = lines.join("\n");
+    }
+
+    function parseArtifactText(raw) {
+      try {
+        const json = JSON.parse(raw);
+        summarizeArtifact(json);
+      } catch (e) {
+        $artifactOut.textContent = `artifact parse failed: ${e.message}`;
+      }
+    }
+
+    document.getElementById("artifactFile").addEventListener("change", async (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      const txt = await file.text();
+      document.getElementById("artifactPaste").value = txt;
+      parseArtifactText(txt);
+    });
+
+    document.getElementById("parsePaste").onclick = () => {
+      const raw = document.getElementById("artifactPaste").value.trim();
+      if (!raw) {
+        $artifactOut.textContent = "No pasted JSON to parse.";
+        return;
+      }
+      parseArtifactText(raw);
+    };
 
     build();
   </script>
