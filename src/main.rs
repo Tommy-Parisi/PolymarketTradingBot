@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -35,6 +36,8 @@ struct BotRuntime {
     bankroll: f64,
     valuation_limit: usize,
     enrichment_limit: usize,
+    claude_every_n_cycles: u64,
+    cycle_counter: AtomicU64,
 }
 
 #[tokio::main]
@@ -69,6 +72,8 @@ async fn main() {
         bankroll: bankroll_from_env(),
         valuation_limit: valuation_market_limit_from_env(),
         enrichment_limit: enrichment_market_limit_from_env(),
+        claude_every_n_cycles: claude_every_n_cycles_from_env(),
+        cycle_counter: AtomicU64::new(0),
     };
 
     if runtime.mode == ExecutionMode::Live && smoke_test_enabled() {
@@ -99,8 +104,13 @@ async fn main() {
 }
 
 async fn run_cycle(runtime: &BotRuntime) {
+    let cycle_number = runtime.cycle_counter.fetch_add(1, Ordering::Relaxed) + 1;
+    let use_claude = should_use_claude_for_cycle(cycle_number, runtime.claude_every_n_cycles);
     let started_at = Utc::now();
-    println!("starting cycle");
+    println!(
+        "starting cycle #{} (claude_enabled={} cadence={})",
+        cycle_number, use_claude, runtime.claude_every_n_cycles
+    );
 
     let scanned = match runtime.scanner.scan_snapshot_with_deltas().await {
         Ok(markets) => markets,
@@ -178,7 +188,11 @@ async fn run_cycle(runtime: &BotRuntime) {
         })
         .collect();
 
-    let valuations = match runtime.valuator.value_markets(&valuation_inputs).await {
+    let valuations = match runtime
+        .valuator
+        .value_markets_with_claude_enabled(&valuation_inputs, use_claude)
+        .await
+    {
         Ok(v) => v,
         Err(err) => {
             eprintln!("valuation failed: {err}");
@@ -429,6 +443,18 @@ fn cycle_seconds_from_env() -> u64 {
         .and_then(|v| v.parse::<u64>().ok())
         .unwrap_or(600)
         .max(5)
+}
+
+fn claude_every_n_cycles_from_env() -> u64 {
+    std::env::var("BOT_CLAUDE_EVERY_N_CYCLES")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        .unwrap_or(1)
+        .max(1)
+}
+
+fn should_use_claude_for_cycle(cycle_number: u64, every_n_cycles: u64) -> bool {
+    every_n_cycles <= 1 || ((cycle_number - 1) % every_n_cycles == 0)
 }
 
 fn engine_config_from_env() -> EngineConfig {

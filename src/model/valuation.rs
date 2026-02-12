@@ -239,6 +239,14 @@ impl ClaudeValuationEngine {
     }
 
     pub async fn value_markets(&self, inputs: &[ValuationInput]) -> Result<Vec<MarketValuation>, ExecutionError> {
+        self.value_markets_with_claude_enabled(inputs, true).await
+    }
+
+    pub async fn value_markets_with_claude_enabled(
+        &self,
+        inputs: &[ValuationInput],
+        claude_enabled: bool,
+    ) -> Result<Vec<MarketValuation>, ExecutionError> {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
@@ -259,7 +267,7 @@ impl ClaudeValuationEngine {
                 continue;
             }
 
-            let (inferred, mode) = self.infer_batch(&unresolved).await?;
+            let (inferred, mode) = self.infer_batch(&unresolved, claude_enabled).await?;
             self.record_batch_mode(mode);
             let input_by_ticker: HashMap<String, ValuationInput> =
                 unresolved.iter().map(|i| (i.market.ticker.clone(), i.clone())).collect();
@@ -419,7 +427,14 @@ impl ClaudeValuationEngine {
     async fn infer_batch(
         &self,
         inputs: &[ValuationInput],
+        claude_enabled: bool,
     ) -> Result<(Vec<MarketValuation>, BatchMode), ExecutionError> {
+        if !claude_enabled {
+            return Ok((
+                self.heuristic_batch(inputs),
+                BatchMode::Heuristic("claude cadence disabled for this cycle".to_string()),
+            ));
+        }
         if self.cfg.anthropic_api_key.is_none() {
             return Ok((
                 self.heuristic_batch(inputs),
@@ -860,6 +875,26 @@ mod tests {
             .await
             .expect("should work");
         assert_eq!(out.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn cadence_disabled_forces_heuristic_mode() {
+        let cfg = ValuationConfig {
+            anthropic_api_key: Some("test-key".to_string()),
+            ..ValuationConfig::default()
+        };
+        let engine = ClaudeValuationEngine::new(cfg);
+        let out = engine
+            .value_markets_with_claude_enabled(&[input(45.0, 55.0)], false)
+            .await
+            .expect("should use heuristic");
+        assert_eq!(out.len(), 1);
+        let summary = engine.last_run_summary();
+        assert!(summary.used_heuristic);
+        assert!(summary
+            .fallback_reasons
+            .iter()
+            .any(|r| r.contains("cadence disabled")));
     }
 
     #[test]
