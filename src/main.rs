@@ -250,18 +250,19 @@ async fn run_cycle(runtime: &BotRuntime) {
         let diagnostics = runtime.valuator.candidate_diagnostics(&valuations, 5);
         eprintln!("no mispricing candidates above threshold");
         eprintln!(
-            "candidate diagnostics: strict_threshold={:.4} fallback_threshold={:.4} min_candidates={} total_cost_prob={:.4} strict_count={} relaxed_count={}",
+            "candidate diagnostics: strict_threshold={:.4} fallback_threshold={:.4} min_candidates={} adaptive_enabled={} total_cost_prob={:.4} strict_count={} relaxed_count={}",
             diagnostics.strict_threshold,
             diagnostics.fallback_threshold,
             diagnostics.min_candidates,
+            diagnostics.adaptive_threshold_enabled,
             diagnostics.total_cost_prob,
             diagnostics.strict_count,
             diagnostics.relaxed_count
         );
         for edge in diagnostics.top_edges {
             eprintln!(
-                "top edge: ticker={} raw_edge={:.4} adjusted_edge={:.4} confidence={:.2}",
-                edge.ticker, edge.raw_edge, edge.adjusted_edge, edge.confidence
+                "top edge: ticker={} raw_edge={:.4} adjusted_edge={:.4} effective_threshold={:.4} confidence={:.2}",
+                edge.ticker, edge.raw_edge, edge.adjusted_edge, edge.effective_threshold, edge.confidence
             );
         }
         persist_cycle_artifact(CycleArtifact {
@@ -644,6 +645,8 @@ fn artifact_valuation(v: &MarketValuation) -> ArtifactValuation {
         ticker: v.ticker.clone(),
         fair_prob_yes: v.fair_prob_yes,
         market_mid_prob_yes: v.market_mid_prob_yes,
+        market_volume: v.market_volume,
+        spread_cents: v.spread_cents,
         confidence: v.confidence,
         rationale: v.rationale.clone(),
         stale_after: v.stale_after,
@@ -690,6 +693,8 @@ struct ArtifactValuation {
     ticker: String,
     fair_prob_yes: f64,
     market_mid_prob_yes: f64,
+    market_volume: f64,
+    spread_cents: Option<f64>,
     confidence: f64,
     rationale: String,
     stale_after: DateTime<Utc>,

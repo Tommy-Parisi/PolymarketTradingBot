@@ -26,6 +26,13 @@ pub struct ValuationConfig {
     pub mispricing_threshold: f64,
     pub min_candidates: usize,
     pub fallback_mispricing_threshold: f64,
+    pub adaptive_threshold_enabled: bool,
+    pub adaptive_threshold_floor: f64,
+    pub adaptive_liquidity_volume_ref: f64,
+    pub adaptive_spread_ref_cents: f64,
+    pub adaptive_confidence_weight: f64,
+    pub adaptive_liquidity_weight: f64,
+    pub adaptive_spread_weight: f64,
     pub fee_bps: f64,
     pub slippage_bps: f64,
 }
@@ -53,6 +60,13 @@ impl Default for ValuationConfig {
             mispricing_threshold: 0.08,
             min_candidates: 0,
             fallback_mispricing_threshold: 0.02,
+            adaptive_threshold_enabled: false,
+            adaptive_threshold_floor: 0.01,
+            adaptive_liquidity_volume_ref: 50_000.0,
+            adaptive_spread_ref_cents: 12.0,
+            adaptive_confidence_weight: 0.20,
+            adaptive_liquidity_weight: 0.55,
+            adaptive_spread_weight: 0.25,
             fee_bps: 15.0,
             slippage_bps: 20.0,
         }
@@ -75,6 +89,42 @@ impl ValuationConfig {
         if let Ok(v) = std::env::var("BOT_FALLBACK_MISPRICING_THRESHOLD") {
             if let Ok(parsed) = v.parse::<f64>() {
                 cfg.fallback_mispricing_threshold = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_THRESHOLD_ENABLED") {
+            cfg.adaptive_threshold_enabled = matches!(
+                v.to_ascii_lowercase().as_str(),
+                "1" | "true" | "yes"
+            );
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_THRESHOLD_FLOOR") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_threshold_floor = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_LIQUIDITY_VOLUME_REF") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_liquidity_volume_ref = parsed.max(1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_SPREAD_REF_CENTS") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_spread_ref_cents = parsed.max(0.1);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_CONFIDENCE_WEIGHT") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_confidence_weight = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_LIQUIDITY_WEIGHT") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_liquidity_weight = parsed.clamp(0.0, 1.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_ADAPTIVE_SPREAD_WEIGHT") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.adaptive_spread_weight = parsed.clamp(0.0, 1.0);
             }
         }
         if let Ok(v) = std::env::var("BOT_FEE_BPS") {
@@ -118,6 +168,8 @@ pub struct MarketValuation {
     pub ticker: String,
     pub fair_prob_yes: f64,
     pub market_mid_prob_yes: f64,
+    pub market_volume: f64,
+    pub spread_cents: Option<f64>,
     pub confidence: f64,
     pub rationale: String,
     pub stale_after: DateTime<Utc>,
@@ -147,6 +199,7 @@ pub struct CandidateEdgeSnapshot {
     pub ticker: String,
     pub raw_edge: f64,
     pub adjusted_edge: f64,
+    pub effective_threshold: f64,
     pub confidence: f64,
 }
 
@@ -155,6 +208,7 @@ pub struct CandidateDiagnostics {
     pub strict_threshold: f64,
     pub fallback_threshold: f64,
     pub min_candidates: usize,
+    pub adaptive_threshold_enabled: bool,
     pub total_cost_prob: f64,
     pub strict_count: usize,
     pub relaxed_count: usize,
@@ -255,7 +309,8 @@ impl ClaudeValuationEngine {
         for v in valuations {
             let raw_edge = v.fair_prob_yes - v.market_mid_prob_yes;
             let adjusted = raw_edge.abs() - total_cost_prob;
-            if adjusted < threshold {
+            let effective_threshold = self.effective_threshold_for_valuation(v, threshold);
+            if adjusted < effective_threshold {
                 continue;
             }
 
@@ -330,6 +385,7 @@ impl ClaudeValuationEngine {
                     ticker: v.ticker.clone(),
                     raw_edge,
                     adjusted_edge: raw_edge.abs() - total_cost_prob,
+                    effective_threshold: self.effective_threshold_for_valuation(v, self.cfg.mispricing_threshold),
                     confidence: v.confidence,
                 }
             })
@@ -341,6 +397,7 @@ impl ClaudeValuationEngine {
             strict_threshold: self.cfg.mispricing_threshold,
             fallback_threshold: self.cfg.fallback_mispricing_threshold,
             min_candidates: self.cfg.min_candidates,
+            adaptive_threshold_enabled: self.cfg.adaptive_threshold_enabled,
             total_cost_prob,
             strict_count: strict.len(),
             relaxed_count: relaxed.len(),
@@ -446,8 +503,7 @@ impl ClaudeValuationEngine {
             .map(|c| c.text.clone())
             .ok_or_else(|| ExecutionError::Exchange("claude missing text content".to_string()))?;
 
-        let parsed: Vec<ClaudeValuationItem> = serde_json::from_str(&content_text)
-            .map_err(|e| ExecutionError::Exchange(format!("invalid claude valuation JSON: {e}")))?;
+        let parsed = parse_claude_valuation_items(&content_text)?;
 
         let mut by_ticker: HashMap<String, &ValuationInput> = HashMap::new();
         for i in inputs {
@@ -461,6 +517,8 @@ impl ClaudeValuationEngine {
                     ticker: p.ticker,
                     fair_prob_yes: p.fair_prob_yes.clamp(0.01, 0.99),
                     market_mid_prob_yes: market_mid_prob_yes(&input.market).unwrap_or(0.5),
+                    market_volume: input.market.volume,
+                    spread_cents: input.market.spread_cents(),
                     confidence: p.confidence.clamp(0.0, 1.0),
                     rationale: p.rationale,
                     stale_after: Utc::now() + chrono::Duration::minutes(10),
@@ -490,6 +548,8 @@ impl ClaudeValuationEngine {
                     ticker: i.market.ticker.clone(),
                     fair_prob_yes: fair,
                     market_mid_prob_yes: mid,
+                    market_volume: i.market.volume,
+                    spread_cents: i.market.spread_cents(),
                     confidence: i.enrichment.as_ref().map(|_| 0.62).unwrap_or(0.45),
                     rationale: "heuristic valuation fallback".to_string(),
                     stale_after: Utc::now() + chrono::Duration::minutes(10),
@@ -554,12 +614,78 @@ impl ClaudeValuationEngine {
             }
         }
     }
+
+    fn effective_threshold_for_valuation(&self, valuation: &MarketValuation, base_threshold: f64) -> f64 {
+        let base = base_threshold.clamp(0.0, 1.0);
+        if !self.cfg.adaptive_threshold_enabled {
+            return base;
+        }
+
+        let floor = self.cfg.adaptive_threshold_floor.min(base);
+        let liquidity_score = (valuation.market_volume / self.cfg.adaptive_liquidity_volume_ref).clamp(0.0, 1.0);
+        let spread_score = valuation
+            .spread_cents
+            .map(|s| (1.0 - (s / self.cfg.adaptive_spread_ref_cents)).clamp(0.0, 1.0))
+            .unwrap_or(0.5);
+        let confidence_score = valuation.confidence.clamp(0.0, 1.0);
+        let w_conf = self.cfg.adaptive_confidence_weight;
+        let w_liq = self.cfg.adaptive_liquidity_weight;
+        let w_spread = self.cfg.adaptive_spread_weight;
+        let weight_sum = (w_conf + w_liq + w_spread).max(1e-9);
+        let quality = ((w_conf * confidence_score) + (w_liq * liquidity_score) + (w_spread * spread_score))
+            / weight_sum;
+
+        floor + ((base - floor) * (1.0 - quality.clamp(0.0, 1.0)))
+    }
 }
 
 #[derive(Debug, Clone)]
 enum BatchMode {
     Claude,
     Heuristic(String),
+}
+
+fn parse_claude_valuation_items(content_text: &str) -> Result<Vec<ClaudeValuationItem>, ExecutionError> {
+    if let Ok(parsed) = serde_json::from_str::<Vec<ClaudeValuationItem>>(content_text) {
+        return Ok(parsed);
+    }
+
+    if let Some(inner) = strip_markdown_code_fence(content_text) {
+        if let Ok(parsed) = serde_json::from_str::<Vec<ClaudeValuationItem>>(inner) {
+            return Ok(parsed);
+        }
+    }
+
+    if let Some(json_array) = extract_outer_json_array(content_text) {
+        if let Ok(parsed) = serde_json::from_str::<Vec<ClaudeValuationItem>>(&json_array) {
+            return Ok(parsed);
+        }
+    }
+
+    Err(ExecutionError::Exchange(
+        "invalid claude valuation JSON: unable to parse model response as JSON array".to_string(),
+    ))
+}
+
+fn strip_markdown_code_fence(s: &str) -> Option<&str> {
+    let trimmed = s.trim();
+    if !trimmed.starts_with("```") {
+        return None;
+    }
+    let after_open = trimmed.strip_prefix("```")?;
+    let newline_idx = after_open.find('\n')?;
+    let after_header = &after_open[(newline_idx + 1)..];
+    let close_idx = after_header.rfind("```")?;
+    Some(after_header[..close_idx].trim())
+}
+
+fn extract_outer_json_array(s: &str) -> Option<String> {
+    let start = s.find('[')?;
+    let end = s.rfind(']')?;
+    if end <= start {
+        return None;
+    }
+    Some(s[start..=end].trim().to_string())
 }
 
 fn build_prompt(inputs: &[ValuationInput], max_chars: usize) -> String {
@@ -660,6 +786,8 @@ mod tests {
             ticker: "KX".to_string(),
             fair_prob_yes: 0.70,
             market_mid_prob_yes: 0.50,
+            market_volume: 10_000.0,
+            spread_cents: Some(4.0),
             confidence: 0.8,
             rationale: "x".to_string(),
             stale_after: Utc::now(),
@@ -684,6 +812,8 @@ mod tests {
             ticker: "KX".to_string(),
             fair_prob_yes: 0.53,
             market_mid_prob_yes: 0.50,
+            market_volume: 10_000.0,
+            spread_cents: Some(4.0),
             confidence: 0.8,
             rationale: "x".to_string(),
             stale_after: Utc::now(),
@@ -691,6 +821,31 @@ mod tests {
         let c = engine.generate_candidates(&vals);
         assert_eq!(c.len(), 1);
         assert!(c[0].rationale.contains("relaxed-threshold-candidate"));
+    }
+
+    #[test]
+    fn adaptive_threshold_lowers_bar_for_liquid_tight_markets() {
+        let cfg = ValuationConfig {
+            adaptive_threshold_enabled: true,
+            mispricing_threshold: 0.08,
+            adaptive_threshold_floor: 0.01,
+            fee_bps: 0.0,
+            slippage_bps: 0.0,
+            ..ValuationConfig::default()
+        };
+        let engine = ClaudeValuationEngine::new(cfg);
+        let vals = vec![MarketValuation {
+            ticker: "KX".to_string(),
+            fair_prob_yes: 0.56,
+            market_mid_prob_yes: 0.52,
+            market_volume: 120_000.0,
+            spread_cents: Some(2.0),
+            confidence: 0.85,
+            rationale: "x".to_string(),
+            stale_after: Utc::now(),
+        }];
+        let c = engine.generate_candidates(&vals);
+        assert_eq!(c.len(), 1);
     }
 
     #[tokio::test]
@@ -705,5 +860,30 @@ mod tests {
             .await
             .expect("should work");
         assert_eq!(out.len(), 1);
+    }
+
+    #[test]
+    fn parses_plain_json_array_response() {
+        let raw =
+            r#"[{"ticker":"KX1","fair_prob_yes":0.61,"confidence":0.72,"rationale":"alpha"}]"#;
+        let parsed = parse_claude_valuation_items(raw).expect("json should parse");
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].ticker, "KX1");
+    }
+
+    #[test]
+    fn parses_fenced_json_array_response() {
+        let raw = "```json\n[{\"ticker\":\"KX2\",\"fair_prob_yes\":0.42,\"confidence\":0.55,\"rationale\":\"beta\"}]\n```";
+        let parsed = parse_claude_valuation_items(raw).expect("fenced json should parse");
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].ticker, "KX2");
+    }
+
+    #[test]
+    fn parses_embedded_json_array_response() {
+        let raw = "Here is the output:\n[{\"ticker\":\"KX3\",\"fair_prob_yes\":0.35,\"confidence\":0.51,\"rationale\":\"gamma\"}]";
+        let parsed = parse_claude_valuation_items(raw).expect("embedded json should parse");
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].ticker, "KX3");
     }
 }

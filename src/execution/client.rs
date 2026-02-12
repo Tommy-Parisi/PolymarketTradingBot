@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use base64::Engine as _;
 use chrono::Utc;
 use reqwest::{Client, Method, StatusCode};
+use std::error::Error as _;
 use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs8::DecodePrivateKey;
 use rsa::pss::SigningKey;
@@ -83,11 +84,11 @@ impl ExchangeClient for KalshiClient {
             Side::Buy => "buy",
             Side::Sell => "sell",
         };
-        let price_cents = request.limit_price.map(|p| prob_to_cents(p) as u32);
-        let (yes_price, no_price) = if side == "yes" {
-            (price_cents, None)
+        let price_dollars = request.limit_price.map(prob_to_dollars_string);
+        let (yes_price_dollars, no_price_dollars) = if side == "yes" {
+            (price_dollars, None)
         } else {
-            (None, price_cents)
+            (None, price_dollars)
         };
         let body = CreateOrderRequest {
             ticker: request.market_id.clone(),
@@ -96,10 +97,8 @@ impl ExchangeClient for KalshiClient {
             action: action.to_string(),
             count: request.quantity.max(0.0).round() as u64,
             count_fp: Some(to_fp_string(request.quantity)),
-            yes_price,
-            no_price,
-            yes_price_dollars: yes_price.map(cents_to_dollars_string),
-            no_price_dollars: no_price.map(cents_to_dollars_string),
+            yes_price_dollars,
+            no_price_dollars,
             order_type: "limit".to_string(),
         };
         let body_text = serde_json::to_string(&body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
@@ -118,7 +117,7 @@ impl ExchangeClient for KalshiClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| ExecutionError::RetryableExchange(e.to_string()))?;
+            .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("place_order", &e)))?;
         let status = resp.status();
         let text = resp
             .text()
@@ -157,7 +156,7 @@ impl ExchangeClient for KalshiClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| ExecutionError::RetryableExchange(e.to_string()))?;
+            .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("get_order", &e)))?;
         let status = resp.status();
         let text = resp
             .text()
@@ -208,7 +207,7 @@ impl ExchangeClient for KalshiClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| ExecutionError::RetryableExchange(e.to_string()))?;
+            .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("cancel_order", &e)))?;
         let status = resp.status();
         let text = resp
             .text()
@@ -232,7 +231,7 @@ impl ExchangeClient for KalshiClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| ExecutionError::RetryableExchange(e.to_string()))?;
+            .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("smoke_test", &e)))?;
         let status = resp.status();
         let text = resp
             .text()
@@ -281,13 +280,8 @@ fn kalshi_side_from_outcome(outcome_id: &str) -> Result<String, ExecutionError> 
     }
 }
 
-fn prob_to_cents(prob: f64) -> u8 {
-    let cents = (prob.clamp(0.0, 1.0) * 100.0).round();
-    cents as u8
-}
-
-fn cents_to_dollars_string(cents: u32) -> String {
-    format!("{:.4}", (cents as f64) / 100.0)
+fn prob_to_dollars_string(prob: f64) -> String {
+    format!("{:.4}", prob.clamp(0.0, 1.0))
 }
 
 fn cents_to_prob(cents: u32) -> f64 {
@@ -325,6 +319,24 @@ fn build_http_error(method: &str, path: &str, status: StatusCode, body: &str) ->
     ExecutionError::Exchange(msg)
 }
 
+fn format_reqwest_error(context: &str, e: &reqwest::Error) -> String {
+    let mut out = format!(
+        "{context}: {e} [is_connect={} is_timeout={} is_status={} url={}]",
+        e.is_connect(),
+        e.is_timeout(),
+        e.is_status(),
+        e.url()
+            .map(|u| u.as_str().to_string())
+            .unwrap_or_else(|| "<none>".to_string())
+    );
+    let mut src = e.source();
+    while let Some(s) = src {
+        out.push_str(&format!("; source={s}"));
+        src = s.source();
+    }
+    out
+}
+
 #[derive(Debug, Serialize)]
 struct CreateOrderRequest {
     ticker: String,
@@ -334,8 +346,6 @@ struct CreateOrderRequest {
     count: u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     count_fp: Option<String>,
-    yes_price: Option<u32>,
-    no_price: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     yes_price_dollars: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
