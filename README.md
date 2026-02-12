@@ -221,6 +221,14 @@ Recommended rollout:
 2. Switch to Kalshi demo credentials in `live` with `BOT_RUN_SMOKE_TEST=true` first.
 3. Promote to production credentials only after a successful demo burn-in period.
 
+## Local Control Page
+
+Use `/Users/tommy/Desktop/Desktop_Thomas_MacBook_Pro/PolymarketTradingBot/control_panel.html` to generate run commands quickly with presets and persistent fields.
+
+Open it locally, choose a preset, then copy the generated command and run it in repo root after:
+
+`set -a; source .env; set +a`
+
 ## Notes
 
 This repository is initialized and connected to:

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalshi Bot Control</title>
+  <style>
+    :root {
+      --bg: #090c10;
+      --panel: #0f141b;
+      --ink: #ecfff3;
+      --muted: #94a8a0;
+      --hot: #90ff55;
+      --warn: #ffd166;
+      --line: #1d2730;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #183721 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #172236 0%, transparent 60%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+      padding: 20px;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+    .card {
+      background: linear-gradient(180deg, #111823, var(--panel));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 5vw, 48px);
+      letter-spacing: 1px;
+      line-height: 1.05;
+    }
+    .sub { color: var(--muted); margin-top: 4px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    input, select {
+      width: 100%;
+      background: #0a1016;
+      color: var(--ink);
+      border: 1px solid #283241;
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      border: 1px solid #34404f;
+      background: #111a26;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .primary {
+      border-color: #5fb93c;
+      background: linear-gradient(180deg, #17341c, #122715);
+      color: var(--hot);
+      font-weight: 700;
+    }
+    pre {
+      margin: 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #070b10;
+      border: 1px solid #202a36;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+    }
+    .note { color: var(--warn); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>BOT OPS: KNOBS + FIRE</h1>
+      <div class="sub">Local control page to generate exact `cargo run` command lines.</div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button id="presetSafe">Preset: Live Safe</button>
+        <button id="presetTest">Preset: Aggressive Test</button>
+        <button id="presetPaper">Preset: Paper Replay</button>
+        <button id="reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="card grid" id="fields"></div>
+
+    <div class="card">
+      <div class="row">
+        <button class="primary" id="build">Build Command</button>
+        <button id="copy">Copy Command</button>
+      </div>
+      <pre id="out"></pre>
+      <div class="note">Run in repo root after `set -a; source .env; set +a`.</div>
+    </div>
+  </div>
+
+  <script>
+    const schema = [
+      ["BOT_EXCHANGE_BACKEND", "select", ["kalshi", "paper_sim"], "kalshi"],
+      ["BOT_EXECUTION_MODE", "select", ["live", "paper"], "live"],
+      ["BOT_RUN_SMOKE_TEST", "select", ["true", "false"], "true"],
+      ["BOT_RUN_ONCE", "select", ["true", "false"], "true"],
+      ["BOT_FORCE_TEST_CANDIDATE", "select", ["false", "true"], "false"],
+      ["BOT_ALLOW_HEURISTIC_IN_LIVE", "select", ["false", "true"], "false"],
+      ["BOT_MIN_CANDIDATES", "text", null, "2"],
+      ["BOT_MISPRICING_THRESHOLD", "text", null, "0.08"],
+      ["BOT_FALLBACK_MISPRICING_THRESHOLD", "text", null, "0.02"],
+      ["BOT_MIN_EDGE_PCT", "text", null, "0.02"],
+      ["BOT_FEE_BPS", "text", null, "2"],
+      ["BOT_SLIPPAGE_BPS", "text", null, "2"],
+      ["BOT_VALUATION_TIMEOUT_MS", "text", null, "25000"],
+      ["BOT_VALUATION_BATCH_SIZE", "text", null, "8"],
+      ["BOT_ADAPTIVE_THRESHOLD_ENABLED", "select", ["true", "false"], "true"],
+      ["BOT_ADAPTIVE_THRESHOLD_FLOOR", "text", null, "0.01"]
+    ];
+
+    const stateKey = "kalshi-bot-control-v1";
+    const $fields = document.getElementById("fields");
+    const $out = document.getElementById("out");
+    const map = new Map();
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(stateKey) || "{}"); }
+      catch { return {}; }
+    }
+    function save() {
+      const obj = {};
+      map.forEach((el, key) => obj[key] = el.value);
+      localStorage.setItem(stateKey, JSON.stringify(obj));
+    }
+    function setValues(values) {
+      Object.entries(values).forEach(([k, v]) => { if (map.has(k)) map.get(k).value = v; });
+      save();
+      build();
+    }
+
+    const stored = load();
+    for (const [name, type, options, def] of schema) {
+      const label = document.createElement("label");
+      label.textContent = name;
+      let el;
+      if (type === "select") {
+        el = document.createElement("select");
+        options.forEach(opt => {
+          const o = document.createElement("option");
+          o.value = opt; o.textContent = opt;
+          el.appendChild(o);
+        });
+      } else {
+        el = document.createElement("input");
+        el.type = "text";
+      }
+      el.value = stored[name] ?? def;
+      el.addEventListener("input", save);
+      map.set(name, el);
+      label.appendChild(el);
+      $fields.appendChild(label);
+    }
+
+    function build() {
+      const pairs = schema.map(([k]) => `${k}=${map.get(k).value}`);
+      $out.textContent = pairs.join(" \\\n") + " \\\n" + "cargo run";
+    }
+
+    document.getElementById("build").onclick = build;
+    document.getElementById("copy").onclick = async () => {
+      build();
+      await navigator.clipboard.writeText($out.textContent);
+    };
+    document.getElementById("reset").onclick = () => {
+      localStorage.removeItem(stateKey);
+      location.reload();
+    };
+    document.getElementById("presetSafe").onclick = () => setValues({
+      BOT_EXCHANGE_BACKEND: "kalshi",
+      BOT_EXECUTION_MODE: "live",
+      BOT_RUN_SMOKE_TEST: "true",
+      BOT_RUN_ONCE: "true",
+      BOT_FORCE_TEST_CANDIDATE: "false",
+      BOT_ALLOW_HEURISTIC_IN_LIVE: "false",
+      BOT_MIN_CANDIDATES: "2",
+      BOT_MISPRICING_THRESHOLD: "0.08",
+      BOT_FALLBACK_MISPRICING_THRESHOLD: "0.02",
+      BOT_MIN_EDGE_PCT: "0.02",
+      BOT_FEE_BPS: "2",
+      BOT_SLIPPAGE_BPS: "2",
+      BOT_VALUATION_TIMEOUT_MS: "25000",
+      BOT_VALUATION_BATCH_SIZE: "8",
+      BOT_ADAPTIVE_THRESHOLD_ENABLED: "true",
+      BOT_ADAPTIVE_THRESHOLD_FLOOR: "0.01"
+    });
+    document.getElementById("presetTest").onclick = () => setValues({
+      BOT_EXCHANGE_BACKEND: "kalshi",
+      BOT_EXECUTION_MODE: "live",
+      BOT_RUN_SMOKE_TEST: "true",
+      BOT_RUN_ONCE: "true",
+      BOT_FORCE_TEST_CANDIDATE: "false",
+      BOT_ALLOW_HEURISTIC_IN_LIVE: "false",
+      BOT_MIN_CANDIDATES: "4",
+      BOT_MISPRICING_THRESHOLD: "0.03",
+      BOT_FALLBACK_MISPRICING_THRESHOLD: "0.01",
+      BOT_MIN_EDGE_PCT: "0.01",
+      BOT_FEE_BPS: "2",
+      BOT_SLIPPAGE_BPS: "2",
+      BOT_VALUATION_TIMEOUT_MS: "35000",
+      BOT_VALUATION_BATCH_SIZE: "6",
+      BOT_ADAPTIVE_THRESHOLD_ENABLED: "true",
+      BOT_ADAPTIVE_THRESHOLD_FLOOR: "0.005"
+    });
+    document.getElementById("presetPaper").onclick = () => setValues({
+      BOT_EXCHANGE_BACKEND: "paper_sim",
+      BOT_EXECUTION_MODE: "paper",
+      BOT_RUN_SMOKE_TEST: "false",
+      BOT_RUN_ONCE: "true",
+      BOT_FORCE_TEST_CANDIDATE: "false",
+      BOT_ALLOW_HEURISTIC_IN_LIVE: "false",
+      BOT_MIN_CANDIDATES: "2",
+      BOT_MISPRICING_THRESHOLD: "0.02",
+      BOT_FALLBACK_MISPRICING_THRESHOLD: "0.01",
+      BOT_MIN_EDGE_PCT: "0.01",
+      BOT_FEE_BPS: "2",
+      BOT_SLIPPAGE_BPS: "2",
+      BOT_VALUATION_TIMEOUT_MS: "25000",
+      BOT_VALUATION_BATCH_SIZE: "8",
+      BOT_ADAPTIVE_THRESHOLD_ENABLED: "true",
+      BOT_ADAPTIVE_THRESHOLD_FLOOR: "0.005"
+    });
+
+    build();
+  </script>
+</body>
+</html>
