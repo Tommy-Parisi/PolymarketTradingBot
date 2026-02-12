@@ -94,6 +94,7 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
 - `BOT_CYCLE_SECONDS` (default `600`, i.e. 10 minutes)
 - `BOT_CLAUDE_EVERY_N_CYCLES` (default `1`; run Claude valuation every N cycles, heuristic on other cycles for cost control)
+- `BOT_CLAUDE_TRIGGER_MODE` (`cadence` default, or `on_heuristic_candidates`; in `on_heuristic_candidates`, heuristic runs first and Claude is only called when heuristic finds potential candidates)
 - `BOT_RUN_ONCE` (`true/false`, default `false`)
 - `BOT_FORCE_TEST_CANDIDATE` (`true/false`, default `false`; injects one deterministic candidate when none pass threshold)
 - `BOT_CYCLE_ARTIFACTS_ENABLED` (`true/false`, default `true`)

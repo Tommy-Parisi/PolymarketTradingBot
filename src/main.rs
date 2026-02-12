@@ -37,7 +37,14 @@ struct BotRuntime {
     valuation_limit: usize,
     enrichment_limit: usize,
     claude_every_n_cycles: u64,
+    claude_trigger_mode: ClaudeTriggerMode,
     cycle_counter: AtomicU64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ClaudeTriggerMode {
+    Cadence,
+    OnHeuristicCandidates,
 }
 
 #[tokio::main]
@@ -85,6 +92,7 @@ async fn main() {
         valuation_limit: valuation_market_limit_from_env(),
         enrichment_limit: enrichment_market_limit_from_env(),
         claude_every_n_cycles: claude_every_n_cycles_from_env(),
+        claude_trigger_mode: claude_trigger_mode_from_env(),
         cycle_counter: AtomicU64::new(0),
     };
 
@@ -117,11 +125,11 @@ async fn main() {
 
 async fn run_cycle(runtime: &BotRuntime) {
     let cycle_number = runtime.cycle_counter.fetch_add(1, Ordering::Relaxed) + 1;
-    let use_claude = should_use_claude_for_cycle(cycle_number, runtime.claude_every_n_cycles);
+    let cadence_use_claude = should_use_claude_for_cycle(cycle_number, runtime.claude_every_n_cycles);
     let started_at = Utc::now();
     println!(
-        "starting cycle #{} (claude_enabled={} cadence={})",
-        cycle_number, use_claude, runtime.claude_every_n_cycles
+        "starting cycle #{} (claude_trigger_mode={:?} cadence_claude_enabled={} cadence={})",
+        cycle_number, runtime.claude_trigger_mode, cadence_use_claude, runtime.claude_every_n_cycles
     );
 
     let scanned = match runtime.scanner.scan_snapshot_with_deltas().await {
@@ -200,30 +208,102 @@ async fn run_cycle(runtime: &BotRuntime) {
         })
         .collect();
 
-    let valuations = match runtime
-        .valuator
-        .value_markets_with_claude_enabled(&valuation_inputs, use_claude)
-        .await
-    {
-        Ok(v) => v,
-        Err(err) => {
-            eprintln!("valuation failed: {err}");
-            persist_cycle_artifact(CycleArtifact {
-                started_at,
-                finished_at: Utc::now(),
-                status: "valuation_failed".to_string(),
-                message: Some(err.to_string()),
-                selected_markets: selected
-                    .iter()
-                    .map(|m| artifact_market(m))
-                    .take(100)
-                    .collect(),
-                valuations: Vec::new(),
-                candidates: Vec::new(),
-                allocations: Vec::new(),
-                executions: Vec::new(),
-            });
-            return;
+    let (valuations, claude_attempted) = match runtime.claude_trigger_mode {
+        ClaudeTriggerMode::Cadence => {
+            let valuations = match runtime
+                .valuator
+                .value_markets_with_claude_enabled(&valuation_inputs, cadence_use_claude)
+                .await
+            {
+                Ok(v) => v,
+                Err(err) => {
+                    eprintln!("valuation failed: {err}");
+                    persist_cycle_artifact(CycleArtifact {
+                        started_at,
+                        finished_at: Utc::now(),
+                        status: "valuation_failed".to_string(),
+                        message: Some(err.to_string()),
+                        selected_markets: selected
+                            .iter()
+                            .map(|m| artifact_market(m))
+                            .take(100)
+                            .collect(),
+                        valuations: Vec::new(),
+                        candidates: Vec::new(),
+                        allocations: Vec::new(),
+                        executions: Vec::new(),
+                    });
+                    return;
+                }
+            };
+            (valuations, cadence_use_claude)
+        }
+        ClaudeTriggerMode::OnHeuristicCandidates => {
+            let heuristic_vals = match runtime
+                .valuator
+                .value_markets_with_claude_enabled(&valuation_inputs, false)
+                .await
+            {
+                Ok(v) => v,
+                Err(err) => {
+                    eprintln!("valuation failed: {err}");
+                    persist_cycle_artifact(CycleArtifact {
+                        started_at,
+                        finished_at: Utc::now(),
+                        status: "valuation_failed".to_string(),
+                        message: Some(err.to_string()),
+                        selected_markets: selected
+                            .iter()
+                            .map(|m| artifact_market(m))
+                            .take(100)
+                            .collect(),
+                        valuations: Vec::new(),
+                        candidates: Vec::new(),
+                        allocations: Vec::new(),
+                        executions: Vec::new(),
+                    });
+                    return;
+                }
+            };
+            let heuristic_candidates = runtime.valuator.generate_candidates(&heuristic_vals);
+            if heuristic_candidates.is_empty() {
+                println!(
+                    "claude trigger: skipped (no heuristic candidates for this cycle)"
+                );
+                (heuristic_vals, false)
+            } else {
+                println!(
+                    "claude trigger: heuristic found {} candidates, running claude valuation",
+                    heuristic_candidates.len()
+                );
+                let claude_vals = match runtime
+                    .valuator
+                    .value_markets_with_claude_enabled(&valuation_inputs, true)
+                    .await
+                {
+                    Ok(v) => v,
+                    Err(err) => {
+                        eprintln!("valuation failed: {err}");
+                        persist_cycle_artifact(CycleArtifact {
+                            started_at,
+                            finished_at: Utc::now(),
+                            status: "valuation_failed".to_string(),
+                            message: Some(err.to_string()),
+                            selected_markets: selected
+                                .iter()
+                                .map(|m| artifact_market(m))
+                                .take(100)
+                                .collect(),
+                            valuations: Vec::new(),
+                            candidates: Vec::new(),
+                            allocations: Vec::new(),
+                            executions: Vec::new(),
+                        });
+                        return;
+                    }
+                };
+                (claude_vals, true)
+            }
         }
     };
     println!("valued {} markets", valuations.len());
@@ -237,31 +317,6 @@ async fn run_cycle(runtime: &BotRuntime) {
         "valuation mode: used_claude={} used_heuristic={} fallback_reasons={}",
         valuation_summary.used_claude, valuation_summary.used_heuristic, fallback_reason_text
     );
-    if runtime.mode == ExecutionMode::Live
-        && valuation_summary.used_heuristic
-        && !runtime.valuator.allow_heuristic_in_live()
-    {
-        eprintln!(
-            "live cycle aborted: heuristic valuation fallback was used and BOT_ALLOW_HEURISTIC_IN_LIVE is false"
-        );
-        persist_cycle_artifact(CycleArtifact {
-            started_at,
-            finished_at: Utc::now(),
-            status: "valuation_fail_closed_live".to_string(),
-            message: Some("heuristic valuation fallback used in live mode".to_string()),
-            selected_markets: selected
-                .iter()
-                .map(|m| artifact_market(m))
-                .take(100)
-                .collect(),
-            valuations: valuations.iter().map(artifact_valuation).collect(),
-            candidates: Vec::new(),
-            allocations: Vec::new(),
-            executions: Vec::new(),
-        });
-        return;
-    }
-
     let mut candidates = runtime.valuator.generate_candidates(&valuations);
     if candidates.is_empty() && force_test_candidate_enabled() {
         if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
@@ -310,6 +365,32 @@ async fn run_cycle(runtime: &BotRuntime) {
     }
     println!("generated {} candidates", candidates.len());
     println!("top candidate rationale: {}", candidates[0].rationale);
+
+    if runtime.mode == ExecutionMode::Live
+        && valuation_summary.used_heuristic
+        && !runtime.valuator.allow_heuristic_in_live()
+        && (claude_attempted || !matches!(runtime.claude_trigger_mode, ClaudeTriggerMode::OnHeuristicCandidates))
+    {
+        eprintln!(
+            "live cycle aborted: heuristic valuation fallback was used and BOT_ALLOW_HEURISTIC_IN_LIVE is false"
+        );
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "valuation_fail_closed_live".to_string(),
+            message: Some("heuristic valuation fallback used in live mode".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: candidate_artifacts_from(&candidates),
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
+        return;
+    }
 
     let candidate_artifacts: Vec<ArtifactCandidate> = candidates.iter().map(artifact_candidate).collect();
     let allocations = runtime.allocator.allocate(runtime.bankroll, candidates);
@@ -477,6 +558,17 @@ fn claude_every_n_cycles_from_env() -> u64 {
 
 fn should_use_claude_for_cycle(cycle_number: u64, every_n_cycles: u64) -> bool {
     every_n_cycles <= 1 || ((cycle_number - 1) % every_n_cycles == 0)
+}
+
+fn claude_trigger_mode_from_env() -> ClaudeTriggerMode {
+    match std::env::var("BOT_CLAUDE_TRIGGER_MODE")
+        .unwrap_or_else(|_| "cadence".to_string())
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "on_heuristic_candidates" => ClaudeTriggerMode::OnHeuristicCandidates,
+        _ => ClaudeTriggerMode::Cadence,
+    }
 }
 
 fn engine_config_from_env() -> EngineConfig {
@@ -712,6 +804,10 @@ fn artifact_candidate(c: &CandidateTrade) -> ArtifactCandidate {
         confidence: c.confidence,
         rationale: c.rationale.clone(),
     }
+}
+
+fn candidate_artifacts_from(candidates: &[CandidateTrade]) -> Vec<ArtifactCandidate> {
+    candidates.iter().map(artifact_candidate).collect()
 }
 
 #[derive(Debug, Serialize)]
