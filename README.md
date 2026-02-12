@@ -103,6 +103,7 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_REPLAY_DAYS` (default `3`)
 - `BOT_REPLAY_CYCLES_PER_DAY` (default `144`)
 - `BOT_REPLAY_BANKROLL` (default `10000`)
+- `BOT_RUN_SUMMARY_ONLY` (`true/false`, default `false`; prints aggregated PnL/trade summary from journal + state and exits)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -200,6 +201,18 @@ Replay mode (`BOT_RUN_REPLAY=true`) runs synthetic multi-day cycles and prints:
 2. fill/partial/cancel counts
 3. fees paid
 4. edge-PnL net fees
+
+For long paper/live runs, generate an end-of-run summary without executing trades:
+
+`set -a; source .env; set +a; BOT_RUN_SUMMARY_ONLY=true cargo run --quiet`
+
+The summary includes:
+
+1. total and per-day order counts
+2. filled/partial/canceled/rejected counts
+3. traded notional and fees paid
+4. expected edge PnL net fees (derived from logged signal edge on order intents)
+5. latest runtime state exposure and daily realized PnL snapshot
 
 ## Trading Safety Controls
 

@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
+use std::collections::BTreeMap;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -19,6 +20,33 @@ pub struct ExecutionEngine {
     client: Arc<dyn ExchangeClient>,
     config: EngineConfig,
     mode: ExecutionMode,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DailyPnlSummary {
+    pub orders_reported: u64,
+    pub filled_orders: u64,
+    pub traded_notional: f64,
+    pub fees_paid: f64,
+    pub expected_edge_pnl_net_fees: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PnlSummary {
+    pub journal_path: String,
+    pub state_path: String,
+    pub orders_reported: u64,
+    pub filled_orders: u64,
+    pub partial_orders: u64,
+    pub canceled_orders: u64,
+    pub rejected_orders: u64,
+    pub traded_notional: f64,
+    pub fees_paid: f64,
+    pub expected_edge_pnl_net_fees: f64,
+    pub state_day: Option<String>,
+    pub state_daily_realized_pnl: Option<f64>,
+    pub state_open_exposure_notional: Option<f64>,
+    pub by_day: BTreeMap<String, DailyPnlSummary>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,7 +81,16 @@ impl ExecutionEngine {
         }
 
         self.record_pre_submit_state(&mut state, &order);
-        self.append_journal("order_intent", json!({"order": &order, "mode": format!("{:?}", self.mode)}))?;
+        self.append_journal(
+            "order_intent",
+            json!({
+                "order": &order,
+                "mode": format!("{:?}", self.mode),
+                "signal_edge_pct": signal.edge_pct,
+                "signal_fair_price": signal.fair_price,
+                "signal_observed_price": signal.observed_price
+            }),
+        )?;
         self.save_state(&state)?;
 
         let report = if self.mode == ExecutionMode::Paper {
@@ -418,11 +455,111 @@ struct OpenOrderState {
     created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct JournalEntry {
     ts: DateTime<Utc>,
     event: String,
     payload: serde_json::Value,
+}
+
+#[derive(Debug, Deserialize)]
+struct SummaryIntentOrder {
+    client_order_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct SummaryIntentPayload {
+    order: SummaryIntentOrder,
+    #[serde(default)]
+    signal_edge_pct: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct SummaryReportPayload {
+    report: ExecutionReport,
+}
+
+pub fn summarize_performance_paths(state_path: &str, journal_path: &str) -> Result<PnlSummary, ExecutionError> {
+    let mut summary = PnlSummary {
+        journal_path: journal_path.to_string(),
+        state_path: state_path.to_string(),
+        ..PnlSummary::default()
+    };
+    let mut edge_by_client_order_id: std::collections::HashMap<String, f64> = std::collections::HashMap::new();
+
+    let journal_p = Path::new(journal_path);
+    if journal_p.exists() {
+        let text = fs::read_to_string(journal_p).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        for line in text.lines() {
+            if line.trim().is_empty() {
+                continue;
+            }
+            let entry: JournalEntry =
+                serde_json::from_str(line).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+            let day = entry.ts.format("%Y-%m-%d").to_string();
+            let day_summary = summary.by_day.entry(day).or_default();
+
+            if entry.event == "order_intent" {
+                if let Ok(intent) = serde_json::from_value::<SummaryIntentPayload>(entry.payload) {
+                    edge_by_client_order_id.insert(
+                        intent.order.client_order_id,
+                        intent.signal_edge_pct.unwrap_or(0.0).max(0.0),
+                    );
+                }
+                continue;
+            }
+
+            if entry.event != "order_report" {
+                continue;
+            }
+            let payload = match serde_json::from_value::<SummaryReportPayload>(entry.payload) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            let report = payload.report;
+            summary.orders_reported += 1;
+            day_summary.orders_reported += 1;
+            match report.status {
+                OrderStatus::Filled => {
+                    summary.filled_orders += 1;
+                    day_summary.filled_orders += 1;
+                }
+                OrderStatus::PartiallyFilled => summary.partial_orders += 1,
+                OrderStatus::Canceled => summary.canceled_orders += 1,
+                OrderStatus::Rejected => summary.rejected_orders += 1,
+                OrderStatus::New => {}
+            }
+            let fill_price = report.avg_fill_price.unwrap_or(0.0).max(0.0);
+            let filled_qty = report.filled_qty.max(0.0);
+            let notional = fill_price * filled_qty;
+            let fee = report.fee_paid.max(0.0);
+            let edge = edge_by_client_order_id
+                .get(&report.client_order_id)
+                .copied()
+                .unwrap_or(0.0)
+                .max(0.0);
+            let edge_pnl_net_fees = (notional * edge) - fee;
+
+            summary.traded_notional += notional;
+            summary.fees_paid += fee;
+            summary.expected_edge_pnl_net_fees += edge_pnl_net_fees;
+
+            day_summary.traded_notional += notional;
+            day_summary.fees_paid += fee;
+            day_summary.expected_edge_pnl_net_fees += edge_pnl_net_fees;
+        }
+    }
+
+    let state_p = Path::new(state_path);
+    if state_p.exists() {
+        let text = fs::read_to_string(state_p).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        let state: RuntimeState = serde_json::from_str(&text).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        summary.state_day = Some(state.day);
+        summary.state_daily_realized_pnl = Some(state.daily_realized_pnl);
+        summary.state_open_exposure_notional = Some(state.open_exposure_notional);
+    }
+
+    Ok(summary)
 }
 
 #[cfg(test)]

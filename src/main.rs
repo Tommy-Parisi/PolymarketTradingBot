@@ -17,7 +17,7 @@ mod replay;
 use data::market_enrichment::{EnrichmentConfig, MarketEnricher};
 use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
 use execution::client::{ExchangeClient, KalshiClient};
-use execution::engine::{ExecutionEngine, ExecutionMode};
+use execution::engine::{ExecutionEngine, ExecutionMode, summarize_performance_paths};
 use execution::paper_sim::{PaperSimClient, PaperSimConfig};
 use execution::types::EngineConfig;
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
@@ -42,6 +42,18 @@ struct BotRuntime {
 
 #[tokio::main]
 async fn main() {
+    if run_summary_only_mode() {
+        let cfg = engine_config_from_env();
+        match summarize_performance_paths(&cfg.state_path, &cfg.journal_path) {
+            Ok(summary) => match serde_json::to_string_pretty(&summary) {
+                Ok(s) => println!("{s}"),
+                Err(err) => eprintln!("failed to render pnl summary: {err}"),
+            },
+            Err(err) => eprintln!("failed to build pnl summary: {err}"),
+        }
+        return;
+    }
+
     if replay_mode_enabled() {
         replay::run_multi_day_replay().await;
         return;
@@ -424,6 +436,16 @@ fn run_once_mode() -> bool {
 fn replay_mode_enabled() -> bool {
     matches!(
         std::env::var("BOT_RUN_REPLAY")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn run_summary_only_mode() -> bool {
+    matches!(
+        std::env::var("BOT_RUN_SUMMARY_ONLY")
             .unwrap_or_else(|_| "false".to_string())
             .to_ascii_lowercase()
             .as_str(),

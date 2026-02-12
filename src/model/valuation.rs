@@ -238,6 +238,7 @@ impl ClaudeValuationEngine {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn value_markets(&self, inputs: &[ValuationInput]) -> Result<Vec<MarketValuation>, ExecutionError> {
         self.value_markets_with_claude_enabled(inputs, true).await
     }
