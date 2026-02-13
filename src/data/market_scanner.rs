@@ -22,10 +22,26 @@ impl Default for ScannerConfig {
         Self {
             api_base_url: std::env::var("KALSHI_API_BASE_URL")
                 .unwrap_or_else(|_| "https://demo-api.kalshi.co".to_string()),
-            max_markets: 1000,
-            min_volume: 1_000.0,
-            max_spread_cents: 8.0,
-            ws_delta_window_secs: 2,
+            max_markets: std::env::var("BOT_SCAN_MAX_MARKETS")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(1000)
+                .max(10),
+            min_volume: std::env::var("BOT_SCAN_MIN_VOLUME")
+                .ok()
+                .and_then(|v| v.parse::<f64>().ok())
+                .unwrap_or(1_000.0)
+                .max(0.0),
+            max_spread_cents: std::env::var("BOT_SCAN_MAX_SPREAD_CENTS")
+                .ok()
+                .and_then(|v| v.parse::<f64>().ok())
+                .unwrap_or(8.0)
+                .max(0.5),
+            ws_delta_window_secs: std::env::var("BOT_SCAN_WS_DELTA_WINDOW_SECS")
+                .ok()
+                .and_then(|v| v.parse::<u64>().ok())
+                .unwrap_or(2)
+                .max(1),
         }
     }
 }

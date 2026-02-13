@@ -1,4 +1,5 @@
 use crate::model::valuation::CandidateTrade;
+use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct AllocationConfig {
@@ -6,6 +7,7 @@ pub struct AllocationConfig {
     pub max_fraction_per_trade: f64,
     pub max_total_fraction_per_cycle: f64,
     pub min_fraction_per_trade: f64,
+    pub enforce_event_mutex: bool,
 }
 
 impl Default for AllocationConfig {
@@ -15,6 +17,7 @@ impl Default for AllocationConfig {
             max_fraction_per_trade: 0.06,
             max_total_fraction_per_cycle: 0.20,
             min_fraction_per_trade: 0.005,
+            enforce_event_mutex: true,
         }
     }
 }
@@ -48,9 +51,17 @@ impl PortfolioAllocator {
 
         let mut remaining_cycle_fraction = self.cfg.max_total_fraction_per_cycle;
         let mut out = Vec::new();
+        let mut seen_event_keys: HashSet<String> = HashSet::new();
         for c in candidates.into_iter().take(self.cfg.max_trades_per_cycle) {
             if remaining_cycle_fraction <= 0.0 {
                 break;
+            }
+            if self.cfg.enforce_event_mutex {
+                let event_key = event_key_from_ticker(&c.ticker);
+                if seen_event_keys.contains(&event_key) {
+                    continue;
+                }
+                seen_event_keys.insert(event_key);
             }
             let kelly = approximate_kelly_fraction(c.fair_price, c.observed_price);
             let mut fraction = kelly
@@ -75,6 +86,13 @@ impl PortfolioAllocator {
             remaining_cycle_fraction -= fraction;
         }
         out
+    }
+}
+
+fn event_key_from_ticker(ticker: &str) -> String {
+    match ticker.rfind('-') {
+        Some(i) if i > 0 => ticker[..i].to_string(),
+        _ => ticker.to_string(),
     }
 }
 
@@ -111,6 +129,7 @@ mod tests {
             max_fraction_per_trade: 0.06,
             max_total_fraction_per_cycle: 0.10,
             min_fraction_per_trade: 0.001,
+            enforce_event_mutex: true,
         });
         let out = alloc.allocate(
             10_000.0,
@@ -128,5 +147,21 @@ mod tests {
         });
         let out = alloc.allocate(10_000.0, vec![c(0.08, 0.3, 0.52, 0.50)]);
         assert!(out.is_empty());
+    }
+
+    #[test]
+    fn allocator_enforces_event_mutex_on_same_event_root() {
+        let alloc = PortfolioAllocator::new(AllocationConfig {
+            max_trades_per_cycle: 5,
+            min_fraction_per_trade: 0.001,
+            enforce_event_mutex: true,
+            ..AllocationConfig::default()
+        });
+        let mut a = c(0.20, 1.0, 0.70, 0.50);
+        a.ticker = "KXTABLE-AAA-BBB-AAA".to_string();
+        let mut b = c(0.19, 1.0, 0.69, 0.50);
+        b.ticker = "KXTABLE-AAA-BBB-BBB".to_string();
+        let out = alloc.allocate(10_000.0, vec![a, b]);
+        assert_eq!(out.len(), 1);
     }
 }

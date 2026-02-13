@@ -70,6 +70,10 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_BANKROLL` (default `10000`)
 - `BOT_VALUATION_MARKETS` (default `250`)
 - `BOT_ENRICHMENT_MARKETS` (default `25`)
+- `BOT_SCAN_MAX_MARKETS` (default `1000`)
+- `BOT_SCAN_MIN_VOLUME` (default `1000`)
+- `BOT_SCAN_MAX_SPREAD_CENTS` (default `8`)
+- `BOT_SCAN_WS_DELTA_WINDOW_SECS` (default `2`)
 - `BOT_MISPRICING_THRESHOLD` (default `0.08`)
 - `BOT_MIN_CANDIDATES` (default `0`; when >0, backfills from real valuations if strict threshold returns too few)
 - `BOT_FALLBACK_MISPRICING_THRESHOLD` (default `0.02`; used only for the backfill path above)
@@ -92,9 +96,12 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_MAX_FRACTION_PER_TRADE` (default `0.06`)
 - `BOT_MAX_TOTAL_FRACTION_PER_CYCLE` (default `0.20`)
 - `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
+- `BOT_ENFORCE_EVENT_MUTEX` (default `true`; prevents allocating both sides of the same underlying event root in one cycle)
 - `BOT_CYCLE_SECONDS` (default `600`, i.e. 10 minutes)
 - `BOT_CLAUDE_EVERY_N_CYCLES` (default `1`; run Claude valuation every N cycles, heuristic on other cycles for cost control)
-- `BOT_CLAUDE_TRIGGER_MODE` (`cadence` default, or `on_heuristic_candidates`; in `on_heuristic_candidates`, heuristic runs first and Claude is only called when heuristic finds potential candidates)
+- `BOT_CLAUDE_TRIGGER_MODE` (`cadence` default, or `on_viable_markets`, or `on_heuristic_candidates`)
+  - `on_viable_markets`: Claude runs only on cycles with selected markets (skips no-market cycles).
+  - `on_heuristic_candidates`: heuristic runs first; Claude runs only if heuristic finds potential candidates.
 - `BOT_RUN_ONCE` (`true/false`, default `false`)
 - `BOT_FORCE_TEST_CANDIDATE` (`true/false`, default `false`; injects one deterministic candidate when none pass threshold)
 - `BOT_CYCLE_ARTIFACTS_ENABLED` (`true/false`, default `true`)
@@ -214,6 +221,13 @@ The summary includes:
 3. traded notional and fees paid
 4. expected edge PnL net fees (derived from logged signal edge on order intents)
 5. latest runtime state exposure and daily realized PnL snapshot
+
+During normal cycles, the bot also prints a live mark-to-market snapshot of open positions based on current scanned market mids:
+
+1. `position marks: open_positions=... marked_positions=... total_unrealized=...`
+2. per-position rows with `entry`, latest `mark`, and `unrealized`
+
+Execution logs now include Kalshi lookup hints and market titles for easier manual inspection.
 
 ## Trading Safety Controls
 

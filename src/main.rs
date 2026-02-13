@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio::time::MissedTickBehavior;
 
 mod data;
@@ -19,7 +19,7 @@ use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
 use execution::client::{ExchangeClient, KalshiClient};
 use execution::engine::{ExecutionEngine, ExecutionMode, summarize_performance_paths};
 use execution::paper_sim::{PaperSimClient, PaperSimConfig};
-use execution::types::EngineConfig;
+use execution::types::{EngineConfig, OrderStatus};
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
 use model::allocator::{AllocationConfig, PortfolioAllocator};
 use model::valuation::{CandidateTrade, ClaudeValuationEngine, MarketValuation, ValuationConfig, ValuationInput};
@@ -44,6 +44,7 @@ struct BotRuntime {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ClaudeTriggerMode {
     Cadence,
+    OnViableMarkets,
     OnHeuristicCandidates,
 }
 
@@ -150,6 +151,7 @@ async fn run_cycle(runtime: &BotRuntime) {
             return;
         }
     };
+    log_position_marks_from_journal(&scanned);
     let selected = runtime.scanner.select_for_valuation(scanned);
     if selected.is_empty() {
         eprintln!("no markets selected for valuation");
@@ -237,6 +239,36 @@ async fn run_cycle(runtime: &BotRuntime) {
                 }
             };
             (valuations, cadence_use_claude)
+        }
+        ClaudeTriggerMode::OnViableMarkets => {
+            let use_claude = !valuation_inputs.is_empty();
+            let valuations = match runtime
+                .valuator
+                .value_markets_with_claude_enabled(&valuation_inputs, use_claude)
+                .await
+            {
+                Ok(v) => v,
+                Err(err) => {
+                    eprintln!("valuation failed: {err}");
+                    persist_cycle_artifact(CycleArtifact {
+                        started_at,
+                        finished_at: Utc::now(),
+                        status: "valuation_failed".to_string(),
+                        message: Some(err.to_string()),
+                        selected_markets: selected
+                            .iter()
+                            .map(|m| artifact_market(m))
+                            .take(100)
+                            .collect(),
+                        valuations: Vec::new(),
+                        candidates: Vec::new(),
+                        allocations: Vec::new(),
+                        executions: Vec::new(),
+                    });
+                    return;
+                }
+            };
+            (valuations, use_claude)
         }
         ClaudeTriggerMode::OnHeuristicCandidates => {
             let heuristic_vals = match runtime
@@ -414,6 +446,10 @@ async fn run_cycle(runtime: &BotRuntime) {
         return;
     }
     println!("allocator selected {} trades", allocations.len());
+    let title_by_ticker: std::collections::HashMap<String, String> = selected
+        .iter()
+        .map(|m| (m.ticker.clone(), m.title.clone()))
+        .collect();
 
     let mut execution_artifacts = Vec::new();
     for allocated in allocations {
@@ -440,9 +476,23 @@ async fn run_cycle(runtime: &BotRuntime) {
 
         match runtime.engine.execute_signal(&signal, allocated.notional).await {
             Ok(report) => {
+                let lookup_hint = kalshi_lookup_hint(&signal.market_id);
+                let market_title = title_by_ticker
+                    .get(&signal.market_id)
+                    .or_else(|| title_by_ticker.get(&allocated.candidate.ticker))
+                    .cloned()
+                    .unwrap_or_else(|| "<title unavailable>".to_string());
                 println!(
-                    "order executed: ticker={} fraction={:.4} notional={:.2} report={:?}",
-                    allocated.candidate.ticker, allocated.bankroll_fraction, allocated.notional, report
+                    "order executed: ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} kalshi_hint={}",
+                    allocated.candidate.ticker,
+                    market_title,
+                    signal.outcome_id,
+                    signal.side,
+                    allocated.bankroll_fraction,
+                    allocated.notional,
+                    report.filled_qty,
+                    report.avg_fill_price,
+                    lookup_hint
                 );
                 execution_artifacts.push(ArtifactExecution {
                     source_ticker: allocated.candidate.ticker.clone(),
@@ -566,6 +616,7 @@ fn claude_trigger_mode_from_env() -> ClaudeTriggerMode {
         .to_ascii_lowercase()
         .as_str()
     {
+        "on_viable_markets" | "on_selected_markets" => ClaudeTriggerMode::OnViableMarkets,
         "on_heuristic_candidates" => ClaudeTriggerMode::OnHeuristicCandidates,
         _ => ClaudeTriggerMode::Cadence,
     }
@@ -655,6 +706,12 @@ fn allocation_config_from_env() -> AllocationConfig {
             cfg.min_fraction_per_trade = parsed;
         }
     }
+    if let Ok(v) = std::env::var("BOT_ENFORCE_EVENT_MUTEX") {
+        cfg.enforce_event_mutex = matches!(
+            v.to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes"
+        );
+    }
     cfg
 }
 
@@ -680,6 +737,154 @@ fn cycle_artifacts_enabled() -> bool {
 
 fn cycle_artifacts_dir() -> String {
     std::env::var("BOT_CYCLE_ARTIFACTS_DIR").unwrap_or_else(|_| "var/cycles".to_string())
+}
+
+fn journal_path_from_env() -> String {
+    std::env::var("BOT_JOURNAL_PATH").unwrap_or_else(|_| "var/logs/trade_journal.jsonl".to_string())
+}
+
+fn kalshi_lookup_hint(ticker: &str) -> String {
+    format!("https://kalshi.com/search?query={}", ticker)
+}
+
+fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarket]) {
+    let path = journal_path_from_env();
+    let journal_path = Path::new(&path);
+    if !journal_path.exists() {
+        return;
+    }
+    let text = match fs::read_to_string(journal_path) {
+        Ok(t) => t,
+        Err(_) => return,
+    };
+    let mut intents: std::collections::HashMap<String, IntentOrderLite> = std::collections::HashMap::new();
+    let mut positions: std::collections::HashMap<(String, String), PositionMarkLite> = std::collections::HashMap::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let entry = match serde_json::from_str::<JournalLineLite>(line) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        if entry.event == "order_intent" {
+            if let Ok(payload) = serde_json::from_value::<IntentPayloadLite>(entry.payload) {
+                intents.insert(payload.order.client_order_id.clone(), payload.order);
+            }
+            continue;
+        }
+        if entry.event != "order_report" {
+            continue;
+        }
+        let payload = match serde_json::from_value::<ReportPayloadLite>(entry.payload) {
+            Ok(p) => p,
+            Err(_) => continue,
+        };
+        if !matches!(payload.report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
+            continue;
+        }
+        let Some(intent) = intents.get(&payload.report.client_order_id) else {
+            continue;
+        };
+        let qty = payload.report.filled_qty.max(0.0);
+        let price = payload.report.avg_fill_price.unwrap_or(0.0).max(0.0);
+        if qty <= 0.0 || price <= 0.0 {
+            continue;
+        }
+        let key = (intent.market_id.clone(), intent.outcome_id.clone());
+        let pos = positions.entry(key).or_default();
+        match intent.side {
+            execution::types::Side::Buy => {
+                pos.net_qty += qty;
+                pos.cost_basis += qty * price;
+            }
+            execution::types::Side::Sell => {
+                pos.net_qty -= qty;
+                pos.cost_basis -= qty * price;
+            }
+        }
+    }
+
+    if positions.is_empty() {
+        return;
+    }
+    let quote_by_ticker: std::collections::HashMap<&str, &data::market_scanner::ScannedMarket> =
+        scanned.iter().map(|m| (m.ticker.as_str(), m)).collect();
+    let mut rows = Vec::new();
+    let mut total_unrealized = 0.0;
+    let mut marked_count = 0usize;
+    for ((ticker, outcome), pos) in positions {
+        if pos.net_qty <= 0.0 {
+            continue;
+        }
+        let avg_entry = pos.cost_basis / pos.net_qty;
+        let mark = quote_by_ticker
+            .get(ticker.as_str())
+            .and_then(|m| midpoint_prob_from_market(m))
+            .map(|yes_mid| if outcome.eq_ignore_ascii_case("no") { 1.0 - yes_mid } else { yes_mid });
+        let unrealized = mark.map(|m| (m - avg_entry) * pos.net_qty);
+        if let Some(u) = unrealized {
+            total_unrealized += u;
+            marked_count += 1;
+        }
+        rows.push((ticker, outcome, pos.net_qty, avg_entry, mark, unrealized));
+    }
+    if rows.is_empty() {
+        return;
+    }
+    rows.sort_by(|a, b| {
+        let ua = a.5.unwrap_or(f64::NEG_INFINITY);
+        let ub = b.5.unwrap_or(f64::NEG_INFINITY);
+        ub.total_cmp(&ua)
+    });
+    println!(
+        "position marks: open_positions={} marked_positions={} total_unrealized={:.4}",
+        rows.len(),
+        marked_count,
+        total_unrealized
+    );
+    for (ticker, outcome, qty, entry, mark, pnl) in rows.into_iter().take(5) {
+        println!(
+            "position: ticker={} outcome={} qty={:.4} entry={:.4} mark={:?} unrealized={:?} kalshi_hint={}",
+            ticker,
+            outcome,
+            qty,
+            entry,
+            mark.map(|v| format!("{v:.4}")),
+            pnl.map(|v| format!("{v:.4}")),
+            kalshi_lookup_hint(&ticker)
+        );
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct JournalLineLite {
+    event: String,
+    payload: serde_json::Value,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct IntentOrderLite {
+    client_order_id: String,
+    market_id: String,
+    outcome_id: String,
+    side: execution::types::Side,
+}
+
+#[derive(Debug, Deserialize)]
+struct IntentPayloadLite {
+    order: IntentOrderLite,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReportPayloadLite {
+    report: execution::types::ExecutionReport,
+}
+
+#[derive(Debug, Default)]
+struct PositionMarkLite {
+    net_qty: f64,
+    cost_basis: f64,
 }
 
 fn build_forced_test_candidate(
