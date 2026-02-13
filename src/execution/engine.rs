@@ -66,10 +66,66 @@ impl ExecutionEngine {
         bankroll: f64,
     ) -> Result<ExecutionReport, ExecutionError> {
         self.validate_signal(signal)?;
-        let quantity = self.compute_position_size(signal, bankroll)?;
-        self.validate_quantity_bounds(quantity)?;
+        let total_quantity = self.compute_position_size(signal, bankroll)?;
+        self.validate_quantity_bounds(total_quantity)?;
 
-        let order = self.build_order(signal, quantity)?;
+        let policy = self.execution_policy();
+        match policy {
+            ExecutionPolicy::Ioc => {
+                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Ioc)
+                    .await
+            }
+            ExecutionPolicy::Gtc => {
+                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Gtc)
+                    .await
+            }
+            ExecutionPolicy::Hybrid => {
+                let ioc_qty = (total_quantity * self.config.hybrid_ioc_fraction)
+                    .max(self.config.min_order_quantity)
+                    .min(total_quantity);
+                let first_report = self
+                    .execute_single_order(signal, bankroll, ioc_qty, TimeInForce::Ioc)
+                    .await?;
+
+                let remaining = (total_quantity - first_report.filled_qty).max(0.0);
+                if remaining < self.config.min_order_quantity {
+                    return Ok(first_report);
+                }
+                if matches!(first_report.status, OrderStatus::Rejected) {
+                    return Ok(first_report);
+                }
+
+                match self
+                    .execute_single_order(signal, bankroll, remaining, TimeInForce::Gtc)
+                    .await
+                {
+                    Ok(report) => Ok(report),
+                    Err(err) => {
+                        self.append_journal(
+                            "execution_policy_fallback_failed",
+                            json!({
+                                "reason": err.to_string(),
+                                "fallback_time_in_force": "gtc",
+                                "remaining_qty": remaining,
+                                "market_id": signal.market_id
+                            }),
+                        )?;
+                        Ok(first_report)
+                    }
+                }
+            }
+        }
+    }
+
+    async fn execute_single_order(
+        &self,
+        signal: &TradeSignal,
+        bankroll: f64,
+        quantity: f64,
+        time_in_force: TimeInForce,
+    ) -> Result<ExecutionReport, ExecutionError> {
+        self.validate_quantity_bounds(quantity)?;
+        let order = self.build_order(signal, quantity, time_in_force)?;
         self.pre_trade_checks(&order, bankroll)?;
 
         let mut state = self.load_state()?;
@@ -93,11 +149,12 @@ impl ExecutionEngine {
         )?;
         self.save_state(&state)?;
 
-        let report = if self.mode == ExecutionMode::Paper {
+        let mut report = if self.mode == ExecutionMode::Paper {
             ExecutionReport {
                 order_id: format!("paper-{}", order.client_order_id),
                 client_order_id: order.client_order_id.clone(),
                 status: OrderStatus::Filled,
+                submitted_time_in_force: Some(order.time_in_force),
                 filled_qty: order.quantity,
                 avg_fill_price: order.limit_price,
                 fee_paid: 0.0,
@@ -106,13 +163,15 @@ impl ExecutionEngine {
         } else {
             let (ack, initial) = self.submit_with_retries(&order).await?;
             self.append_journal("order_ack", json!({"ack": ack}))?;
-            self.reconcile_post_submit(ack, initial).await?
+            self.reconcile_post_submit(ack, initial, order.time_in_force).await?
         };
 
+        if report.submitted_time_in_force.is_none() {
+            report.submitted_time_in_force = Some(order.time_in_force);
+        }
         self.finalize_state_from_report(&mut state, &order, &report);
         self.append_journal("order_report", json!({"report": &report}))?;
         self.save_state(&state)?;
-
         Ok(report)
     }
 
@@ -126,7 +185,9 @@ impl ExecutionEngine {
         let mut survivors = Vec::new();
         for tracked in open_orders {
             let mut report = self.client.get_order(&tracked.order_id).await?;
-            if matches!(report.status, OrderStatus::New | OrderStatus::PartiallyFilled) {
+            if matches!(report.status, OrderStatus::New | OrderStatus::PartiallyFilled)
+                && self.execution_policy() == ExecutionPolicy::Ioc
+            {
                 let _ = self.client.cancel_order(&tracked.order_id).await;
                 report = self.client.get_order(&tracked.order_id).await.unwrap_or(report);
             }
@@ -195,7 +256,12 @@ impl ExecutionEngine {
         Ok(())
     }
 
-    fn build_order(&self, signal: &TradeSignal, quantity: f64) -> Result<OrderRequest, ExecutionError> {
+    fn build_order(
+        &self,
+        signal: &TradeSignal,
+        quantity: f64,
+        time_in_force: TimeInForce,
+    ) -> Result<OrderRequest, ExecutionError> {
         let limit_price = compute_limit_price(signal.side, signal.observed_price);
         let notional = quantity * limit_price;
         if notional > self.config.max_market_notional {
@@ -212,7 +278,7 @@ impl ExecutionEngine {
             order_type: OrderType::Limit,
             limit_price: Some(limit_price),
             quantity,
-            time_in_force: TimeInForce::Ioc,
+            time_in_force,
             created_at: Utc::now(),
         })
     }
@@ -335,6 +401,7 @@ impl ExecutionEngine {
         &self,
         ack: OrderAck,
         mut report: ExecutionReport,
+        time_in_force: TimeInForce,
     ) -> Result<ExecutionReport, ExecutionError> {
         if !matches!(report.status, OrderStatus::New | OrderStatus::PartiallyFilled) {
             return Ok(report);
@@ -351,9 +418,13 @@ impl ExecutionEngine {
             }
         }
 
-        let _ = self.client.cancel_order(&ack.order_id).await;
-        let final_report = self.client.get_order(&ack.order_id).await.unwrap_or(report);
-        Ok(final_report)
+        if time_in_force == TimeInForce::Ioc {
+            let _ = self.client.cancel_order(&ack.order_id).await;
+            let final_report = self.client.get_order(&ack.order_id).await.unwrap_or(report);
+            return Ok(final_report);
+        }
+
+        Ok(report)
     }
 
     fn load_state(&self) -> Result<RuntimeState, ExecutionError> {
@@ -397,12 +468,27 @@ impl ExecutionEngine {
             .and_then(|_| f.write_all(b"\n"))
             .map_err(|e| ExecutionError::Exchange(e.to_string()))
     }
+
+    fn execution_policy(&self) -> ExecutionPolicy {
+        match self.config.execution_policy.to_ascii_lowercase().as_str() {
+            "gtc" => ExecutionPolicy::Gtc,
+            "hybrid" => ExecutionPolicy::Hybrid,
+            _ => ExecutionPolicy::Ioc,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ExecutionPolicy {
+    Ioc,
+    Gtc,
+    Hybrid,
 }
 
 fn compute_limit_price(side: Side, observed_price: f64) -> f64 {
     match side {
-        Side::Buy => (observed_price + 0.01).min(1.0),
-        Side::Sell => (observed_price - 0.01).max(0.0),
+        Side::Buy => (observed_price + 0.01).clamp(0.01, 0.99),
+        Side::Sell => (observed_price - 0.01).clamp(0.01, 0.99),
     }
 }
 

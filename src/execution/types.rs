@@ -68,6 +68,7 @@ pub struct ExecutionReport {
     pub order_id: String,
     pub client_order_id: String,
     pub status: OrderStatus,
+    pub submitted_time_in_force: Option<TimeInForce>,
     pub filled_qty: f64,
     pub avg_fill_price: Option<f64>,
     pub fee_paid: f64,
@@ -90,6 +91,8 @@ pub struct EngineConfig {
     pub max_orders_per_minute: usize,
     pub state_path: String,
     pub journal_path: String,
+    pub execution_policy: String,
+    pub hybrid_ioc_fraction: f64,
 }
 
 impl Default for EngineConfig {
@@ -109,6 +112,8 @@ impl Default for EngineConfig {
             max_orders_per_minute: 20,
             state_path: "var/state/runtime_state.json".to_string(),
             journal_path: "var/logs/trade_journal.jsonl".to_string(),
+            execution_policy: "ioc".to_string(),
+            hybrid_ioc_fraction: 0.35,
         }
     }
 }

@@ -190,6 +190,7 @@ fn make_report(
         order_id: order_id.to_string(),
         client_order_id: req.client_order_id.clone(),
         status,
+        submitted_time_in_force: Some(req.time_in_force),
         filled_qty,
         avg_fill_price,
         fee_paid,

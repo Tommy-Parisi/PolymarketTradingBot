@@ -503,6 +503,19 @@ async fn run_cycle(runtime: &BotRuntime) {
         match runtime.mapper.resolve_market_ticker(&signal.market_id).await {
             Ok(ticker) => signal.market_id = ticker,
             Err(err) if runtime.resolution_mode == ResolutionMode::BestEffort => {
+                if runtime.mode == ExecutionMode::Live {
+                    eprintln!("market resolution failed in live mode (skipping trade): {err}");
+                    execution_artifacts.push(ArtifactExecution {
+                        source_ticker: allocated.candidate.ticker.clone(),
+                        resolved_market_id: signal.market_id.clone(),
+                        bankroll_fraction: allocated.bankroll_fraction,
+                        notional: allocated.notional,
+                        result: "resolution_failed_live_skip".to_string(),
+                        error: Some(err.to_string()),
+                        report: None,
+                    });
+                    continue;
+                }
                 eprintln!("market resolution warning (best-effort): {err}");
             }
             Err(err) => {
@@ -528,24 +541,46 @@ async fn run_cycle(runtime: &BotRuntime) {
                     .or_else(|| title_by_ticker.get(&allocated.candidate.ticker))
                     .cloned()
                     .unwrap_or_else(|| "<title unavailable>".to_string());
-                println!(
-                    "order executed: ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} kalshi_hint={}",
-                    allocated.candidate.ticker,
-                    market_title,
-                    signal.outcome_id,
-                    signal.side,
-                    allocated.bankroll_fraction,
-                    allocated.notional,
-                    report.filled_qty,
-                    report.avg_fill_price,
-                    lookup_hint
-                );
+                let status_label = report_status_label(&report.status);
+                if matches!(report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
+                    println!(
+                        "order {}: ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} tif={:?} final_status={:?} kalshi_hint={}",
+                        status_label,
+                        allocated.candidate.ticker,
+                        market_title,
+                        signal.outcome_id,
+                        signal.side,
+                        allocated.bankroll_fraction,
+                        allocated.notional,
+                        report.filled_qty,
+                        report.avg_fill_price,
+                        report.submitted_time_in_force,
+                        report.status,
+                        lookup_hint
+                    );
+                } else {
+                    eprintln!(
+                        "order {} (no fill): ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} tif={:?} final_status={:?} kalshi_hint={}",
+                        status_label,
+                        allocated.candidate.ticker,
+                        market_title,
+                        signal.outcome_id,
+                        signal.side,
+                        allocated.bankroll_fraction,
+                        allocated.notional,
+                        report.filled_qty,
+                        report.avg_fill_price,
+                        report.submitted_time_in_force,
+                        report.status,
+                        lookup_hint
+                    );
+                }
                 execution_artifacts.push(ArtifactExecution {
                     source_ticker: allocated.candidate.ticker.clone(),
                     resolved_market_id: signal.market_id.clone(),
                     bankroll_fraction: allocated.bankroll_fraction,
                     notional: allocated.notional,
-                    result: "executed".to_string(),
+                    result: status_label.to_string(),
                     error: None,
                     report: Some(report),
                 });
@@ -696,6 +731,14 @@ fn engine_config_from_env() -> EngineConfig {
     if let Ok(v) = std::env::var("BOT_JOURNAL_PATH") {
         cfg.journal_path = v;
     }
+    if let Ok(v) = std::env::var("BOT_EXEC_POLICY") {
+        cfg.execution_policy = v.to_ascii_lowercase();
+    }
+    if let Ok(v) = std::env::var("BOT_HYBRID_IOC_FRACTION") {
+        if let Ok(parsed) = v.parse::<f64>() {
+            cfg.hybrid_ioc_fraction = parsed.clamp(0.05, 1.0);
+        }
+    }
     cfg
 }
 
@@ -807,6 +850,16 @@ fn reentry_cooldown_secs_from_env() -> u64 {
 
 fn kalshi_lookup_hint(ticker: &str) -> String {
     format!("https://kalshi.com/search?query={}", ticker)
+}
+
+fn report_status_label(status: &OrderStatus) -> &'static str {
+    match status {
+        OrderStatus::New => "accepted",
+        OrderStatus::PartiallyFilled => "partially_filled",
+        OrderStatus::Filled => "filled",
+        OrderStatus::Canceled => "canceled",
+        OrderStatus::Rejected => "rejected",
+    }
 }
 
 fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarket]) {

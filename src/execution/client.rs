@@ -12,7 +12,7 @@ use rsa::RsaPrivateKey;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
-use crate::execution::types::{ExecutionError, ExecutionReport, OrderAck, OrderRequest, OrderStatus, Side};
+use crate::execution::types::{ExecutionError, ExecutionReport, OrderAck, OrderRequest, OrderStatus, Side, TimeInForce};
 
 const KALSHI_ACCESS_KEY: &str = "KALSHI-ACCESS-KEY";
 const KALSHI_ACCESS_TIMESTAMP: &str = "KALSHI-ACCESS-TIMESTAMP";
@@ -84,11 +84,11 @@ impl ExchangeClient for KalshiClient {
             Side::Buy => "buy",
             Side::Sell => "sell",
         };
-        let price_dollars = request.limit_price.map(prob_to_dollars_string);
-        let (yes_price_dollars, no_price_dollars) = if side == "yes" {
-            (price_dollars, None)
+        let price_cents = request.limit_price.map(prob_to_cents_u32);
+        let (yes_price, no_price) = if side == "yes" {
+            (price_cents, None)
         } else {
-            (None, price_dollars)
+            (None, price_cents)
         };
         let body = CreateOrderRequest {
             ticker: request.market_id.clone(),
@@ -96,10 +96,11 @@ impl ExchangeClient for KalshiClient {
             side,
             action: action.to_string(),
             count: request.quantity.max(0.0).round() as u64,
-            count_fp: Some(to_whole_contract_fp_string(request.quantity)),
-            yes_price_dollars,
-            no_price_dollars,
-            order_type: "limit".to_string(),
+            count_fp: None,
+            yes_price,
+            no_price,
+            type_: "limit".to_string(),
+            time_in_force: Some(kalshi_time_in_force(request.time_in_force).to_string()),
         };
         let body_text = serde_json::to_string(&body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
         let url = format!("{}{}", self.config.api_base_url, path);
@@ -118,13 +119,50 @@ impl ExchangeClient for KalshiClient {
             .send()
             .await
             .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("place_order", &e)))?;
-        let status = resp.status();
-        let text = resp
+        let mut status = resp.status();
+        let mut text = resp
             .text()
             .await
             .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        if status == StatusCode::BAD_REQUEST && text.contains("invalid_parameters") && body.count_fp.is_some() {
+            let mut retry_body = body.clone();
+            retry_body.count_fp = None;
+            let retry_text =
+                serde_json::to_string(&retry_body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+            let retry_url = format!("{}{}", self.config.api_base_url, path);
+            let retry_headers = self.auth_headers(Method::POST, path)?;
+            let mut retry_req = self
+                .http
+                .post(retry_url)
+                .header("Content-Type", "application/json")
+                .body(retry_text);
+            for (k, v) in retry_headers {
+                retry_req = retry_req.header(k, v);
+            }
+            let retry_resp = retry_req
+                .send()
+                .await
+                .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("place_order_retry", &e)))?;
+            status = retry_resp.status();
+            text = retry_resp
+                .text()
+                .await
+                .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        }
         if !status.is_success() {
-            return Err(build_http_error("POST", path, status, &text));
+            let request_summary = format!(
+                "request={{ticker:{} side:{} action:{} count:{} count_fp:{:?} yes_price:{:?} no_price:{:?} order_type:{}}}",
+                body.ticker,
+                body.side,
+                body.action,
+                body.count,
+                body.count_fp,
+                body.yes_price,
+                body.no_price,
+                body.type_,
+            );
+            let detailed = format!("{text} | {request_summary}");
+            return Err(build_http_error("POST", path, status, &detailed));
         }
 
         let parsed: CreateOrderEnvelope =
@@ -178,6 +216,7 @@ impl ExchangeClient for KalshiClient {
                 .unwrap_or_else(|| order_id.to_string()),
             client_order_id: order.client_order_id.unwrap_or_default(),
             status: map_order_status(order.status.as_deref()),
+            submitted_time_in_force: None,
             filled_qty: order
                 .filled_count_fp
                 .as_deref()
@@ -280,8 +319,8 @@ fn kalshi_side_from_outcome(outcome_id: &str) -> Result<String, ExecutionError> 
     }
 }
 
-fn prob_to_dollars_string(prob: f64) -> String {
-    format!("{:.4}", prob.clamp(0.0, 1.0))
+fn prob_to_cents_u32(prob: f64) -> u32 {
+    (prob.clamp(0.0, 1.0) * 100.0).round() as u32
 }
 
 fn cents_to_prob(cents: u32) -> f64 {
@@ -290,11 +329,6 @@ fn cents_to_prob(cents: u32) -> f64 {
 
 fn parse_prob_dollars_string(raw: &str) -> Option<f64> {
     raw.parse::<f64>().ok()
-}
-
-fn to_whole_contract_fp_string(v: f64) -> String {
-    // Current Kalshi order endpoint requires count_fp to represent whole contracts.
-    format!("{}", v.max(0.0).round() as u64)
 }
 
 fn parse_fp_string(raw: &str) -> Option<f64> {
@@ -309,6 +343,14 @@ fn map_order_status(status: Option<&str>) -> OrderStatus {
         "canceled" | "cancelled" => OrderStatus::Canceled,
         "rejected" => OrderStatus::Rejected,
         _ => OrderStatus::New,
+    }
+}
+
+fn kalshi_time_in_force(tif: TimeInForce) -> &'static str {
+    match tif {
+        TimeInForce::Ioc => "immediate_or_cancel",
+        TimeInForce::Gtc => "good_till_canceled",
+        TimeInForce::Fok => "fill_or_kill",
     }
 }
 
@@ -338,7 +380,7 @@ fn format_reqwest_error(context: &str, e: &reqwest::Error) -> String {
     out
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct CreateOrderRequest {
     ticker: String,
     client_order_id: String,
@@ -348,10 +390,13 @@ struct CreateOrderRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     count_fp: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    yes_price_dollars: Option<String>,
+    yes_price: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    no_price_dollars: Option<String>,
-    order_type: String,
+    no_price: Option<u32>,
+    #[serde(rename = "type")]
+    type_: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    time_in_force: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
