@@ -445,14 +445,60 @@ async fn run_cycle(runtime: &BotRuntime) {
         });
         return;
     }
-    println!("allocator selected {} trades", allocations.len());
+    let ticker_risk = load_ticker_risk_state_from_journal();
+    let max_notional_per_ticker = max_notional_per_ticker_from_env();
+    let reentry_cooldown_secs = reentry_cooldown_secs_from_env() as i64;
+    let now = Utc::now();
+    let mut guarded_allocations = Vec::new();
+    for a in allocations {
+        if let Some(r) = ticker_risk.get(&a.candidate.ticker) {
+            if r.open_notional_estimate + a.notional > max_notional_per_ticker {
+                eprintln!(
+                    "risk guard: skipping {} due to per-ticker notional cap (current={:.2} + proposed={:.2} > cap={:.2})",
+                    a.candidate.ticker, r.open_notional_estimate, a.notional, max_notional_per_ticker
+                );
+                continue;
+            }
+            if let Some(last_fill) = r.last_fill_ts {
+                let age_secs = (now - last_fill).num_seconds();
+                if age_secs >= 0 && age_secs < reentry_cooldown_secs {
+                    eprintln!(
+                        "risk guard: skipping {} due to re-entry cooldown (age={}s < cooldown={}s)",
+                        a.candidate.ticker, age_secs, reentry_cooldown_secs
+                    );
+                    continue;
+                }
+            }
+        }
+        guarded_allocations.push(a);
+    }
+    if guarded_allocations.is_empty() {
+        eprintln!("allocator produced no trades after risk guard");
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "no_allocations".to_string(),
+            message: Some("allocator produced no trades after risk guard".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: candidate_artifacts,
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
+        return;
+    }
+    println!("allocator selected {} trades", guarded_allocations.len());
     let title_by_ticker: std::collections::HashMap<String, String> = selected
         .iter()
         .map(|m| (m.ticker.clone(), m.title.clone()))
         .collect();
 
     let mut execution_artifacts = Vec::new();
-    for allocated in allocations {
+    for allocated in guarded_allocations {
         let mut signal = runtime.valuator.candidate_to_signal(&allocated.candidate);
         match runtime.mapper.resolve_market_ticker(&signal.market_id).await {
             Ok(ticker) => signal.market_id = ticker,
@@ -743,6 +789,22 @@ fn journal_path_from_env() -> String {
     std::env::var("BOT_JOURNAL_PATH").unwrap_or_else(|_| "var/logs/trade_journal.jsonl".to_string())
 }
 
+fn max_notional_per_ticker_from_env() -> f64 {
+    std::env::var("BOT_MAX_NOTIONAL_PER_TICKER")
+        .ok()
+        .and_then(|v| v.parse::<f64>().ok())
+        .unwrap_or(500.0)
+        .max(1.0)
+}
+
+fn reentry_cooldown_secs_from_env() -> u64 {
+    std::env::var("BOT_REENTRY_COOLDOWN_SECS")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        .unwrap_or(3600)
+        .max(0)
+}
+
 fn kalshi_lookup_hint(ticker: &str) -> String {
     format!("https://kalshi.com/search?query={}", ticker)
 }
@@ -857,6 +919,62 @@ fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarke
     }
 }
 
+fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, TickerRiskState> {
+    let path = journal_path_from_env();
+    let journal_path = Path::new(&path);
+    if !journal_path.exists() {
+        return std::collections::HashMap::new();
+    }
+    let text = match fs::read_to_string(journal_path) {
+        Ok(t) => t,
+        Err(_) => return std::collections::HashMap::new(),
+    };
+    let mut intents: std::collections::HashMap<String, IntentOrderLite> = std::collections::HashMap::new();
+    let mut state: std::collections::HashMap<String, TickerRiskState> = std::collections::HashMap::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let entry = match serde_json::from_str::<JournalLineLite>(line) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        if entry.event == "order_intent" {
+            if let Ok(payload) = serde_json::from_value::<IntentPayloadLite>(entry.payload) {
+                intents.insert(payload.order.client_order_id.clone(), payload.order);
+            }
+            continue;
+        }
+        if entry.event != "order_report" {
+            continue;
+        }
+        let payload = match serde_json::from_value::<ReportPayloadLite>(entry.payload) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        if !matches!(payload.report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
+            continue;
+        }
+        let Some(intent) = intents.get(&payload.report.client_order_id) else {
+            continue;
+        };
+        let notional = payload.report.filled_qty.max(0.0) * payload.report.avg_fill_price.unwrap_or(0.0).max(0.0);
+        if notional <= 0.0 {
+            continue;
+        }
+        let row = state.entry(intent.market_id.clone()).or_default();
+        row.open_notional_estimate += notional;
+        if row
+            .last_fill_ts
+            .map(|t| payload.report.updated_at > t)
+            .unwrap_or(true)
+        {
+            row.last_fill_ts = Some(payload.report.updated_at);
+        }
+    }
+    state
+}
+
 #[derive(Debug, Deserialize)]
 struct JournalLineLite {
     event: String,
@@ -885,6 +1003,12 @@ struct ReportPayloadLite {
 struct PositionMarkLite {
     net_qty: f64,
     cost_basis: f64,
+}
+
+#[derive(Debug, Default)]
+struct TickerRiskState {
+    open_notional_estimate: f64,
+    last_fill_ts: Option<DateTime<Utc>>,
 }
 
 fn build_forced_test_candidate(

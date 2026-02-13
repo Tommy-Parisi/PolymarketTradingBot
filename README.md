@@ -97,6 +97,8 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_MAX_TOTAL_FRACTION_PER_CYCLE` (default `0.20`)
 - `BOT_MIN_FRACTION_PER_TRADE` (default `0.005`)
 - `BOT_ENFORCE_EVENT_MUTEX` (default `true`; prevents allocating both sides of the same underlying event root in one cycle)
+- `BOT_MAX_NOTIONAL_PER_TICKER` (default `500`; blocks new allocations when historical filled notional for ticker would exceed cap)
+- `BOT_REENTRY_COOLDOWN_SECS` (default `3600`; blocks re-buying the same ticker too soon after a fill)
 - `BOT_CYCLE_SECONDS` (default `600`, i.e. 10 minutes)
 - `BOT_CLAUDE_EVERY_N_CYCLES` (default `1`; run Claude valuation every N cycles, heuristic on other cycles for cost control)
 - `BOT_CLAUDE_TRIGGER_MODE` (`cadence` default, or `on_viable_markets`, or `on_heuristic_candidates`)
