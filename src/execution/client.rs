@@ -293,7 +293,8 @@ fn parse_prob_dollars_string(raw: &str) -> Option<f64> {
 }
 
 fn to_fp_string(v: f64) -> String {
-    format!("{:.4}", v.max(0.0))
+    // Kalshi requires fixed-point quantity strings with at most 2 decimal places.
+    format!("{:.2}", v.max(0.0))
 }
 
 fn parse_fp_string(raw: &str) -> Option<f64> {
