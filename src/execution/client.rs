@@ -96,7 +96,7 @@ impl ExchangeClient for KalshiClient {
             side,
             action: action.to_string(),
             count: request.quantity.max(0.0).round() as u64,
-            count_fp: Some(to_fp_string(request.quantity)),
+            count_fp: Some(to_whole_contract_fp_string(request.quantity)),
             yes_price_dollars,
             no_price_dollars,
             order_type: "limit".to_string(),
@@ -292,9 +292,9 @@ fn parse_prob_dollars_string(raw: &str) -> Option<f64> {
     raw.parse::<f64>().ok()
 }
 
-fn to_fp_string(v: f64) -> String {
-    // Kalshi requires fixed-point quantity strings with at most 2 decimal places.
-    format!("{:.2}", v.max(0.0))
+fn to_whole_contract_fp_string(v: f64) -> String {
+    // Current Kalshi order endpoint requires count_fp to represent whole contracts.
+    format!("{}", v.max(0.0).round() as u64)
 }
 
 fn parse_fp_string(raw: &str) -> Option<f64> {
