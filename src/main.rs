@@ -448,6 +448,7 @@ async fn run_cycle(runtime: &BotRuntime) {
     let ticker_risk = load_ticker_risk_state_from_journal();
     let max_notional_per_ticker = max_notional_per_ticker_from_env();
     let reentry_cooldown_secs = reentry_cooldown_secs_from_env() as i64;
+    let invalid_param_cooldown_secs = invalid_param_cooldown_secs_from_env();
     let now = Utc::now();
     let mut guarded_allocations = Vec::new();
     for a in allocations {
@@ -468,6 +469,24 @@ async fn run_cycle(runtime: &BotRuntime) {
                     );
                     continue;
                 }
+            }
+            if let Some(last_invalid) = r.last_invalid_parameters_ts {
+                let age_secs = (now - last_invalid).num_seconds();
+                if age_secs >= 0 && age_secs < invalid_param_cooldown_secs {
+                    eprintln!(
+                        "risk guard: skipping {} due to invalid-parameters cooldown (age={}s < cooldown={}s)",
+                        a.candidate.ticker, age_secs, invalid_param_cooldown_secs
+                    );
+                    continue;
+                }
+            }
+            let key = order_key(&a.candidate.outcome_id, a.candidate.side);
+            if r.open_order_keys.contains(&key) {
+                eprintln!(
+                    "risk guard: skipping {} due to existing open order on same outcome/side ({})",
+                    a.candidate.ticker, key
+                );
+                continue;
             }
         }
         guarded_allocations.push(a);
@@ -542,9 +561,27 @@ async fn run_cycle(runtime: &BotRuntime) {
                     .cloned()
                     .unwrap_or_else(|| "<title unavailable>".to_string());
                 let status_label = report_status_label(&report.status);
-                if matches!(report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
+                if matches!(report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled)
+                    && report.filled_qty > 0.0
+                {
                     println!(
                         "order {}: ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} tif={:?} final_status={:?} kalshi_hint={}",
+                        status_label,
+                        allocated.candidate.ticker,
+                        market_title,
+                        signal.outcome_id,
+                        signal.side,
+                        allocated.bankroll_fraction,
+                        allocated.notional,
+                        report.filled_qty,
+                        report.avg_fill_price,
+                        report.submitted_time_in_force,
+                        report.status,
+                        lookup_hint
+                    );
+                } else if matches!(report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
+                    eprintln!(
+                        "order {} (zero_qty anomaly): ticker={} title=\"{}\" outcome={} side={:?} fraction={:.4} target_notional={:.2} filled_qty={:.4} fill_price={:?} tif={:?} final_status={:?} kalshi_hint={}",
                         status_label,
                         allocated.candidate.ticker,
                         market_title,
@@ -848,6 +885,14 @@ fn reentry_cooldown_secs_from_env() -> u64 {
         .max(0)
 }
 
+fn invalid_param_cooldown_secs_from_env() -> i64 {
+    std::env::var("BOT_INVALID_PARAM_COOLDOWN_SECS")
+        .ok()
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(21_600)
+        .max(0)
+}
+
 fn kalshi_lookup_hint(ticker: &str) -> String {
     format!("https://kalshi.com/search?query={}", ticker)
 }
@@ -998,6 +1043,15 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
             }
             continue;
         }
+        if entry.event == "order_error" {
+            if let Ok(payload) = serde_json::from_value::<OrderErrorPayloadLite>(entry.payload) {
+                if payload.error.to_ascii_lowercase().contains("invalid_parameters") {
+                    let row = state.entry(payload.market_id).or_default();
+                    row.last_invalid_parameters_ts = Some(entry.ts);
+                }
+            }
+            continue;
+        }
         if entry.event != "order_report" {
             continue;
         }
@@ -1005,24 +1059,33 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
             Ok(v) => v,
             Err(_) => continue,
         };
-        if !matches!(payload.report.status, OrderStatus::Filled | OrderStatus::PartiallyFilled) {
-            continue;
-        }
         let Some(intent) = intents.get(&payload.report.client_order_id) else {
             continue;
         };
-        let notional = payload.report.filled_qty.max(0.0) * payload.report.avg_fill_price.unwrap_or(0.0).max(0.0);
-        if notional <= 0.0 {
-            continue;
-        }
         let row = state.entry(intent.market_id.clone()).or_default();
-        row.open_notional_estimate += notional;
-        if row
-            .last_fill_ts
-            .map(|t| payload.report.updated_at > t)
-            .unwrap_or(true)
-        {
-            row.last_fill_ts = Some(payload.report.updated_at);
+        let key = order_key(&intent.outcome_id, intent.side);
+        match payload.report.status {
+            OrderStatus::New | OrderStatus::PartiallyFilled => {
+                row.open_order_keys.insert(key);
+            }
+            OrderStatus::Filled => {
+                row.open_order_keys.remove(&key);
+                let notional = payload.report.filled_qty.max(0.0)
+                    * payload.report.avg_fill_price.unwrap_or(0.0).max(0.0);
+                if notional > 0.0 {
+                    row.open_notional_estimate += notional;
+                    if row
+                        .last_fill_ts
+                        .map(|t| payload.report.updated_at > t)
+                        .unwrap_or(true)
+                    {
+                        row.last_fill_ts = Some(payload.report.updated_at);
+                    }
+                }
+            }
+            OrderStatus::Canceled | OrderStatus::Rejected => {
+                row.open_order_keys.remove(&key);
+            }
         }
     }
     state
@@ -1030,6 +1093,7 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
 
 #[derive(Debug, Deserialize)]
 struct JournalLineLite {
+    ts: DateTime<Utc>,
     event: String,
     payload: serde_json::Value,
 }
@@ -1052,6 +1116,12 @@ struct ReportPayloadLite {
     report: execution::types::ExecutionReport,
 }
 
+#[derive(Debug, Deserialize)]
+struct OrderErrorPayloadLite {
+    market_id: String,
+    error: String,
+}
+
 #[derive(Debug, Default)]
 struct PositionMarkLite {
     net_qty: f64,
@@ -1062,6 +1132,12 @@ struct PositionMarkLite {
 struct TickerRiskState {
     open_notional_estimate: f64,
     last_fill_ts: Option<DateTime<Utc>>,
+    last_invalid_parameters_ts: Option<DateTime<Utc>>,
+    open_order_keys: std::collections::HashSet<String>,
+}
+
+fn order_key(outcome_id: &str, side: execution::types::Side) -> String {
+    format!("{}:{:?}", outcome_id.to_ascii_lowercase(), side)
 }
 
 fn build_forced_test_candidate(

@@ -161,7 +161,22 @@ impl ExecutionEngine {
                 updated_at: Utc::now(),
             }
         } else {
-            let (ack, initial) = self.submit_with_retries(&order).await?;
+            let (ack, initial) = match self.submit_with_retries(&order).await {
+                Ok(v) => v,
+                Err(err) => {
+                    let _ = self.append_journal(
+                        "order_error",
+                        json!({
+                            "market_id": order.market_id,
+                            "outcome_id": order.outcome_id,
+                            "side": format!("{:?}", order.side),
+                            "time_in_force": format!("{:?}", order.time_in_force),
+                            "error": err.to_string()
+                        }),
+                    );
+                    return Err(err);
+                }
+            };
             self.append_journal("order_ack", json!({"ack": ack}))?;
             self.reconcile_post_submit(ack, initial, order.time_in_force).await?
         };

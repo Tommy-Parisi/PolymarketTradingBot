@@ -10,6 +10,7 @@ use rsa::rand_core::OsRng;
 use rsa::signature::{RandomizedSigner, SignatureEncoding};
 use rsa::RsaPrivateKey;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::Sha256;
 
 use crate::execution::types::{ExecutionError, ExecutionReport, OrderAck, OrderRequest, OrderStatus, Side, TimeInForce};
@@ -73,6 +74,86 @@ impl KalshiClient {
             (KALSHI_ACCESS_SIGNATURE.to_string(), signature),
         ])
     }
+
+    async fn apply_market_constraints(&self, body: &mut CreateOrderRequest) -> Result<(), ExecutionError> {
+        let constraints = match self.fetch_market_constraints(&body.ticker).await {
+            Ok(c) => c,
+            Err(_) => return Ok(()),
+        };
+        if let Some(mt) = constraints.market_type.as_deref() {
+            if !mt.eq_ignore_ascii_case("binary") {
+                return Err(ExecutionError::Exchange(format!(
+                    "unsupported non-binary market_type '{}' for ticker {}",
+                    mt, body.ticker
+                )));
+            }
+        }
+
+        if let Some(p) = body.yes_price {
+            body.yes_price = Some(normalize_price_cents(p, &constraints, &body.ticker)?);
+        }
+        if let Some(p) = body.no_price {
+            body.no_price = Some(normalize_price_cents(p, &constraints, &body.ticker)?);
+        }
+        Ok(())
+    }
+
+    async fn fetch_market_constraints(&self, ticker: &str) -> Result<MarketConstraints, ExecutionError> {
+        let path = format!("/trade-api/v2/markets/{ticker}");
+        let url = format!("{}{}", self.config.api_base_url, path);
+        let resp = self
+            .http
+            .get(url)
+            .send()
+            .await
+            .map_err(|e| ExecutionError::RetryableExchange(format_reqwest_error("fetch_market_constraints", &e)))?;
+        let status = resp.status();
+        let text = resp
+            .text()
+            .await
+            .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        if !status.is_success() {
+            return Err(build_http_error("GET", &path, status, &text));
+        }
+        let root: Value =
+            serde_json::from_str(&text).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        let m = root.get("market").unwrap_or(&root);
+        let tick_size_cents = m.get("tick_size").and_then(|v| v.as_u64()).map(|v| v as u32);
+        let market_type = m
+            .get("market_type")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
+        let mut min_cents: Option<u32> = None;
+        let mut max_cents: Option<u32> = None;
+        let mut step_cents: Option<u32> = None;
+        if let Some(ranges) = m.get("price_ranges").and_then(|v| v.as_array()) {
+            for r in ranges {
+                let start = r.get("start").and_then(value_to_cents);
+                let end = r.get("end").and_then(value_to_cents);
+                let step = r.get("step").and_then(value_to_cents);
+                if let Some(s) = start {
+                    min_cents = Some(min_cents.map(|v| v.min(s)).unwrap_or(s));
+                }
+                if let Some(e) = end {
+                    max_cents = Some(max_cents.map(|v| v.max(e)).unwrap_or(e));
+                }
+                if let Some(st) = step {
+                    if st > 0 {
+                        step_cents = Some(step_cents.unwrap_or(st));
+                    }
+                }
+            }
+        }
+
+        Ok(MarketConstraints {
+            tick_size_cents,
+            min_cents,
+            max_cents,
+            step_cents,
+            market_type,
+        })
+    }
 }
 
 #[async_trait]
@@ -90,7 +171,7 @@ impl ExchangeClient for KalshiClient {
         } else {
             (None, price_cents)
         };
-        let body = CreateOrderRequest {
+        let mut body = CreateOrderRequest {
             ticker: request.market_id.clone(),
             client_order_id: request.client_order_id.clone(),
             side,
@@ -102,6 +183,7 @@ impl ExchangeClient for KalshiClient {
             type_: "limit".to_string(),
             time_in_force: Some(kalshi_time_in_force(request.time_in_force).to_string()),
         };
+        self.apply_market_constraints(&mut body).await?;
         let body_text = serde_json::to_string(&body).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
         let url = format!("{}{}", self.config.api_base_url, path);
         let headers = self.auth_headers(Method::POST, path)?;
@@ -209,20 +291,30 @@ impl ExchangeClient for KalshiClient {
         let order = parsed
             .order
             .ok_or_else(|| ExecutionError::Exchange(format!("missing order payload: {text}")))?;
+        let status_mapped = map_order_status(order.status.as_deref());
+        let mut filled_qty = order
+            .filled_count_fp
+            .as_deref()
+            .and_then(parse_fp_string)
+            .or(order.filled_count)
+            .unwrap_or(0.0);
+        if matches!(status_mapped, OrderStatus::Filled) && filled_qty <= 0.0 {
+            filled_qty = order
+                .count_fp
+                .as_deref()
+                .and_then(parse_fp_string)
+                .or(order.count)
+                .unwrap_or(0.0);
+        }
         Ok(ExecutionReport {
             order_id: order
                 .order_id
                 .or(order.id)
                 .unwrap_or_else(|| order_id.to_string()),
             client_order_id: order.client_order_id.unwrap_or_default(),
-            status: map_order_status(order.status.as_deref()),
+            status: status_mapped,
             submitted_time_in_force: None,
-            filled_qty: order
-                .filled_count_fp
-                .as_deref()
-                .and_then(parse_fp_string)
-                .or(order.filled_count)
-                .unwrap_or(0.0),
+            filled_qty,
             avg_fill_price: order
                 .yes_price_dollars
                 .as_deref()
@@ -346,6 +438,50 @@ fn map_order_status(status: Option<&str>) -> OrderStatus {
     }
 }
 
+fn normalize_price_cents(
+    raw: u32,
+    constraints: &MarketConstraints,
+    ticker: &str,
+) -> Result<u32, ExecutionError> {
+    let min = constraints.min_cents.unwrap_or(1).max(1);
+    let max = constraints.max_cents.unwrap_or(99).min(99);
+    if min > max {
+        return Err(ExecutionError::Exchange(format!(
+            "invalid price bounds for {}: min={} max={}",
+            ticker, min, max
+        )));
+    }
+    let tick = constraints
+        .step_cents
+        .or(constraints.tick_size_cents)
+        .unwrap_or(1)
+        .max(1);
+    let clamped = raw.clamp(min, max);
+    let snapped = (((clamped as u64 + (tick as u64 / 2)) / tick as u64) * tick as u64) as u32;
+    Ok(snapped.clamp(min, max))
+}
+
+fn value_to_cents(v: &Value) -> Option<u32> {
+    if let Some(s) = v.as_str() {
+        return parse_maybe_dollars_to_cents(s);
+    }
+    if let Some(n) = v.as_f64() {
+        if n <= 1.0 {
+            return Some((n * 100.0).round().clamp(0.0, 100.0) as u32);
+        }
+        return Some(n.round().clamp(0.0, 100.0) as u32);
+    }
+    None
+}
+
+fn parse_maybe_dollars_to_cents(raw: &str) -> Option<u32> {
+    let n = raw.parse::<f64>().ok()?;
+    if n <= 1.0 {
+        return Some((n * 100.0).round().clamp(0.0, 100.0) as u32);
+    }
+    Some(n.round().clamp(0.0, 100.0) as u32)
+}
+
 fn kalshi_time_in_force(tif: TimeInForce) -> &'static str {
     match tif {
         TimeInForce::Ioc => "immediate_or_cancel",
@@ -421,9 +557,22 @@ struct KalshiOrderPayload {
     filled_count: Option<f64>,
     #[serde(alias = "filled_count_fp", alias = "filledCountFp")]
     filled_count_fp: Option<String>,
+    #[serde(alias = "count", alias = "contracts")]
+    count: Option<f64>,
+    #[serde(alias = "count_fp", alias = "countFp")]
+    count_fp: Option<String>,
     #[serde(alias = "yes_price", alias = "yesPrice")]
     yes_price_cents: Option<u32>,
     #[serde(alias = "yes_price_dollars", alias = "yesPriceDollars")]
     yes_price_dollars: Option<String>,
     fee: Option<f64>,
+}
+
+#[derive(Debug, Clone)]
+struct MarketConstraints {
+    tick_size_cents: Option<u32>,
+    min_cents: Option<u32>,
+    max_cents: Option<u32>,
+    step_cents: Option<u32>,
+    market_type: Option<String>,
 }
