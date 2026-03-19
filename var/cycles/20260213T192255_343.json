@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T19:22:55.439262Z",
+  "finished_at": "2026-02-13T19:22:59.343901Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 2.0,
+      "volume": 601.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.035,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 601.0,
+      "spread_cents": 2.0,
+      "confidence": 0.45,
+      "rationale": "Mid-probability of 1% seems artificially low for a narrow 1-degree temperature band in Austin during mid-February. Historical data shows Austin's average high in mid-February is ~60°F with typical range 50-70°F, making 74-75°F unusually warm but not impossible (would require ~14°F above normal). The positive enrich_bias (0.0408) suggests market underpricing. Fair estimate ~3.5% accounts for low but non-negligible probability of anomalous warmth. Low confidence due to limited volume (601) and uncertainty in market microstructure.",
+      "stale_after": "2026-02-13T19:32:59.343548Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

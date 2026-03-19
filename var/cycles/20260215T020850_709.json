@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-15T02:08:50.751084Z",
+  "finished_at": "2026-02-15T02:08:51.709094Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ18",
+      "title": "Arizona wins by over 18.5 Points?",
+      "yes_bid_cents": 14.000000000000002,
+      "yes_ask_cents": 18.0,
+      "volume": 15026.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-158",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 30.0,
+      "yes_ask_cents": 36.0,
+      "volume": 10012.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-143",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 67.0,
+      "yes_ask_cents": 73.0,
+      "volume": 3013.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ18",
+      "fair_prob_yes": 0.16,
+      "market_mid_prob_yes": 0.16,
+      "market_volume": 15026.0,
+      "spread_cents": 3.9999999999999982,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-15T02:18:51.708913Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-158",
+      "fair_prob_yes": 0.33,
+      "market_mid_prob_yes": 0.33,
+      "market_volume": 10012.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-15T02:18:51.708919Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-143",
+      "fair_prob_yes": 0.7,
+      "market_mid_prob_yes": 0.7,
+      "market_volume": 3013.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-15T02:18:51.708920Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-17T13:00:28.861889Z",
+  "finished_at": "2026-02-17T13:00:30.077003Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 1.0,
+      "volume": 1003.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 24.0,
+      "yes_ask_cents": 27.0,
+      "volume": 243.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 28.000000000000004,
+      "yes_ask_cents": 30.0,
+      "volume": 108.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.05160000000000001,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 1003.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T13:00:31.250195Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.29660000000000003,
+      "market_mid_prob_yes": 0.255,
+      "market_volume": 243.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T13:00:31.250196Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.3316,
+      "market_mid_prob_yes": 0.29,
+      "market_volume": 108.0,
+      "spread_cents": 1.9999999999999964,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T13:00:31.250199Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

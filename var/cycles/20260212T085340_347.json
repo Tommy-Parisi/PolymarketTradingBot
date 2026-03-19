@@ -1,0 +1,132 @@
+{
+  "started_at": "2026-02-12T08:53:40.448636Z",
+  "finished_at": "2026-02-12T08:53:41.347931Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 53.0,
+      "volume": 34015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "title": "Oklahoma City wins by over 14.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 21015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "title": "Portland wins by over 7.5 Points?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 51.0,
+      "volume": 20035.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 51.0,
+      "yes_ask_cents": 52.0,
+      "volume": 12000.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 57.99999999999999,
+      "yes_ask_cents": 59.0,
+      "volume": 6005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 56.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 4005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 46.0,
+      "volume": 2050.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "fair_prob_yes": 0.525,
+      "market_mid_prob_yes": 0.525,
+      "market_volume": 34015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347631Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "fair_prob_yes": 0.435,
+      "market_mid_prob_yes": 0.435,
+      "market_volume": 21015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347637Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 20035.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347638Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "fair_prob_yes": 0.515,
+      "market_mid_prob_yes": 0.515,
+      "market_volume": 12000.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347640Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "fair_prob_yes": 0.585,
+      "market_mid_prob_yes": 0.585,
+      "market_volume": 6005.0,
+      "spread_cents": 1.000000000000007,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347641Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "fair_prob_yes": 0.565,
+      "market_mid_prob_yes": 0.565,
+      "market_volume": 4005.0,
+      "spread_cents": 0.9999999999999858,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347642Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "fair_prob_yes": 0.455,
+      "market_mid_prob_yes": 0.455,
+      "market_volume": 2050.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T09:03:41.347644Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T18:32:55.491069Z",
+  "finished_at": "2026-02-13T18:33:00.915011Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "title": "Will the high temp in Chicago be <46° on Feb 14, 2026?",
+      "yes_bid_cents": 49.0,
+      "yes_ask_cents": 50.0,
+      "volume": 458.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "fair_prob_yes": 0.4542,
+      "market_mid_prob_yes": 0.495,
+      "market_volume": 458.0,
+      "spread_cents": 1.0,
+      "confidence": 0.65,
+      "rationale": "Mid-probability of 0.495 adjusted downward by enrich_bias of 0.0408, suggesting slight overpricing of YES. February 14 Chicago high temps historically average ~29°F with typical highs around 35-40°F, making sub-46° quite likely but not certain. Low volume (458) reduces confidence in market efficiency.",
+      "stale_after": "2026-02-13T18:43:00.914756Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

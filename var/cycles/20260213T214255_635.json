@@ -1,0 +1,116 @@
+{
+  "started_at": "2026-02-13T21:42:55.515908Z",
+  "finished_at": "2026-02-13T21:42:56.635535Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45923.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 42173.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 80.0,
+      "volume": 36784.0
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "title": "Will the high temp in Chicago be <46° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 2.0,
+      "volume": 881.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45923.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara underdog with mid_prob at 0.45. Moderate volume supports market efficiency. No bias detected. Confidence limited by typical college hockey volatility.",
+      "stale_after": "2026-02-13T21:43:01.950692Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 42173.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris slight favorite at 0.45. Similar volume and structure to NIA contract. Symmetric pricing suggests balanced market view. Standard college hockey uncertainty.",
+      "stale_after": "2026-02-13T21:43:01.950713Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.1,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 36784.0,
+      "spread_cents": 10.0,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 is implausibly high given typical hockey tie rates (~5-10%). Market likely mispriced or contract terms unclear. Adjust down to realistic 0.10 with moderate confidence.",
+      "stale_after": "2026-02-13T21:43:01.950718Z"
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "fair_prob_yes": 0.04,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 881.0,
+      "spread_cents": 1.0,
+      "confidence": 0.55,
+      "rationale": "Chicago Feb 14 high <46°F is rare but plausible. Mid_prob 0.015 seems slightly low; positive bias of 0.0456 suggests modest underpricing. Adjust to 0.04. Low volume and seasonal uncertainty limit confidence.",
+      "stale_after": "2026-02-13T21:43:01.950722Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.9,
+      "observed_price": 0.25,
+      "edge_pct": 0.6465000000000001,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 is implausibly high given typical hockey tie rates (~5-10%). Market likely mispriced or contract terms unclear. Adjust down to realistic 0.10 with moderate confidence."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.045,
+      "notional": 450.0
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "resolved_market_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.045,
+      "notional": 450.0,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-6f1a009f-e5d3-4a77-bc02-0aa3d08d18ce",
+        "client_order_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-6f1a009f-e5d3-4a77-bc02-0aa3d08d18ce",
+        "status": "Filled",
+        "filled_qty": 108.0,
+        "avg_fill_price": 0.26,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-13T21:42:56.635271Z"
+      }
+    }
+  ]
+}

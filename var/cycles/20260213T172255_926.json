@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T17:22:55.439072Z",
+  "finished_at": "2026-02-13T17:22:59.926001Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "title": "Will the **high temp in Denver** be <54° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 12.0,
+      "volume": 1050.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "fair_prob_yes": 0.072,
+      "market_mid_prob_yes": 0.065,
+      "market_volume": 1050.0,
+      "spread_cents": 11.0,
+      "confidence": 0.65,
+      "rationale": "Mid-probability of 6.5% seems underpriced for a high temp <54°F in Denver on Feb 14. Historical data shows Denver's Feb average high is ~47°F, making sub-54° outcomes reasonably common. Positive enrich_bias (3.52%) suggests market underestimation. Adjusted upward to ~7.2%, but confidence moderate due to weather volatility and specific date uncertainty.",
+      "stale_after": "2026-02-13T17:32:59.925639Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

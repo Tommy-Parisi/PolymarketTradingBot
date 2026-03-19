@@ -1,0 +1,160 @@
+{
+  "started_at": "2026-02-11T23:09:47.176059Z",
+  "finished_at": "2026-02-11T23:09:48.348569Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "title": "Minnesota wins by over 5.5 Points?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 6044.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS8",
+      "title": "San Antonio wins by over 8.5 Points?",
+      "yes_bid_cents": 44.0,
+      "yes_ask_cents": 45.0,
+      "volume": 4006.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE20",
+      "title": "Cleveland wins by over 20.5 Points?",
+      "yes_bid_cents": 38.0,
+      "yes_ask_cents": 39.0,
+      "volume": 3094.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN8",
+      "title": "Minnesota wins by over 8.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 2092.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE14",
+      "title": "Cleveland wins by over 14.5 Points?",
+      "yes_bid_cents": 59.0,
+      "yes_ask_cents": 60.0,
+      "volume": 1117.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI1",
+      "title": "Philadelphia wins by over 1.5 Points?",
+      "yes_bid_cents": 53.0,
+      "yes_ask_cents": 54.0,
+      "volume": 1087.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-WAS11",
+      "title": "Washington wins by over 11.5 Points?",
+      "yes_bid_cents": 5.0,
+      "yes_ask_cents": 6.0,
+      "volume": 1032.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE19",
+      "title": "Cleveland wins by over 19.5 Points?",
+      "yes_bid_cents": 42.0,
+      "yes_ask_cents": 43.0,
+      "volume": 1011.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "fair_prob_yes": 0.56,
+      "market_mid_prob_yes": 0.56,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348218Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS8",
+      "fair_prob_yes": 0.445,
+      "market_mid_prob_yes": 0.445,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348231Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE20",
+      "fair_prob_yes": 0.385,
+      "market_mid_prob_yes": 0.385,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348233Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN8",
+      "fair_prob_yes": 0.435,
+      "market_mid_prob_yes": 0.435,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348234Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE14",
+      "fair_prob_yes": 0.595,
+      "market_mid_prob_yes": 0.595,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348235Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI1",
+      "fair_prob_yes": 0.535,
+      "market_mid_prob_yes": 0.535,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348236Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-WAS11",
+      "fair_prob_yes": 0.055,
+      "market_mid_prob_yes": 0.055,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348237Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE19",
+      "fair_prob_yes": 0.425,
+      "market_mid_prob_yes": 0.425,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-11T23:19:48.348239Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.5900000000000001,
+      "observed_price": 0.56,
+      "edge_pct": 0.030000000000000027,
+      "confidence": 0.7,
+      "rationale": "forced deterministic test candidate"
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "resolved_market_id": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994,
+      "result": "execution_failed",
+      "error": "signal edge 0.0300 below minimum 0.0800",
+      "report": null
+    }
+  ]
+}

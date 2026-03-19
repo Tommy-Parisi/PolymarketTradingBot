@@ -88,8 +88,32 @@ impl MarketEnricher {
         let vertical = detect_vertical(market);
         let (weather_signal, sports_injury_signal, crypto_sentiment_signal) = match vertical {
             MarketVertical::Weather => (self.fetch_noaa_weather_signal().await?, None, None),
-            MarketVertical::Sports => (None, self.fetch_sports_injury_signal().await?, None),
-            MarketVertical::Crypto => (None, None, self.fetch_crypto_sentiment_signal().await?),
+            MarketVertical::Sports => {
+                let signal = match self.fetch_sports_injury_signal().await {
+                    Ok(v) => v,
+                    Err(err) => {
+                        eprintln!(
+                            "enrichment warning: sports injury feed failed for {}: {}",
+                            market.ticker, err
+                        );
+                        None
+                    }
+                };
+                (None, signal, None)
+            }
+            MarketVertical::Crypto => {
+                let signal = match self.fetch_crypto_sentiment_signal().await {
+                    Ok(v) => v,
+                    Err(err) => {
+                        eprintln!(
+                            "enrichment warning: crypto sentiment feed failed for {}: {}",
+                            market.ticker, err
+                        );
+                        None
+                    }
+                };
+                (None, None, signal)
+            }
             MarketVertical::Other => (None, None, None),
         };
 
@@ -318,6 +342,10 @@ mod tests {
         let weather = ScannedMarket {
             ticker: "KXWEATHER-NYC".to_string(),
             title: "NYC high temp above 90F".to_string(),
+            subtitle: None,
+            market_type: None,
+            event_ticker: None,
+            series_ticker: None,
             yes_bid_cents: None,
             yes_ask_cents: None,
             volume: 0.0,
@@ -326,6 +354,10 @@ mod tests {
         let crypto = ScannedMarket {
             ticker: "KXBTC-TEST".to_string(),
             title: "Bitcoin above 120k".to_string(),
+            subtitle: None,
+            market_type: None,
+            event_ticker: None,
+            series_ticker: None,
             yes_bid_cents: None,
             yes_ask_cents: None,
             volume: 0.0,

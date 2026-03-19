@@ -1,0 +1,85 @@
+{
+  "started_at": "2026-02-18T01:00:28.997158Z",
+  "finished_at": "2026-02-18T01:00:30.528076Z",
+  "status": "no_allocations",
+  "message": "allocator produced no trades after risk guard",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "title": "Will the **high temp in Houston** be 77-78° on Feb 17, 2026?",
+      "yes_bid_cents": 20.0,
+      "yes_ask_cents": 39.0,
+      "volume": 1131.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 2.0,
+      "yes_ask_cents": 3.0,
+      "volume": 884.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 97.0,
+      "yes_ask_cents": 98.0,
+      "volume": 244.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "fair_prob_yes": 0.34459999999999996,
+      "market_mid_prob_yes": 0.295,
+      "market_volume": 1131.0,
+      "spread_cents": 19.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T01:10:30.515433Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.0746,
+      "market_mid_prob_yes": 0.025,
+      "market_volume": 884.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T01:10:30.515437Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.99,
+      "market_mid_prob_yes": 0.975,
+      "market_volume": 244.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T01:00:30.578918Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.0746,
+      "observed_price": 0.025,
+      "edge_pct": 0.046099999999999995,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.34459999999999996,
+      "observed_price": 0.295,
+      "edge_pct": 0.046099999999999974,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    }
+  ],
+  "allocations": [],
+  "executions": []
+}

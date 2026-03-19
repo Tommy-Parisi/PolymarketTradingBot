@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T22:13:40.633800Z",
+  "finished_at": "2026-02-12T22:13:41.765778Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "title": "Will Jakub Kaczmarek win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 31134.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "title": "Will Lukasz Bernacki win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 51.0,
+      "volume": 28685.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "title": "Will Milosz Piecowski win the Dawid Kotwica vs Milosz Piecowski Table Tennis Match Winner?",
+      "yes_bid_cents": 56.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 28405.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 31134.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:23:41.765655Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 28685.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:23:41.765658Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "fair_prob_yes": 0.565,
+      "market_mid_prob_yes": 0.565,
+      "market_volume": 28405.0,
+      "spread_cents": 0.9999999999999858,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:23:41.765658Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

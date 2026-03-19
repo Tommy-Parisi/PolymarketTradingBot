@@ -15,6 +15,10 @@ use crate::execution::types::{
     new_client_order_id, EngineConfig, ExecutionError, ExecutionReport, OrderAck, OrderRequest, OrderStatus,
     OrderType, Side, TimeInForce, TradeSignal,
 };
+use crate::research::market_recorder::ResearchCaptureConfig;
+use crate::research::order_recorder::{
+    record_order_ack, record_order_error, record_order_intent, record_order_report,
+};
 
 pub struct ExecutionEngine {
     client: Arc<dyn ExchangeClient>,
@@ -147,6 +151,9 @@ impl ExecutionEngine {
                 "signal_observed_price": signal.observed_price
             }),
         )?;
+        if let Err(err) = record_order_intent(&ResearchCaptureConfig::from_env(), &order, signal) {
+            eprintln!("research capture warning (order_intent): {err}");
+        }
         self.save_state(&state)?;
 
         let mut report = if self.mode == ExecutionMode::Paper {
@@ -164,6 +171,14 @@ impl ExecutionEngine {
             let (ack, initial) = match self.submit_with_retries(&order).await {
                 Ok(v) => v,
                 Err(err) => {
+                    if let Err(rec_err) = record_order_error(
+                        &ResearchCaptureConfig::from_env(),
+                        &order,
+                        "submit_error",
+                        &err.to_string(),
+                    ) {
+                        eprintln!("research capture warning (submit_error): {rec_err}");
+                    }
                     let _ = self.append_journal(
                         "order_error",
                         json!({
@@ -178,7 +193,10 @@ impl ExecutionEngine {
                 }
             };
             self.append_journal("order_ack", json!({"ack": ack}))?;
-            self.reconcile_post_submit(ack, initial, order.time_in_force).await?
+            if let Err(err) = record_order_ack(&ResearchCaptureConfig::from_env(), &order, &ack) {
+                eprintln!("research capture warning (order_ack): {err}");
+            }
+            self.reconcile_post_submit(&order, ack, initial, order.time_in_force).await?
         };
 
         if report.submitted_time_in_force.is_none() {
@@ -186,6 +204,14 @@ impl ExecutionEngine {
         }
         self.finalize_state_from_report(&mut state, &order, &report);
         self.append_journal("order_report", json!({"report": &report}))?;
+        if let Err(err) = record_order_report(
+            &ResearchCaptureConfig::from_env(),
+            &order,
+            &report,
+            "terminal",
+        ) {
+            eprintln!("research capture warning (order_terminal): {err}");
+        }
         self.save_state(&state)?;
         Ok(report)
     }
@@ -414,6 +440,7 @@ impl ExecutionEngine {
 
     async fn reconcile_post_submit(
         &self,
+        order: &OrderRequest,
         ack: OrderAck,
         mut report: ExecutionReport,
         time_in_force: TimeInForce,
@@ -425,6 +452,14 @@ impl ExecutionEngine {
         for _ in 0..self.config.reconcile_poll_attempts {
             sleep(Duration::from_millis(self.config.reconcile_poll_interval_ms)).await;
             report = self.client.get_order(&ack.order_id).await?;
+            if let Err(err) = record_order_report(
+                &ResearchCaptureConfig::from_env(),
+                order,
+                &report,
+                "reconcile",
+            ) {
+                eprintln!("research capture warning (reconcile): {err}");
+            }
             if matches!(
                 report.status,
                 OrderStatus::Filled | OrderStatus::Canceled | OrderStatus::Rejected
@@ -434,6 +469,14 @@ impl ExecutionEngine {
         }
 
         if time_in_force == TimeInForce::Ioc {
+            if let Err(err) = record_order_error(
+                &ResearchCaptureConfig::from_env(),
+                order,
+                "cancel_requested",
+                "ioc reconcile requested cancel",
+            ) {
+                eprintln!("research capture warning (cancel_request): {err}");
+            }
             let _ = self.client.cancel_order(&ack.order_id).await;
             let final_report = self.client.get_order(&ack.order_id).await.unwrap_or(report);
             return Ok(final_report);

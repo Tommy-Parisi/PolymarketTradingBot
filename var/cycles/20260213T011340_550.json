@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T01:13:40.661087Z",
+  "finished_at": "2026-02-13T01:13:41.550827Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121855MMIJZO-MMI",
+      "title": "Will Mateusz Misiak win the Mateusz Misiak vs Jakub Zochniak Table Tennis Match Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 71.0,
+      "volume": 99354.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121855MMIJZO-MMI",
+      "fair_prob_yes": 0.705,
+      "market_mid_prob_yes": 0.705,
+      "market_volume": 99354.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T01:23:41.550659Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

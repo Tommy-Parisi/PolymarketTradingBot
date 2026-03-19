@@ -786,6 +786,10 @@ mod tests {
             market: ScannedMarket {
                 ticker: "KXTEST".to_string(),
                 title: "Bitcoin above 120k".to_string(),
+                subtitle: None,
+                market_type: None,
+                event_ticker: None,
+                series_ticker: None,
                 yes_bid_cents: Some(mid_bid),
                 yes_ask_cents: Some(mid_ask),
                 volume: 10_000.0,

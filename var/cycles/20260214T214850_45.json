@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-14T21:48:50.688469Z",
+  "finished_at": "2026-02-14T21:48:52.045229Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXBTCD-26FEB1417-T70249.99",
+      "title": "Bitcoin price  on Feb 14, 2026?",
+      "yes_bid_cents": 10.0,
+      "yes_ask_cents": 11.0,
+      "volume": 3251.0
+    },
+    {
+      "ticker": "KXBTCD-26FEB1417-T69749.99",
+      "title": "Bitcoin price  on Feb 14, 2026?",
+      "yes_bid_cents": 90.0,
+      "yes_ask_cents": 92.0,
+      "volume": 1702.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "title": "Will the **high temp in Denver** be <54° on Feb 14, 2026?",
+      "yes_bid_cents": 3.0,
+      "yes_ask_cents": 4.0,
+      "volume": 1189.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXBTCD-26FEB1417-T69749.99",
+      "fair_prob_yes": 0.91,
+      "market_mid_prob_yes": 0.91,
+      "market_volume": 1702.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-14T21:48:52.146042Z"
+    },
+    {
+      "ticker": "KXBTCD-26FEB1417-T70249.99",
+      "fair_prob_yes": 0.105,
+      "market_mid_prob_yes": 0.105,
+      "market_volume": 3251.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-14T21:58:52.044989Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "fair_prob_yes": 0.0774,
+      "market_mid_prob_yes": 0.035,
+      "market_volume": 1189.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-14T21:58:52.044997Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

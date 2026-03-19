@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-18T05:50:28.880347Z",
+  "finished_at": "2026-02-18T05:50:30.858140Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXXRPD-26FEB1801-T1.6399",
+      "title": "Ripple price at Feb 18, 2026 at 1am EST?",
+      "yes_bid_cents": 81.0,
+      "yes_ask_cents": 82.0,
+      "volume": 100.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXXRPD-26FEB1801-T1.6399",
+      "fair_prob_yes": 0.815,
+      "market_mid_prob_yes": 0.815,
+      "market_volume": 100.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T06:00:30.858034Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

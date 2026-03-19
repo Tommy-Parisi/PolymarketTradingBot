@@ -1,0 +1,116 @@
+{
+  "started_at": "2026-02-13T20:12:55.425417Z",
+  "finished_at": "2026-02-13T20:13:00.221281Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45899.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 42149.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 80.0,
+      "volume": 36760.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 2.0,
+      "volume": 651.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45899.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara moneyline with mid_prob at 0.45. Moderate volume supports estimate. No significant bias detected.",
+      "stale_after": "2026-02-13T20:23:00.215145Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 42149.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris moneyline with mid_prob at 0.45. Similar volume and structure to NIA contract. Consistent pricing.",
+      "stale_after": "2026-02-13T20:23:00.215167Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.1,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 36760.0,
+      "spread_cents": 10.0,
+      "confidence": 0.7,
+      "rationale": "Tie outcome priced at 0.75 mid_prob appears inflated. Hockey ties rare in regulation. Fair value ~0.10 given RMU+NIA sum to ~0.90.",
+      "stale_after": "2026-02-13T20:23:00.215172Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.02,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 651.0,
+      "spread_cents": 2.0,
+      "confidence": 0.6,
+      "rationale": "Austin Feb 14 high of 74-75°F extremely unlikely (mid_prob 0.01). Positive bias of 0.044 suggests slight underpricing, but narrow temp band remains improbable.",
+      "stale_after": "2026-02-13T20:23:00.215176Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.9,
+      "observed_price": 0.25,
+      "edge_pct": 0.6465000000000001,
+      "confidence": 0.7,
+      "rationale": "Tie outcome priced at 0.75 mid_prob appears inflated. Hockey ties rare in regulation. Fair value ~0.10 given RMU+NIA sum to ~0.90."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "resolved_market_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-a767d3c1-49b0-428e-a399-4627dc8481a2",
+        "client_order_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-a767d3c1-49b0-428e-a399-4627dc8481a2",
+        "status": "Filled",
+        "filled_qty": 100.79999999999998,
+        "avg_fill_price": 0.26,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-13T20:13:00.220430Z"
+      }
+    }
+  ]
+}

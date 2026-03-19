@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-14T22:58:50.768400Z",
+  "finished_at": "2026-02-14T22:58:51.973711Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "title": "Will the **high temp in Denver** be <54° on Feb 14, 2026?",
+      "yes_bid_cents": 3.0,
+      "yes_ask_cents": 4.0,
+      "volume": 1189.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHDEN-26FEB14-T54",
+      "fair_prob_yes": 0.0766,
+      "market_mid_prob_yes": 0.035,
+      "market_volume": 1189.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-14T23:08:51.973564Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

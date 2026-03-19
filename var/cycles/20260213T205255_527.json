@@ -1,0 +1,116 @@
+{
+  "started_at": "2026-02-13T20:52:55.431344Z",
+  "finished_at": "2026-02-13T20:53:00.527365Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45923.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 42173.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 80.0,
+      "volume": 36784.0
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "title": "Will the high temp in Chicago be <46° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 2.0,
+      "volume": 881.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45923.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara underdog with mid_prob at 0.45. Moderate volume supports market efficiency. No bias detected. Confidence limited by typical college hockey volatility.",
+      "stale_after": "2026-02-13T21:03:00.520919Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 42173.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris slight favorite at 0.45. Similar volume and structure to Niagara contract. Consistent pricing across related markets suggests fair valuation.",
+      "stale_after": "2026-02-13T21:03:00.520940Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.1,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 36784.0,
+      "spread_cents": 10.0,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 appears inflated relative to typical hockey tie probability (~5-10%). Mid_prob likely reflects mispricing. Adjust down to ~0.10 for fair value.",
+      "stale_after": "2026-02-13T21:03:00.520945Z"
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "fair_prob_yes": 0.04,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 881.0,
+      "spread_cents": 1.0,
+      "confidence": 0.7,
+      "rationale": "Extreme cold event (high <46°F in Chicago mid-Feb) priced at 0.015. Positive bias of 0.0456 suggests slight underpricing. Adjust to ~0.04. Low volume increases uncertainty.",
+      "stale_after": "2026-02-13T21:03:00.520949Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.9,
+      "observed_price": 0.25,
+      "edge_pct": 0.6465000000000001,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 appears inflated relative to typical hockey tie probability (~5-10%). Mid_prob likely reflects mispricing. Adjust down to ~0.10 for fair value."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.045,
+      "notional": 450.0
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "resolved_market_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.045,
+      "notional": 450.0,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-1de4f8d7-95ed-4692-8fb8-5d0a5ffb80bc",
+        "client_order_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-1de4f8d7-95ed-4692-8fb8-5d0a5ffb80bc",
+        "status": "Filled",
+        "filled_qty": 108.0,
+        "avg_fill_price": 0.26,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-13T20:53:00.526614Z"
+      }
+    }
+  ]
+}

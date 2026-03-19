@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T23:13:40.617053Z",
+  "finished_at": "2026-02-12T23:13:46.074810Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "title": "Will Jakub Kaczmarek win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 64.0,
+      "volume": 31688.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "title": "Will Lukasz Bernacki win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 52.0,
+      "volume": 29152.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "title": "Will Milosz Piecowski win the Dawid Kotwica vs Milosz Piecowski Table Tennis Match Winner?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.00000000000001,
+      "volume": 28489.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "fair_prob_yes": 0.549,
+      "market_mid_prob_yes": 0.62,
+      "market_volume": 31688.0,
+      "spread_cents": 4.0,
+      "confidence": 0.65,
+      "rationale": "Mid-price of 0.62 appears inflated relative to complementary market (LBE at 0.51). Probabilities should sum to ~1.0; current sum is 1.13, indicating overpricing of Kaczmarek. Adjusted down to 0.549 accounting for market inefficiency and typical table tennis match uncertainty.",
+      "stale_after": "2026-02-12T23:23:46.074654Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "fair_prob_yes": 0.451,
+      "market_mid_prob_yes": 0.51,
+      "market_volume": 29152.0,
+      "spread_cents": 2.0,
+      "confidence": 0.65,
+      "rationale": "Complementary to JKA market. Mid-price of 0.51 is slightly elevated. Fair probability should be approximately 1 - 0.549 = 0.451. Moderate confidence due to limited volume and no additional match context.",
+      "stale_after": "2026-02-12T23:23:46.074659Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "fair_prob_yes": 0.555,
+      "market_mid_prob_yes": 0.555,
+      "market_volume": 28489.0,
+      "spread_cents": 1.0,
+      "confidence": 0.6,
+      "rationale": "Mid-price of 0.555 is reasonable and internally consistent (complementary market would be ~0.445). Slight adjustment to 0.555 reflects mid-market estimate. Lower confidence due to limited volume (28k) and lack of player history/context.",
+      "stale_after": "2026-02-12T23:23:46.074660Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

@@ -1,0 +1,217 @@
+{
+  "started_at": "2026-02-12T08:03:40.394915Z",
+  "finished_at": "2026-02-12T08:03:41.314800Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 53.0,
+      "volume": 34015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "title": "Oklahoma City wins by over 14.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 21015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "title": "Portland wins by over 7.5 Points?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 51.0,
+      "volume": 20035.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 51.0,
+      "yes_ask_cents": 52.0,
+      "volume": 12000.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL7",
+      "title": "Los Angeles L wins by over 7.5 Points?",
+      "yes_bid_cents": 48.0,
+      "yes_ask_cents": 49.0,
+      "volume": 11006.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12DALLAL-232",
+      "title": "Dallas at Los Angeles L: Total Points",
+      "yes_bid_cents": 49.0,
+      "yes_ask_cents": 50.0,
+      "volume": 10011.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 57.99999999999999,
+      "yes_ask_cents": 59.0,
+      "volume": 6005.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL4",
+      "title": "Los Angeles L wins by over 4.5 Points?",
+      "yes_bid_cents": 59.0,
+      "yes_ask_cents": 60.0,
+      "volume": 5011.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL22",
+      "title": "Los Angeles L wins by over 22.5 Points?",
+      "yes_bid_cents": 8.0,
+      "yes_ask_cents": 9.0,
+      "volume": 5010.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 56.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 4005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 46.0,
+      "volume": 2050.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12DALLAL-235",
+      "title": "Dallas at Los Angeles L: Total Points",
+      "yes_bid_cents": 42.0,
+      "yes_ask_cents": 43.0,
+      "volume": 2016.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "fair_prob_yes": 0.435,
+      "market_mid_prob_yes": 0.435,
+      "market_volume": 21015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:03:41.331722Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "fair_prob_yes": 0.515,
+      "market_mid_prob_yes": 0.515,
+      "market_volume": 12000.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:03:41.331723Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL22",
+      "fair_prob_yes": 0.085,
+      "market_mid_prob_yes": 0.085,
+      "market_volume": 5010.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:03:41.331725Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "fair_prob_yes": 0.455,
+      "market_mid_prob_yes": 0.455,
+      "market_volume": 2050.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:03:41.331727Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12DALLAL-235",
+      "fair_prob_yes": 0.425,
+      "market_mid_prob_yes": 0.425,
+      "market_volume": 2016.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:03:41.331728Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "fair_prob_yes": 0.525,
+      "market_mid_prob_yes": 0.525,
+      "market_volume": 34015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314552Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 20035.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314557Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL7",
+      "fair_prob_yes": 0.485,
+      "market_mid_prob_yes": 0.485,
+      "market_volume": 11006.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314559Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12DALLAL-232",
+      "fair_prob_yes": 0.495,
+      "market_mid_prob_yes": 0.495,
+      "market_volume": 10011.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314560Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "fair_prob_yes": 0.585,
+      "market_mid_prob_yes": 0.585,
+      "market_volume": 6005.0,
+      "spread_cents": 1.000000000000007,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314561Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12DALLAL-LAL4",
+      "fair_prob_yes": 0.595,
+      "market_mid_prob_yes": 0.595,
+      "market_volume": 5011.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314562Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "fair_prob_yes": 0.565,
+      "market_mid_prob_yes": 0.565,
+      "market_volume": 4005.0,
+      "spread_cents": 0.9999999999999858,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T08:13:41.314563Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

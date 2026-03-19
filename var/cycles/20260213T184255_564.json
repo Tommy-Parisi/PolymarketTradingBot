@@ -1,0 +1,47 @@
+{
+  "started_at": "2026-02-13T18:42:55.468362Z",
+  "finished_at": "2026-02-13T18:43:01.564337Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "title": "Will the high temp in Chicago be <46° on Feb 14, 2026?",
+      "yes_bid_cents": 75.0,
+      "yes_ask_cents": 77.0,
+      "volume": 609.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 2.0,
+      "volume": 465.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "fair_prob_yes": 0.72,
+      "market_mid_prob_yes": 0.76,
+      "market_volume": 609.0,
+      "spread_cents": 2.0,
+      "confidence": 0.65,
+      "rationale": "Mid-prob of 0.76 adjusted downward by enrich_bias (0.0408). Chicago in mid-February typically sees highs around 30-35°F; <46° is quite likely but not certain. Moderate volume supports liquidity. Confidence limited by weather unpredictability and small sample size.",
+      "stale_after": "2026-02-13T18:53:01.564217Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.03,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 465.0,
+      "spread_cents": 1.0,
+      "confidence": 0.72,
+      "rationale": "Mid-prob of 0.015 adjusted slightly upward by enrich_bias. Austin in mid-February typically sees highs 60-70°F; a narrow band of 74-75° is quite specific and unlikely. Very low probability is justified by climatology. Higher confidence due to clear seasonal baseline and tight temperature range.",
+      "stale_after": "2026-02-13T18:53:01.564222Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

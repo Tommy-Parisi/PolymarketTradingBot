@@ -1,0 +1,112 @@
+{
+  "started_at": "2026-02-17T23:20:28.959072Z",
+  "finished_at": "2026-02-17T23:20:30.536570Z",
+  "status": "no_allocations",
+  "message": "allocator produced no trades after risk guard",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 2.0,
+      "yes_ask_cents": 10.0,
+      "volume": 1208.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "title": "Will the **high temp in Austin** be >87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 3.0,
+      "volume": 660.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 2.0,
+      "yes_ask_cents": 3.0,
+      "volume": 649.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 97.0,
+      "yes_ask_cents": 98.0,
+      "volume": 201.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.1144,
+      "market_mid_prob_yes": 0.06,
+      "market_volume": 1208.0,
+      "spread_cents": 8.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T23:30:30.524669Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "fair_prob_yes": 0.0694,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 660.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T23:30:30.524674Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.0794,
+      "market_mid_prob_yes": 0.025,
+      "market_volume": 649.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T23:30:30.524676Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.99,
+      "market_mid_prob_yes": 0.975,
+      "market_volume": 201.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T23:30:30.524677Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.1144,
+      "observed_price": 0.06,
+      "edge_pct": 0.0509,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.0694,
+      "observed_price": 0.015,
+      "edge_pct": 0.0509,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.0794,
+      "observed_price": 0.025,
+      "edge_pct": 0.050899999999999994,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    }
+  ],
+  "allocations": [],
+  "executions": []
+}

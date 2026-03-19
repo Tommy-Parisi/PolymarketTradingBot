@@ -1,0 +1,11 @@
+{
+  "started_at": "2026-02-12T19:03:40.516648Z",
+  "finished_at": "2026-02-12T19:04:10.543923Z",
+  "status": "scan_failed",
+  "message": "retryable exchange error: error sending request for url (https://demo-api.kalshi.co/trade-api/v2/markets?status=open&limit=1000)",
+  "selected_markets": [],
+  "valuations": [],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

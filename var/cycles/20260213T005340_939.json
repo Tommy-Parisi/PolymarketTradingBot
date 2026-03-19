@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T00:53:40.607813Z",
+  "finished_at": "2026-02-13T00:53:43.939466Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S20263BAC330E0B3-BE956A7FF8D",
+      "title": "yes Middle Tennessee,yes UMBC,yes Binghamton,no Over 149.5 points scored,yes Over 122.5 points scored",
+      "yes_bid_cents": 32.0,
+      "yes_ask_cents": 40.0,
+      "volume": 678429.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S20263BAC330E0B3-BE956A7FF8D",
+      "fair_prob_yes": 0.42,
+      "market_mid_prob_yes": 0.36,
+      "market_volume": 678429.0,
+      "spread_cents": 8.0,
+      "confidence": 0.55,
+      "rationale": "Market involves multiple conditional outcomes (Middle Tennessee, UMBC, Binghamton wins + scoring thresholds). Mid-probability of 0.36 suggests modest likelihood, but the compound nature of multi-game betting and scoring conditions creates uncertainty. Fair probability adjusted slightly upward from mid_prob due to typical scoring patterns in college basketball, but confidence remains moderate given complexity and limited volume context.",
+      "stale_after": "2026-02-13T01:03:43.939186Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

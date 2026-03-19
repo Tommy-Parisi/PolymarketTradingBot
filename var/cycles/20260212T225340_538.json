@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T22:53:40.618818Z",
+  "finished_at": "2026-02-12T22:53:41.538054Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "title": "Will Jakub Kaczmarek win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 62.0,
+      "yes_ask_cents": 63.0,
+      "volume": 31650.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "title": "Will Lukasz Bernacki win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 53.0,
+      "volume": 29115.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "title": "Will Milosz Piecowski win the Dawid Kotwica vs Milosz Piecowski Table Tennis Match Winner?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.00000000000001,
+      "volume": 28489.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "fair_prob_yes": 0.625,
+      "market_mid_prob_yes": 0.625,
+      "market_volume": 31650.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T23:03:41.537823Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "fair_prob_yes": 0.525,
+      "market_mid_prob_yes": 0.525,
+      "market_volume": 29115.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T23:03:41.537835Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "fair_prob_yes": 0.555,
+      "market_mid_prob_yes": 0.555,
+      "market_volume": 28489.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T23:03:41.537836Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

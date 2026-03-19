@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-12T21:03:40.614133Z",
+  "finished_at": "2026-02-12T21:03:42.543676Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "title": "Will Filip Kujawa win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 50.0,
+      "volume": 26072.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "fair_prob_yes": 0.475,
+      "market_mid_prob_yes": 0.475,
+      "market_volume": 26072.0,
+      "spread_cents": 5.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T21:13:42.543609Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

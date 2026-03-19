@@ -1,0 +1,132 @@
+{
+  "started_at": "2026-02-12T09:03:40.452775Z",
+  "finished_at": "2026-02-12T09:03:46.468426Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 53.0,
+      "volume": 34015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "title": "Oklahoma City wins by over 14.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 21015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "title": "Portland wins by over 7.5 Points?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 51.0,
+      "volume": 20035.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 51.0,
+      "yes_ask_cents": 52.0,
+      "volume": 12000.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 57.99999999999999,
+      "yes_ask_cents": 59.0,
+      "volume": 6005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 56.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 4005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 46.0,
+      "volume": 2050.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "fair_prob_yes": 0.525,
+      "market_mid_prob_yes": 0.525,
+      "market_volume": 34015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.85,
+      "rationale": "High volume (34015) provides strong signal. Mid-probability at 0.525 is near equilibrium for total points market. No bias detected.",
+      "stale_after": "2026-02-12T09:13:46.468037Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "fair_prob_yes": 0.435,
+      "market_mid_prob_yes": 0.435,
+      "market_volume": 21015.0,
+      "spread_cents": 1.0,
+      "confidence": 0.8,
+      "rationale": "Solid volume (21015) supports reliability. OKC winning by 14.5+ is a large spread; 0.435 reflects appropriate skepticism of blowout scenario.",
+      "stale_after": "2026-02-12T09:13:46.468046Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB12PORUTA-POR7",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 20035.0,
+      "spread_cents": 1.0,
+      "confidence": 0.78,
+      "rationale": "Good volume (20035). Portland +7.5 spread is near even odds (0.505), suggesting competitive matchup with slight underdog lean.",
+      "stale_after": "2026-02-12T09:13:46.468048Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "fair_prob_yes": 0.515,
+      "market_mid_prob_yes": 0.515,
+      "market_volume": 12000.0,
+      "spread_cents": 1.0,
+      "confidence": 0.75,
+      "rationale": "Moderate volume (12000). Total of 237 points is slightly favored; consistent with typical NBA scoring patterns for this matchup.",
+      "stale_after": "2026-02-12T09:13:46.468050Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-212",
+      "fair_prob_yes": 0.585,
+      "market_mid_prob_yes": 0.585,
+      "market_volume": 6005.0,
+      "spread_cents": 1.000000000000007,
+      "confidence": 0.7,
+      "rationale": "Lower volume (6005) reduces confidence. Higher probability (0.585) for under-212 suggests market expects lower-scoring game than 215 line.",
+      "stale_after": "2026-02-12T09:13:46.468051Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-234",
+      "fair_prob_yes": 0.565,
+      "market_mid_prob_yes": 0.565,
+      "market_volume": 4005.0,
+      "spread_cents": 0.9999999999999858,
+      "confidence": 0.65,
+      "rationale": "Low volume (4005) limits signal strength. 0.565 for under-234 aligns with lower-scoring expectation vs 237 line.",
+      "stale_after": "2026-02-12T09:13:46.468054Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-218",
+      "fair_prob_yes": 0.455,
+      "market_mid_prob_yes": 0.455,
+      "market_volume": 2050.0,
+      "spread_cents": 1.0,
+      "confidence": 0.6,
+      "rationale": "Very low volume (2050) creates high uncertainty. 0.455 for over-218 suggests slight lean toward higher scoring, but thin liquidity limits reliability.",
+      "stale_after": "2026-02-12T09:13:46.468055Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

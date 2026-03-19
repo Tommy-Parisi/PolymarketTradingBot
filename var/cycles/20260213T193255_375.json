@@ -1,0 +1,116 @@
+{
+  "started_at": "2026-02-13T19:32:55.435976Z",
+  "finished_at": "2026-02-13T19:33:00.375566Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45841.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 45.0,
+      "volume": 42091.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 71.0,
+      "yes_ask_cents": 80.0,
+      "volume": 34661.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 2.0,
+      "volume": 651.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45841.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara favored slightly; mid_prob aligns with market consensus. Moderate volume supports reliability. Hockey outcomes have inherent uncertainty.",
+      "stale_after": "2026-02-13T19:43:00.369379Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.42,
+      "market_mid_prob_yes": 0.425,
+      "market_volume": 42091.0,
+      "spread_cents": 5.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris underdog at 42.5%; consistent with paired Niagara contract. Adequate volume. Similar uncertainty as peer contract.",
+      "stale_after": "2026-02-13T19:43:00.369392Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.08,
+      "market_mid_prob_yes": 0.755,
+      "market_volume": 34661.0,
+      "spread_cents": 9.0,
+      "confidence": 0.7,
+      "rationale": "Mid_prob of 75.5% appears inverted/mislabeled for tie outcome. Ties in hockey are rare (~5-10%). Adjusted down significantly; lower volume reduces confidence slightly.",
+      "stale_after": "2026-02-13T19:43:00.369396Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.03,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 651.0,
+      "spread_cents": 2.0,
+      "confidence": 0.55,
+      "rationale": "Extremely narrow temperature band (74-75°F) in Austin mid-February. Mid_prob of 1% is reasonable but low volume and positive bias introduce uncertainty. Weather forecasting at this precision is difficult.",
+      "stale_after": "2026-02-13T19:43:00.369400Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.92,
+      "observed_price": 0.245,
+      "edge_pct": 0.6715000000000001,
+      "confidence": 0.7,
+      "rationale": "Mid_prob of 75.5% appears inverted/mislabeled for tie outcome. Ties in hockey are rare (~5-10%). Adjusted down significantly; lower volume reduces confidence slightly."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "resolved_market_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.041999999999999996,
+      "notional": 419.99999999999994,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-e153b156-d09b-40c6-92d4-28335d5e545e",
+        "client_order_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-e153b156-d09b-40c6-92d4-28335d5e545e",
+        "status": "Filled",
+        "filled_qty": 102.85714285714285,
+        "avg_fill_price": 0.255,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-13T19:33:00.374832Z"
+      }
+    }
+  ]
+}

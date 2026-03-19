@@ -1,0 +1,161 @@
+{
+  "started_at": "2026-02-17T15:10:28.867093Z",
+  "finished_at": "2026-02-17T15:10:36.473463Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "title": "Will the **high temp in Houston** be 77-78° on Feb 17, 2026?",
+      "yes_bid_cents": 46.0,
+      "yes_ask_cents": 47.0,
+      "volume": 1088.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 1.0,
+      "volume": 1017.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 24.0,
+      "yes_ask_cents": 27.0,
+      "volume": 275.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 28.000000000000004,
+      "yes_ask_cents": 30.0,
+      "volume": 148.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "fair_prob_yes": 0.5098,
+      "market_mid_prob_yes": 0.465,
+      "market_volume": 1088.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T15:20:30.378844Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.05480000000000001,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 1017.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T15:20:30.378851Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.2998,
+      "market_mid_prob_yes": 0.255,
+      "market_volume": 275.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T15:20:30.378852Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.3348,
+      "market_mid_prob_yes": 0.29,
+      "market_volume": 148.0,
+      "spread_cents": 1.9999999999999964,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T15:20:30.378853Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.5098,
+      "observed_price": 0.465,
+      "edge_pct": 0.0413,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.05480000000000001,
+      "observed_price": 0.01,
+      "edge_pct": 0.0413,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.2998,
+      "observed_price": 0.255,
+      "edge_pct": 0.0413,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.3348,
+      "observed_price": 0.29,
+      "edge_pct": 0.0413,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "bankroll_fraction": 0.0372,
+      "notional": 371.99999999999994
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "bankroll_fraction": 0.0372,
+      "notional": 371.99999999999994
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "resolved_market_id": "KXHIGHHOU-26FEB17-B77.5",
+      "bankroll_fraction": 0.0372,
+      "notional": 371.99999999999994,
+      "result": "execution_failed",
+      "error": "exchange error: POST /trade-api/v2/portfolio/orders failed (400 Bad Request): {\"error\":{\"code\":\"invalid_parameters\",\"message\":\"invalid parameters\"}} | request={ticker:KXHIGHHOU-26FEB17-B77.5 side:yes action:buy count:24 count_fp:None yes_price:Some(48) no_price:None order_type:limit}",
+      "report": null
+    },
+    {
+      "source_ticker": "KXHIGHDEN-26FEB17-T57",
+      "resolved_market_id": "KXHIGHDEN-26FEB17-T57",
+      "bankroll_fraction": 0.0372,
+      "notional": 371.99999999999994,
+      "result": "accepted",
+      "error": null,
+      "report": {
+        "order_id": "5b2a205a-cffc-469e-b332-a058511d7bde",
+        "client_order_id": "KXHIGHDEN-26FEB17-T57-15568c78-c7a8-4820-9dcb-9bdf83073c47",
+        "status": "New",
+        "submitted_time_in_force": "Gtc",
+        "filled_qty": 0.0,
+        "avg_fill_price": 0.27,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-17T15:10:36.470009Z"
+      }
+    }
+  ]
+}

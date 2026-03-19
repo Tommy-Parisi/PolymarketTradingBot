@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T22:43:40.615999Z",
+  "finished_at": "2026-02-12T22:43:41.539371Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "title": "Will Jakub Kaczmarek win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 31600.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "title": "Will Lukasz Bernacki win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 52.0,
+      "volume": 29060.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "title": "Will Milosz Piecowski win the Dawid Kotwica vs Milosz Piecowski Table Tennis Match Winner?",
+      "yes_bid_cents": 53.0,
+      "yes_ask_cents": 55.00000000000001,
+      "volume": 28479.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 31600.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:53:41.539159Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "fair_prob_yes": 0.51,
+      "market_mid_prob_yes": 0.51,
+      "market_volume": 29060.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:53:41.539164Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "fair_prob_yes": 0.54,
+      "market_mid_prob_yes": 0.54,
+      "market_volume": 28479.0,
+      "spread_cents": 2.000000000000007,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:53:41.539166Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

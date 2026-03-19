@@ -1,0 +1,139 @@
+{
+  "started_at": "2026-02-18T00:20:29.018154Z",
+  "finished_at": "2026-02-18T00:20:33.004103Z",
+  "status": "no_allocations",
+  "message": "allocator produced no trades after risk guard",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 2.0,
+      "yes_ask_cents": 12.0,
+      "volume": 1212.0
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "title": "Will the **high temp in Houston** be 77-78° on Feb 17, 2026?",
+      "yes_bid_cents": 20.0,
+      "yes_ask_cents": 39.0,
+      "volume": 1131.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 2.0,
+      "yes_ask_cents": 3.0,
+      "volume": 797.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "title": "Will the **high temp in Austin** be >87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 3.0,
+      "volume": 664.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 97.0,
+      "yes_ask_cents": 98.0,
+      "volume": 233.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.12200000000000001,
+      "market_mid_prob_yes": 0.07,
+      "market_volume": 1212.0,
+      "spread_cents": 10.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T00:30:32.985446Z"
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "fair_prob_yes": 0.347,
+      "market_mid_prob_yes": 0.295,
+      "market_volume": 1131.0,
+      "spread_cents": 19.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T00:30:32.985452Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.07700000000000001,
+      "market_mid_prob_yes": 0.025,
+      "market_volume": 797.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T00:30:32.985453Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "fair_prob_yes": 0.067,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 664.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T00:30:32.985454Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.99,
+      "market_mid_prob_yes": 0.975,
+      "market_volume": 233.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T00:30:32.985456Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.07700000000000001,
+      "observed_price": 0.025,
+      "edge_pct": 0.04850000000000001,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.12200000000000001,
+      "observed_price": 0.07,
+      "edge_pct": 0.0485,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.067,
+      "observed_price": 0.015,
+      "edge_pct": 0.0485,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-B77.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.347,
+      "observed_price": 0.295,
+      "edge_pct": 0.04849999999999999,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    }
+  ],
+  "allocations": [],
+  "executions": []
+}

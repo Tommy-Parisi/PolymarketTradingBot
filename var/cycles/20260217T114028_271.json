@@ -1,0 +1,251 @@
+{
+  "started_at": "2026-02-17T11:40:28.864385Z",
+  "finished_at": "2026-02-17T11:40:30.271923Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ18",
+      "title": "Arizona wins by over 18.5 Points?",
+      "yes_bid_cents": 15.0,
+      "yes_ask_cents": 17.0,
+      "volume": 15034.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-158",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 30.0,
+      "yes_ask_cents": 36.0,
+      "volume": 10015.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-143",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 67.0,
+      "yes_ask_cents": 73.0,
+      "volume": 3018.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-170",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 4.0,
+      "yes_ask_cents": 5.0,
+      "volume": 1943.0
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ24",
+      "title": "Arizona wins by over 24.5 Points?",
+      "yes_bid_cents": 5.0,
+      "yes_ask_cents": 10.0,
+      "volume": 1794.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-155",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 39.0,
+      "yes_ask_cents": 40.0,
+      "volume": 1089.0
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-149",
+      "title": "Texas Tech at Arizona: Total Points",
+      "yes_bid_cents": 28.999999999999996,
+      "yes_ask_cents": 32.0,
+      "volume": 1074.0
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-TTU6",
+      "title": "Texas Tech wins by over 6.5 Points?",
+      "yes_bid_cents": 6.0,
+      "yes_ask_cents": 11.0,
+      "volume": 1006.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 1.0,
+      "volume": 1003.0
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-T80",
+      "title": "Will the **high temp in Houston** be >80° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 1.0,
+      "volume": 552.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "title": "Will the **high temp in Denver** be >57° on Feb 17, 2026?",
+      "yes_bid_cents": 24.0,
+      "yes_ask_cents": 27.0,
+      "volume": 243.0
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14VILLCREI-VILL6",
+      "title": "Villanova wins by over 6.5 Points?",
+      "yes_bid_cents": 88.0,
+      "yes_ask_cents": 94.0,
+      "volume": 157.0
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14VILLCREI-VILL9",
+      "title": "Villanova wins by over 9.5 Points?",
+      "yes_bid_cents": 72.0,
+      "yes_ask_cents": 86.0,
+      "volume": 153.0
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "title": "Will the **high temp in Denver** be 56-57° on Feb 17, 2026?",
+      "yes_bid_cents": 28.000000000000004,
+      "yes_ask_cents": 30.0,
+      "volume": 108.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ18",
+      "fair_prob_yes": 0.16,
+      "market_mid_prob_yes": 0.16,
+      "market_volume": 15034.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271537Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-158",
+      "fair_prob_yes": 0.33,
+      "market_mid_prob_yes": 0.33,
+      "market_volume": 10015.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271544Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-143",
+      "fair_prob_yes": 0.7,
+      "market_mid_prob_yes": 0.7,
+      "market_volume": 3018.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271546Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-170",
+      "fair_prob_yes": 0.045,
+      "market_mid_prob_yes": 0.045,
+      "market_volume": 1943.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271547Z"
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-ARIZ24",
+      "fair_prob_yes": 0.075,
+      "market_mid_prob_yes": 0.075,
+      "market_volume": 1794.0,
+      "spread_cents": 5.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271548Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-155",
+      "fair_prob_yes": 0.395,
+      "market_mid_prob_yes": 0.395,
+      "market_volume": 1089.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271550Z"
+    },
+    {
+      "ticker": "KXNCAAMBTOTAL-26FEB14TTUARIZ-149",
+      "fair_prob_yes": 0.305,
+      "market_mid_prob_yes": 0.305,
+      "market_volume": 1074.0,
+      "spread_cents": 3.0000000000000036,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271551Z"
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14TTUARIZ-TTU6",
+      "fair_prob_yes": 0.085,
+      "market_mid_prob_yes": 0.085,
+      "market_volume": 1006.0,
+      "spread_cents": 5.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271553Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.050800000000000005,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 1003.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271554Z"
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB17-T80",
+      "fair_prob_yes": 0.050800000000000005,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 552.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271555Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-T57",
+      "fair_prob_yes": 0.2958,
+      "market_mid_prob_yes": 0.255,
+      "market_volume": 243.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271557Z"
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14VILLCREI-VILL6",
+      "fair_prob_yes": 0.91,
+      "market_mid_prob_yes": 0.91,
+      "market_volume": 157.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271558Z"
+    },
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB14VILLCREI-VILL9",
+      "fair_prob_yes": 0.79,
+      "market_mid_prob_yes": 0.79,
+      "market_volume": 153.0,
+      "spread_cents": 14.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271559Z"
+    },
+    {
+      "ticker": "KXHIGHDEN-26FEB17-B56.5",
+      "fair_prob_yes": 0.3308,
+      "market_mid_prob_yes": 0.29,
+      "market_volume": 108.0,
+      "spread_cents": 1.9999999999999964,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T11:50:30.271560Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

@@ -1,0 +1,268 @@
+{
+  "started_at": "2026-02-17T03:00:28.692046Z",
+  "finished_at": "2026-02-17T03:00:34.254698Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHNY-26FEB16-B37.5",
+      "title": "Will the **high temp in NYC** be 37-38° on Feb 16, 2026?",
+      "yes_bid_cents": 14.000000000000002,
+      "yes_ask_cents": 15.0,
+      "volume": 27889.0
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B41.5",
+      "title": "Will the **high temp in NYC** be 41-42° on Feb 16, 2026?",
+      "yes_bid_cents": 20.0,
+      "yes_ask_cents": 26.0,
+      "volume": 14756.0
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B39.5",
+      "title": "Will the **high temp in NYC** be 39-40° on Feb 16, 2026?",
+      "yes_bid_cents": 62.0,
+      "yes_ask_cents": 64.0,
+      "volume": 11516.0
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B43.5",
+      "title": "Will the **high temp in NYC** be 43-44° on Feb 16, 2026?",
+      "yes_bid_cents": 3.0,
+      "yes_ask_cents": 5.0,
+      "volume": 11128.0
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-T86",
+      "title": "Will the **high temp in Miami** be >86° on Feb 16, 2026?",
+      "yes_bid_cents": 5.0,
+      "yes_ask_cents": 8.0,
+      "volume": 7895.0
+    },
+    {
+      "ticker": "KXHIGHLAX-26FEB16-T65",
+      "title": "Will the **high temp in LA** be >65° on Feb 16, 2026?",
+      "yes_bid_cents": 91.0,
+      "yes_ask_cents": 98.0,
+      "volume": 996.0
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-T79",
+      "title": "Will the **high temp in Miami** be <79° on Feb 16, 2026?",
+      "yes_bid_cents": 99.0,
+      "yes_ask_cents": 100.0,
+      "volume": 661.0
+    },
+    {
+      "ticker": "KXHIGHPHIL-26FEB16-T45",
+      "title": "Will the **high temp in Philadelphia** be >45° on Feb 16, 2026?",
+      "yes_bid_cents": 90.0,
+      "yes_ask_cents": 97.0,
+      "volume": 566.0
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-B83.5",
+      "title": "Will the **high temp in Miami** be 83-84° on Feb 16, 2026?",
+      "yes_bid_cents": 47.0,
+      "yes_ask_cents": 48.0,
+      "volume": 530.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "title": "Will the **high temp in Austin** be >87° on Feb 17, 2026?",
+      "yes_bid_cents": 91.0,
+      "yes_ask_cents": 93.0,
+      "volume": 438.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T80",
+      "title": "Will the **high temp in Austin** be <80° on Feb 17, 2026?",
+      "yes_bid_cents": 99.0,
+      "yes_ask_cents": 100.0,
+      "volume": 336.0
+    },
+    {
+      "ticker": "KXHIGHLAX-26FEB16-B58.5",
+      "title": "Will the **high temp in LA** be 58-59° on Feb 16, 2026?",
+      "yes_bid_cents": 7.000000000000001,
+      "yes_ask_cents": 11.0,
+      "volume": 294.0
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB16-B72.5",
+      "title": "Will the **high temp in Houston** be 72-73° on Feb 16, 2026?",
+      "yes_bid_cents": 54.0,
+      "yes_ask_cents": 56.00000000000001,
+      "volume": 224.0
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-T44",
+      "title": "Will the **high temp in NYC** be >44° on Feb 16, 2026?",
+      "yes_bid_cents": 44.0,
+      "yes_ask_cents": 57.99999999999999,
+      "volume": 198.0
+    },
+    {
+      "ticker": "NASDAQ100I-26FEB17H1600-T25190",
+      "title": "Will the value of the NASDAQ100 be at least 25190.00 on Feb 17, 2026 at 4pm EST?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 119.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHNY-26FEB16-B37.5",
+      "fair_prob_yes": 0.18739999999999998,
+      "market_mid_prob_yes": 0.145,
+      "market_volume": 27889.0,
+      "spread_cents": 0.9999999999999982,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254374Z"
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B41.5",
+      "fair_prob_yes": 0.27240000000000003,
+      "market_mid_prob_yes": 0.23,
+      "market_volume": 14756.0,
+      "spread_cents": 6.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254377Z"
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B39.5",
+      "fair_prob_yes": 0.6724,
+      "market_mid_prob_yes": 0.63,
+      "market_volume": 11516.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254378Z"
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-B43.5",
+      "fair_prob_yes": 0.0824,
+      "market_mid_prob_yes": 0.04,
+      "market_volume": 11128.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254379Z"
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-T86",
+      "fair_prob_yes": 0.1074,
+      "market_mid_prob_yes": 0.065,
+      "market_volume": 7895.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254380Z"
+    },
+    {
+      "ticker": "KXHIGHLAX-26FEB16-T65",
+      "fair_prob_yes": 0.9873999999999999,
+      "market_mid_prob_yes": 0.945,
+      "market_volume": 996.0,
+      "spread_cents": 7.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254381Z"
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-T79",
+      "fair_prob_yes": 0.99,
+      "market_mid_prob_yes": 0.99,
+      "market_volume": 661.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254382Z"
+    },
+    {
+      "ticker": "KXHIGHPHIL-26FEB16-T45",
+      "fair_prob_yes": 0.9774,
+      "market_mid_prob_yes": 0.935,
+      "market_volume": 566.0,
+      "spread_cents": 7.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254383Z"
+    },
+    {
+      "ticker": "KXHIGHMIA-26FEB16-B83.5",
+      "fair_prob_yes": 0.5174,
+      "market_mid_prob_yes": 0.475,
+      "market_volume": 530.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254383Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "fair_prob_yes": 0.9624,
+      "market_mid_prob_yes": 0.92,
+      "market_volume": 438.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254384Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T80",
+      "fair_prob_yes": 0.99,
+      "market_mid_prob_yes": 0.99,
+      "market_volume": 336.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254385Z"
+    },
+    {
+      "ticker": "KXHIGHLAX-26FEB16-B58.5",
+      "fair_prob_yes": 0.1324,
+      "market_mid_prob_yes": 0.09,
+      "market_volume": 294.0,
+      "spread_cents": 3.999999999999999,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254386Z"
+    },
+    {
+      "ticker": "KXHIGHHOU-26FEB16-B72.5",
+      "fair_prob_yes": 0.5924,
+      "market_mid_prob_yes": 0.55,
+      "market_volume": 224.0,
+      "spread_cents": 2.000000000000007,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254387Z"
+    },
+    {
+      "ticker": "KXHIGHNY-26FEB16-T44",
+      "fair_prob_yes": 0.5516,
+      "market_mid_prob_yes": 0.51,
+      "market_volume": 198.0,
+      "spread_cents": 13.999999999999993,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254388Z"
+    },
+    {
+      "ticker": "NASDAQ100I-26FEB17H1600-T25190",
+      "fair_prob_yes": 0.5,
+      "market_mid_prob_yes": 0.5,
+      "market_volume": 119.0,
+      "spread_cents": 13.999999999999993,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T03:10:34.254389Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

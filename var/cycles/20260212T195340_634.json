@@ -1,0 +1,229 @@
+{
+  "started_at": "2026-02-12T19:53:40.578414Z",
+  "finished_at": "2026-02-12T19:53:47.634086Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "title": "Will Filip Kujawa win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 64.0,
+      "yes_ask_cents": 66.0,
+      "volume": 24708.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "title": "Will Waldemar Glanowski win the Lukasz Oracz vs Waldemar Glanowski Table Tennis Match Winner?",
+      "yes_bid_cents": 61.0,
+      "yes_ask_cents": 63.0,
+      "volume": 24449.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "title": "Will Artur Daniel win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 64.0,
+      "yes_ask_cents": 66.0,
+      "volume": 24098.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "title": "Will Krzysztof Kotyl win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 64.0,
+      "yes_ask_cents": 66.0,
+      "volume": 22756.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "title": "Will Jakub Witkowski win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 64.0,
+      "yes_ask_cents": 66.0,
+      "volume": 15194.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "fair_prob_yes": 0.5,
+      "market_mid_prob_yes": 0.65,
+      "market_volume": 24708.0,
+      "spread_cents": 2.0,
+      "confidence": 0.35,
+      "rationale": "Mid-probability of 0.65 appears inflated; complementary market (KKO) also shows 0.65, which is impossible for binary outcomes. Adjusting to fair value assuming equal skill levels absent other data.",
+      "stale_after": "2026-02-12T20:03:45.676063Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "fair_prob_yes": 0.62,
+      "market_mid_prob_yes": 0.62,
+      "market_volume": 24449.0,
+      "spread_cents": 2.0,
+      "confidence": 0.45,
+      "rationale": "Mid-probability of 0.62 suggests slight favorite status. Moderate volume supports pricing. Limited information on player matchup quality.",
+      "stale_after": "2026-02-12T20:03:45.676085Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "fair_prob_yes": 0.5,
+      "market_mid_prob_yes": 0.65,
+      "market_volume": 24098.0,
+      "spread_cents": 2.0,
+      "confidence": 0.35,
+      "rationale": "Mid-probability of 0.65 conflicts with complementary market (JWI) also at 0.65. Suggests pricing error. Reverting to 0.50 absent reliable player data.",
+      "stale_after": "2026-02-12T20:03:45.676087Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "fair_prob_yes": 0.5,
+      "market_mid_prob_yes": 0.65,
+      "market_volume": 22756.0,
+      "spread_cents": 2.0,
+      "confidence": 0.35,
+      "rationale": "Complementary market to FKU; both showing 0.65 indicates pricing inconsistency. Fair value should be ~0.50 for evenly matched players.",
+      "stale_after": "2026-02-12T20:03:45.676089Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "fair_prob_yes": 0.5,
+      "market_mid_prob_yes": 0.65,
+      "market_volume": 15194.0,
+      "spread_cents": 2.0,
+      "confidence": 0.35,
+      "rationale": "Complementary market to ADA; both at 0.65 is mathematically inconsistent. Lower volume suggests less reliable pricing. Adjusting to 0.50.",
+      "stale_after": "2026-02-12T20:03:45.676092Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.5,
+      "observed_price": 0.35,
+      "edge_pct": 0.14650000000000002,
+      "confidence": 0.35,
+      "rationale": "Mid-probability of 0.65 appears inflated; complementary market (KKO) also shows 0.65, which is impossible for binary outcomes. Adjusting to fair value assuming equal skill levels absent other data."
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.5,
+      "observed_price": 0.35,
+      "edge_pct": 0.14650000000000002,
+      "confidence": 0.35,
+      "rationale": "Mid-probability of 0.65 conflicts with complementary market (JWI) also at 0.65. Suggests pricing error. Reverting to 0.50 absent reliable player data."
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.5,
+      "observed_price": 0.35,
+      "edge_pct": 0.14650000000000002,
+      "confidence": 0.35,
+      "rationale": "Complementary market to FKU; both showing 0.65 indicates pricing inconsistency. Fair value should be ~0.50 for evenly matched players."
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.5,
+      "observed_price": 0.35,
+      "edge_pct": 0.14650000000000002,
+      "confidence": 0.35,
+      "rationale": "Complementary market to ADA; both at 0.65 is mathematically inconsistent. Lower volume suggests less reliable pricing. Adjusting to 0.50."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "resolved_market_id": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXTABLETENNIS-26FEB121235FKUKKO-FKU-65776f84-8ef9-4ce0-8077-31ec9a773998",
+        "client_order_id": "KXTABLETENNIS-26FEB121235FKUKKO-FKU-65776f84-8ef9-4ce0-8077-31ec9a773998",
+        "status": "Filled",
+        "filled_qty": 35.99999999999999,
+        "avg_fill_price": 0.36,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-12T19:53:47.629225Z"
+      }
+    },
+    {
+      "source_ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "resolved_market_id": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXTABLETENNIS-26FEB121240ADAJWI-ADA-46ba94a5-6581-4fd5-a230-ba1912a9caff",
+        "client_order_id": "KXTABLETENNIS-26FEB121240ADAJWI-ADA-46ba94a5-6581-4fd5-a230-ba1912a9caff",
+        "status": "Filled",
+        "filled_qty": 35.99999999999999,
+        "avg_fill_price": 0.36,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-12T19:53:47.631176Z"
+      }
+    },
+    {
+      "source_ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "resolved_market_id": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXTABLETENNIS-26FEB121235FKUKKO-KKO-487dc293-abdc-40d2-b640-c268aa1d57d7",
+        "client_order_id": "KXTABLETENNIS-26FEB121235FKUKKO-KKO-487dc293-abdc-40d2-b640-c268aa1d57d7",
+        "status": "Filled",
+        "filled_qty": 35.99999999999999,
+        "avg_fill_price": 0.36,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-12T19:53:47.632245Z"
+      }
+    },
+    {
+      "source_ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "resolved_market_id": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "bankroll_fraction": 0.020999999999999998,
+      "notional": 209.99999999999997,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXTABLETENNIS-26FEB121240ADAJWI-JWI-f093b1c7-8c38-47b5-8930-533e5264dcd9",
+        "client_order_id": "KXTABLETENNIS-26FEB121240ADAJWI-JWI-f093b1c7-8c38-47b5-8930-533e5264dcd9",
+        "status": "Filled",
+        "filled_qty": 35.99999999999999,
+        "avg_fill_price": 0.36,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-12T19:53:47.633639Z"
+      }
+    }
+  ]
+}

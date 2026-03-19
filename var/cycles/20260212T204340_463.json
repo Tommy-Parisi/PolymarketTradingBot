@@ -1,0 +1,81 @@
+{
+  "started_at": "2026-02-12T20:43:40.582465Z",
+  "finished_at": "2026-02-12T20:43:44.463304Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "title": "Will Filip Kujawa win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 50.0,
+      "volume": 26062.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "title": "Will Waldemar Glanowski win the Lukasz Oracz vs Waldemar Glanowski Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 61.0,
+      "volume": 24462.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "title": "Will Artur Daniel win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 63.0,
+      "yes_ask_cents": 64.0,
+      "volume": 24153.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "title": "Will Jakub Witkowski win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 45.0,
+      "yes_ask_cents": 50.0,
+      "volume": 16492.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "fair_prob_yes": 0.635,
+      "market_mid_prob_yes": 0.635,
+      "market_volume": 24153.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T20:43:41.557963Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "fair_prob_yes": 0.48,
+      "market_mid_prob_yes": 0.475,
+      "market_volume": 26062.0,
+      "spread_cents": 5.0,
+      "confidence": 0.55,
+      "rationale": "Mid-probability of 0.475 suggests relatively even matchup. No player ranking data available. Moderate volume (26k) provides some market signal but confidence limited by lack of player-specific information.",
+      "stale_after": "2026-02-12T20:53:44.463080Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "fair_prob_yes": 0.6,
+      "market_mid_prob_yes": 0.605,
+      "market_volume": 24462.0,
+      "spread_cents": 1.0,
+      "confidence": 0.6,
+      "rationale": "Mid-probability of 0.605 indicates slight favorite status for Glanowski. Highest volume (24.5k) suggests reasonable market consensus. Confidence moderate due to absence of head-to-head history or ranking differential data.",
+      "stale_after": "2026-02-12T20:53:44.463092Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "fair_prob_yes": 0.47,
+      "market_mid_prob_yes": 0.475,
+      "market_volume": 16492.0,
+      "spread_cents": 5.0,
+      "confidence": 0.52,
+      "rationale": "Mid-probability of 0.475 indicates near-even odds. Lowest volume (16.5k) reduces confidence in market signal. Witkowski appears slight underdog. Limited data on player relative strength.",
+      "stale_after": "2026-02-12T20:53:44.463094Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

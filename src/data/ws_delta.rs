@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 
+use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{json, Value};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
@@ -24,6 +25,7 @@ impl Default for WsDeltaConfig {
 
 #[derive(Debug, Clone, Default)]
 pub struct MarketDelta {
+    pub observed_at: DateTime<Utc>,
     pub ticker: String,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
@@ -109,6 +111,7 @@ pub fn parse_ws_delta(raw: &str) -> Option<MarketDelta> {
 
     if msg_type.eq_ignore_ascii_case("ticker_v2") || msg_type.eq_ignore_ascii_case("ticker") {
         return Some(MarketDelta {
+            observed_at: Utc::now(),
             ticker,
             yes_bid_cents: parse_price_cents(
                 data.get("yes_bid_dollars")
@@ -133,6 +136,7 @@ pub fn parse_ws_delta(raw: &str) -> Option<MarketDelta> {
             .or_else(|| data.get("qty"))
             .and_then(value_as_f64);
         return Some(MarketDelta {
+            observed_at: Utc::now(),
             ticker,
             yes_bid_cents: None,
             yes_ask_cents: None,

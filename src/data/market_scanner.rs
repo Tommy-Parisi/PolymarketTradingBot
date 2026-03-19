@@ -50,6 +50,10 @@ impl Default for ScannerConfig {
 pub struct ScannedMarket {
     pub ticker: String,
     pub title: String,
+    pub subtitle: Option<String>,
+    pub market_type: Option<String>,
+    pub event_ticker: Option<String>,
+    pub series_ticker: Option<String>,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
     pub volume: f64,
@@ -68,6 +72,13 @@ impl ScannedMarket {
 pub struct KalshiMarketScanner {
     cfg: ScannerConfig,
     http: Client,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ScanTrace {
+    pub snapshot_markets: Vec<ScannedMarket>,
+    pub deltas: Vec<MarketDelta>,
+    pub final_markets: Vec<ScannedMarket>,
 }
 
 impl KalshiMarketScanner {
@@ -120,8 +131,12 @@ impl KalshiMarketScanner {
     }
 
     pub async fn scan_snapshot_with_deltas(&self) -> Result<Vec<ScannedMarket>, ExecutionError> {
+        Ok(self.scan_snapshot_with_trace().await?.final_markets)
+    }
+
+    pub async fn scan_snapshot_with_trace(&self) -> Result<ScanTrace, ExecutionError> {
         let snapshot = self.scan_snapshot().await?;
-        let mut index = to_index_map(snapshot);
+        let mut index = to_index_map(snapshot.clone());
         let tickers: Vec<String> = index.keys().cloned().collect();
 
         let delta_cfg = WsDeltaConfig {
@@ -130,11 +145,20 @@ impl KalshiMarketScanner {
             listen_window: Duration::from_secs(self.cfg.ws_delta_window_secs),
         };
         let ingestor = KalshiWsDeltaIngestor::new(delta_cfg);
-        if let Ok(deltas) = ingestor.collect_deltas(&tickers).await {
-            apply_deltas(&mut index, deltas);
-        }
+        let deltas = match ingestor.collect_deltas(&tickers).await {
+            Ok(deltas) => {
+                apply_deltas(&mut index, deltas.clone());
+                deltas
+            }
+            Err(_) => Vec::new(),
+        };
 
-        Ok(index.into_values().collect())
+        let final_markets = index.into_values().collect();
+        Ok(ScanTrace {
+            snapshot_markets: snapshot,
+            deltas,
+            final_markets,
+        })
     }
 
     pub fn select_for_valuation(&self, markets: Vec<ScannedMarket>) -> Vec<ScannedMarket> {
@@ -181,6 +205,13 @@ struct MarketsResponse {
 struct KalshiMarketWire {
     ticker: String,
     title: Option<String>,
+    subtitle: Option<String>,
+    #[serde(alias = "market_type", alias = "marketType")]
+    market_type: Option<String>,
+    #[serde(alias = "event_ticker", alias = "eventTicker")]
+    event_ticker: Option<String>,
+    #[serde(alias = "series_ticker", alias = "seriesTicker")]
+    series_ticker: Option<String>,
     #[serde(alias = "yes_bid", alias = "yesBid")]
     yes_bid: Option<f64>,
     #[serde(alias = "yes_ask", alias = "yesAsk")]
@@ -209,6 +240,10 @@ fn to_scanned_market(m: KalshiMarketWire) -> ScannedMarket {
     ScannedMarket {
         ticker: m.ticker,
         title: m.title.unwrap_or_default(),
+        subtitle: m.subtitle,
+        market_type: m.market_type,
+        event_ticker: m.event_ticker,
+        series_ticker: m.series_ticker,
         yes_bid_cents,
         yes_ask_cents,
         volume: m.volume.unwrap_or(0.0),
@@ -229,6 +264,10 @@ mod tests {
         let m = ScannedMarket {
             ticker: "X".to_string(),
             title: "".to_string(),
+            subtitle: None,
+            market_type: None,
+            event_ticker: None,
+            series_ticker: None,
             yes_bid_cents: Some(43.0),
             yes_ask_cents: Some(49.0),
             volume: 10_000.0,
@@ -249,6 +288,10 @@ mod tests {
             ScannedMarket {
                 ticker: "A".to_string(),
                 title: "".to_string(),
+                subtitle: None,
+                market_type: None,
+                event_ticker: None,
+                series_ticker: None,
                 yes_bid_cents: Some(40.0),
                 yes_ask_cents: Some(45.0),
                 volume: 1_000.0,
@@ -257,6 +300,10 @@ mod tests {
             ScannedMarket {
                 ticker: "B".to_string(),
                 title: "".to_string(),
+                subtitle: None,
+                market_type: None,
+                event_ticker: None,
+                series_ticker: None,
                 yes_bid_cents: Some(20.0),
                 yes_ask_cents: Some(40.0),
                 volume: 5_000.0,
@@ -273,6 +320,10 @@ mod tests {
         let wire = KalshiMarketWire {
             ticker: "KXTEST".to_string(),
             title: Some("Test".to_string()),
+            subtitle: None,
+            market_type: None,
+            event_ticker: None,
+            series_ticker: None,
             yes_bid: None,
             yes_ask: None,
             yes_bid_dollars: Some("0.43".to_string()),
@@ -290,6 +341,10 @@ mod tests {
         let mut map = to_index_map(vec![ScannedMarket {
             ticker: "KXBTC".to_string(),
             title: "x".to_string(),
+            subtitle: None,
+            market_type: None,
+            event_ticker: None,
+            series_ticker: None,
             yes_bid_cents: Some(40.0),
             yes_ask_cents: Some(45.0),
             volume: 100.0,
@@ -298,6 +353,7 @@ mod tests {
         apply_deltas(
             &mut map,
             vec![MarketDelta {
+                observed_at: Utc::now(),
                 ticker: "KXBTC".to_string(),
                 yes_bid_cents: Some(41.0),
                 yes_ask_cents: Some(46.0),

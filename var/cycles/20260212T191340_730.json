@@ -1,0 +1,98 @@
+{
+  "started_at": "2026-02-12T19:13:40.514994Z",
+  "finished_at": "2026-02-12T19:13:52.730315Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "title": "Will Filip Kujawa win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 24621.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "title": "Will Waldemar Glanowski win the Lukasz Oracz vs Waldemar Glanowski Table Tennis Match Winner?",
+      "yes_bid_cents": 62.0,
+      "yes_ask_cents": 64.0,
+      "volume": 24394.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "title": "Will Artur Daniel win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 24028.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "title": "Will Krzysztof Kotyl win the Filip Kujawa vs Krzysztof Kotyl Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 22668.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "title": "Will Jakub Witkowski win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 15135.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-FKU",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 24621.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T19:23:52.729879Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "fair_prob_yes": 0.63,
+      "market_mid_prob_yes": 0.63,
+      "market_volume": 24394.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T19:23:52.729881Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 24028.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T19:23:52.729881Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121235FKUKKO-KKO",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 22668.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T19:23:52.729882Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-JWI",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 15135.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T19:23:52.729882Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

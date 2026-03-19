@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-18T07:00:29.015601Z",
+  "finished_at": "2026-02-18T07:00:30.856177Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB17TTUASU-TTU5",
+      "title": "Texas Tech wins by over 5.5 Points?",
+      "yes_bid_cents": 4.0,
+      "yes_ask_cents": 19.0,
+      "volume": 2100.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAMBSPREAD-26FEB17TTUASU-TTU5",
+      "fair_prob_yes": 0.115,
+      "market_mid_prob_yes": 0.115,
+      "market_volume": 2100.0,
+      "spread_cents": 15.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-18T07:10:30.855582Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

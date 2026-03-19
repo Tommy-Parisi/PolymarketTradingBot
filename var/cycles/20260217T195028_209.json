@@ -1,0 +1,68 @@
+{
+  "started_at": "2026-02-17T19:50:28.923671Z",
+  "finished_at": "2026-02-17T19:50:30.209284Z",
+  "status": "no_allocations",
+  "message": "allocator produced no trades after risk guard",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "title": "Will the **high temp in Austin** be 86-87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 1.0,
+      "volume": 1041.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "title": "Will the **high temp in Austin** be >87° on Feb 17, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 3.0,
+      "volume": 648.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "fair_prob_yes": 0.061200000000000004,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 1041.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T20:00:30.190353Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "fair_prob_yes": 0.06620000000000001,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 648.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-17T20:00:30.190360Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXHIGHAUS-26FEB17-T87",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.06620000000000001,
+      "observed_price": 0.015,
+      "edge_pct": 0.047700000000000006,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB17-B86.5",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.061200000000000004,
+      "observed_price": 0.01,
+      "edge_pct": 0.0477,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback"
+    }
+  ],
+  "allocations": [],
+  "executions": []
+}

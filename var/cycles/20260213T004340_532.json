@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-13T00:43:40.613521Z",
+  "finished_at": "2026-02-13T00:43:41.532008Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-DPY",
+      "title": "Will Dawid Pyrek win the Maciej Lamer vs Dawid Pyrek Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 64.0,
+      "volume": 673755.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-LBE",
+      "title": "Will Lukasz Bernacki win the Kacper Adamus vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 26.0,
+      "yes_ask_cents": 27.0,
+      "volume": 669497.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-MLA",
+      "title": "Will Maciej Lamer win the Maciej Lamer vs Dawid Pyrek Table Tennis Match Winner?",
+      "yes_bid_cents": 79.0,
+      "yes_ask_cents": 80.0,
+      "volume": 666933.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-DPY",
+      "fair_prob_yes": 0.62,
+      "market_mid_prob_yes": 0.62,
+      "market_volume": 673755.0,
+      "spread_cents": 4.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:53:41.531675Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-LBE",
+      "fair_prob_yes": 0.265,
+      "market_mid_prob_yes": 0.265,
+      "market_volume": 669497.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:53:41.531680Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-MLA",
+      "fair_prob_yes": 0.795,
+      "market_mid_prob_yes": 0.795,
+      "market_volume": 666933.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:53:41.531681Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

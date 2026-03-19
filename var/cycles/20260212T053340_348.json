@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T05:33:40.360044Z",
+  "finished_at": "2026-02-12T05:33:41.348154Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "title": "Oklahoma City wins by over 14.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 45.0,
+      "volume": 21000.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "title": "Milwaukee at Oklahoma City: Total Points",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 53.0,
+      "volume": 18005.0
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "title": "Portland at Utah: Total Points",
+      "yes_bid_cents": 49.0,
+      "yes_ask_cents": 50.0,
+      "volume": 4005.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBASPREAD-26FEB12MILOKC-OKC14",
+      "fair_prob_yes": 0.44,
+      "market_mid_prob_yes": 0.44,
+      "market_volume": 21000.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T05:33:42.725861Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12PORUTA-237",
+      "fair_prob_yes": 0.495,
+      "market_mid_prob_yes": 0.495,
+      "market_volume": 4005.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T05:33:42.725868Z"
+    },
+    {
+      "ticker": "KXNBATOTAL-26FEB12MILOKC-215",
+      "fair_prob_yes": 0.525,
+      "market_mid_prob_yes": 0.525,
+      "market_volume": 18005.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T05:43:41.347946Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

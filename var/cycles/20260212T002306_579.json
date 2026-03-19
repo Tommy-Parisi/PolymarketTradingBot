@@ -1,0 +1,343 @@
+{
+  "started_at": "2026-02-12T00:23:06.945521Z",
+  "finished_at": "2026-02-12T00:23:23.579818Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS8",
+      "title": "San Antonio wins by over 8.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 11016.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE20",
+      "title": "Cleveland wins by over 20.5 Points?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 42.0,
+      "volume": 6095.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "title": "Minnesota wins by over 5.5 Points?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 6044.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE17",
+      "title": "Cleveland wins by over 17.5 Points?",
+      "yes_bid_cents": 49.0,
+      "yes_ask_cents": 50.0,
+      "volume": 6033.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI4",
+      "title": "Philadelphia wins by over 4.5 Points?",
+      "yes_bid_cents": 31.0,
+      "yes_ask_cents": 36.0,
+      "volume": 5035.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE19",
+      "title": "Cleveland wins by over 19.5 Points?",
+      "yes_bid_cents": 42.0,
+      "yes_ask_cents": 43.0,
+      "volume": 4011.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI1",
+      "title": "Philadelphia wins by over 1.5 Points?",
+      "yes_bid_cents": 52.0,
+      "yes_ask_cents": 54.0,
+      "volume": 4001.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS10",
+      "title": "Boston wins by over 10.5 Points?",
+      "yes_bid_cents": 61.0,
+      "yes_ask_cents": 62.0,
+      "volume": 3030.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE22",
+      "title": "Cleveland wins by over 22.5 Points?",
+      "yes_bid_cents": 33.0,
+      "yes_ask_cents": 34.0,
+      "volume": 3018.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-NYK2",
+      "title": "New York wins by over 2.5 Points?",
+      "yes_bid_cents": 37.0,
+      "yes_ask_cents": 40.0,
+      "volume": 3012.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11MILORL-ORL10",
+      "title": "Orlando wins by over 10.5 Points?",
+      "yes_bid_cents": 51.0,
+      "yes_ask_cents": 52.0,
+      "volume": 2101.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN8",
+      "title": "Minnesota wins by over 8.5 Points?",
+      "yes_bid_cents": 43.0,
+      "yes_ask_cents": 44.0,
+      "volume": 2092.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE16",
+      "title": "Cleveland wins by over 16.5 Points?",
+      "yes_bid_cents": 53.0,
+      "yes_ask_cents": 54.0,
+      "volume": 2017.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS5",
+      "title": "San Antonio wins by over 5.5 Points?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.00000000000001,
+      "volume": 2013.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS16",
+      "title": "Boston wins by over 16.5 Points?",
+      "yes_bid_cents": 41.0,
+      "yes_ask_cents": 42.0,
+      "volume": 2001.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS11",
+      "title": "Boston wins by over 11.5 Points?",
+      "yes_bid_cents": 56.99999999999999,
+      "yes_ask_cents": 59.0,
+      "volume": 1151.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE14",
+      "title": "Cleveland wins by over 14.5 Points?",
+      "yes_bid_cents": 59.0,
+      "yes_ask_cents": 60.0,
+      "volume": 1117.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE23",
+      "title": "Cleveland wins by over 23.5 Points?",
+      "yes_bid_cents": 30.0,
+      "yes_ask_cents": 31.0,
+      "volume": 1094.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11ATLCHA-CHA18",
+      "title": "Charlotte wins by over 18.5 Points?",
+      "yes_bid_cents": 12.0,
+      "yes_ask_cents": 13.0,
+      "volume": 1074.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-WAS11",
+      "title": "Washington wins by over 11.5 Points?",
+      "yes_bid_cents": 5.0,
+      "yes_ask_cents": 6.0,
+      "volume": 1032.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11LACHOU-HOU9",
+      "title": "Houston wins by over 9.5 Points?",
+      "yes_bid_cents": 46.0,
+      "yes_ask_cents": 47.0,
+      "volume": 1015.0
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE11",
+      "title": "Cleveland wins by over 11.5 Points?",
+      "yes_bid_cents": 66.0,
+      "yes_ask_cents": 67.0,
+      "volume": 1004.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS8",
+      "fair_prob_yes": 0.435,
+      "market_mid_prob_yes": 0.435,
+      "confidence": 0.72,
+      "rationale": "Moderate volume (11016) supports mid-price. 8.5pt spread is substantial; market pricing reflects balanced uncertainty.",
+      "stale_after": "2026-02-12T00:33:12.627722Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE20",
+      "fair_prob_yes": 0.41,
+      "market_mid_prob_yes": 0.41,
+      "confidence": 0.68,
+      "rationale": "Lower volume (6095) reduces confidence. 20.5pt blowout is unlikely; pricing reflects appropriate skepticism.",
+      "stale_after": "2026-02-12T00:33:12.627727Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN5",
+      "fair_prob_yes": 0.56,
+      "market_mid_prob_yes": 0.56,
+      "confidence": 0.7,
+      "rationale": "Moderate volume (6044). 5.5pt spread is reasonable; slight favorite pricing suggests Minnesota edge in matchup.",
+      "stale_after": "2026-02-12T00:33:12.627727Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE17",
+      "fair_prob_yes": 0.495,
+      "market_mid_prob_yes": 0.495,
+      "confidence": 0.71,
+      "rationale": "Moderate volume (6033). Near 50-50 odds for 17.5pt spread reflects high uncertainty; fair pricing.",
+      "stale_after": "2026-02-12T00:33:12.627728Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI4",
+      "fair_prob_yes": 0.335,
+      "market_mid_prob_yes": 0.335,
+      "confidence": 0.65,
+      "rationale": "Lower volume (5035) limits confidence. Philadelphia underdog at 4.5pts; pricing reflects market skepticism.",
+      "stale_after": "2026-02-12T00:33:12.627729Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE19",
+      "fair_prob_yes": 0.425,
+      "market_mid_prob_yes": 0.425,
+      "confidence": 0.66,
+      "rationale": "Lower volume (4011) reduces confidence. 19.5pt spread unlikely; pricing appropriately reflects low probability.",
+      "stale_after": "2026-02-12T00:33:12.627730Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-PHI1",
+      "fair_prob_yes": 0.53,
+      "market_mid_prob_yes": 0.53,
+      "confidence": 0.69,
+      "rationale": "Lower volume (4001). Tight 1.5pt spread near even odds; slight Philadelphia edge in close matchup.",
+      "stale_after": "2026-02-12T00:33:12.627730Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS10",
+      "fair_prob_yes": 0.615,
+      "market_mid_prob_yes": 0.615,
+      "confidence": 0.73,
+      "rationale": "Moderate volume (3030). Boston favored at 10.5pts; pricing reflects meaningful but not dominant edge.",
+      "stale_after": "2026-02-12T00:33:12.627731Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE22",
+      "fair_prob_yes": 0.32,
+      "market_mid_prob_yes": 0.335,
+      "confidence": 0.72,
+      "rationale": "Large spread (22.5pts) requires dominant performance. Mid-prob 0.335 slightly overvalues likelihood; adjusted down slightly. Moderate volume supports market efficiency.",
+      "stale_after": "2026-02-12T00:33:18.474Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11NYKPHI-NYK2",
+      "fair_prob_yes": 0.39,
+      "market_mid_prob_yes": 0.385,
+      "confidence": 0.68,
+      "rationale": "Tight spread (2.5pts) near pick-em range. Mid-prob 0.385 reasonable but slightly optimistic for NYK; minimal adjustment. Lower volume reduces confidence.",
+      "stale_after": "2026-02-12T00:33:18.474015Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11MILORL-ORL10",
+      "fair_prob_yes": 0.51,
+      "market_mid_prob_yes": 0.515,
+      "confidence": 0.7,
+      "rationale": "Mid-prob 0.515 appears well-calibrated for 10.5pt spread. Orlando favored but not heavily; fair value near market. Moderate volume supports estimate.",
+      "stale_after": "2026-02-12T00:33:18.474017Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11PORMIN-MIN8",
+      "fair_prob_yes": 0.43,
+      "market_mid_prob_yes": 0.435,
+      "confidence": 0.69,
+      "rationale": "8.5pt spread with mid-prob 0.435 slightly optimistic for Minnesota. Adjusted marginally down. Lower volume and moderate confidence warranted.",
+      "stale_after": "2026-02-12T00:33:18.474019Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE16",
+      "fair_prob_yes": 0.53,
+      "market_mid_prob_yes": 0.535,
+      "confidence": 0.71,
+      "rationale": "16.5pt spread with mid-prob 0.535 well-positioned. Cleveland favored but 16.5pts is substantial; fair value near market. Decent volume supports estimate.",
+      "stale_after": "2026-02-12T00:33:18.474020Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11SASGSW-SAS5",
+      "fair_prob_yes": 0.56,
+      "market_mid_prob_yes": 0.555,
+      "confidence": 0.72,
+      "rationale": "5.5pt spread with mid-prob 0.555 reasonable. San Antonio slight favorite; fair value near market. Good volume and balanced odds support confidence.",
+      "stale_after": "2026-02-12T00:33:18.474023Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS16",
+      "fair_prob_yes": 0.41,
+      "market_mid_prob_yes": 0.415,
+      "confidence": 0.7,
+      "rationale": "16.5pt spread with mid-prob 0.415 slightly optimistic for Boston. Large spread makes outcome less likely; adjusted down modestly. Adequate volume.",
+      "stale_after": "2026-02-12T00:33:18.474024Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11CHIBOS-BOS11",
+      "fair_prob_yes": 0.58,
+      "market_mid_prob_yes": 0.58,
+      "confidence": 0.68,
+      "rationale": "11.5pt spread with mid-prob 0.58 reasonable for Boston favorite. Fair value near market but lower volume reduces confidence in estimate.",
+      "stale_after": "2026-02-12T00:33:18.474026Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE14",
+      "fair_prob_yes": 0.59,
+      "market_mid_prob_yes": 0.595,
+      "confidence": 0.72,
+      "rationale": "Mid-probability of 0.595 suggests moderate market consensus. Spread of 14.5 points is substantial but achievable in NBA. Good volume (1117) supports reliability. No bias detected.",
+      "stale_after": "2026-02-12T00:33:23.579398Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE23",
+      "fair_prob_yes": 0.31,
+      "market_mid_prob_yes": 0.305,
+      "confidence": 0.68,
+      "rationale": "23.5-point spread is very large for NBA games; 0.305 probability reflects rarity of such blowouts. Consistent with historical data. Adequate volume supports estimate.",
+      "stale_after": "2026-02-12T00:33:23.579415Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11ATLCHA-CHA18",
+      "fair_prob_yes": 0.13,
+      "market_mid_prob_yes": 0.125,
+      "confidence": 0.65,
+      "rationale": "18.5-point spread is extremely difficult to cover; 0.125 probability is appropriately low. Charlotte as underdog makes this unlikely. Lower confidence due to extreme spread.",
+      "stale_after": "2026-02-12T00:33:23.579417Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-WAS11",
+      "fair_prob_yes": 0.06,
+      "market_mid_prob_yes": 0.055,
+      "confidence": 0.7,
+      "rationale": "Washington as underdog with 11.5-point spread is highly improbable; 0.055 reflects this correctly. Market consensus is clear despite low probability. Adequate volume.",
+      "stale_after": "2026-02-12T00:33:23.579418Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11LACHOU-HOU9",
+      "fair_prob_yes": 0.47,
+      "market_mid_prob_yes": 0.465,
+      "confidence": 0.71,
+      "rationale": "9.5-point spread is moderate; 0.465 probability near 50-50 suggests competitive matchup. Good volume (1015) provides confidence. Slight adjustment down from mid-prob for typical market overestimation.",
+      "stale_after": "2026-02-12T00:33:23.579420Z"
+    },
+    {
+      "ticker": "KXNBASPREAD-26FEB11WASCLE-CLE11",
+      "fair_prob_yes": 0.66,
+      "market_mid_prob_yes": 0.665,
+      "confidence": 0.73,
+      "rationale": "11.5-point spread with 0.665 probability indicates Cleveland favored but not heavily. Reasonable spread size. Highest volume (1004) and consistent with CLE14 market. Good confidence.",
+      "stale_after": "2026-02-12T00:33:23.579422Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

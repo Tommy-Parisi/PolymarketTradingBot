@@ -1,0 +1,116 @@
+{
+  "started_at": "2026-02-13T19:42:55.457138Z",
+  "finished_at": "2026-02-13T19:43:02.633015Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45859.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 45.0,
+      "volume": 42109.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 80.0,
+      "volume": 36720.0
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 2.0,
+      "volume": 651.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45859.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara moneyline with mid_prob at 0.45. Moderate volume supports price discovery. No obvious bias detected.",
+      "stale_after": "2026-02-13T19:53:02.626323Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.42,
+      "market_mid_prob_yes": 0.425,
+      "market_volume": 42109.0,
+      "spread_cents": 5.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris moneyline with mid_prob at 0.425. Similar volume and liquidity to Niagara contract. Consistent pricing.",
+      "stale_after": "2026-02-13T19:53:02.626344Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.13,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 36720.0,
+      "spread_cents": 10.0,
+      "confidence": 0.55,
+      "rationale": "Tie outcome priced at 0.75 is implausibly high given RMU+NIA probabilities sum to ~0.87. Likely mispriced or low liquidity artifact. Fair value ~0.13 to balance to 1.0.",
+      "stale_after": "2026-02-13T19:53:02.626349Z"
+    },
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.02,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 651.0,
+      "spread_cents": 2.0,
+      "confidence": 0.45,
+      "rationale": "Extreme weather specificity (74-75°F range) on future date. Mid_prob 0.01 is reasonable but low volume and positive bias suggest uncertainty. Slight upward adjustment to 0.02.",
+      "stale_after": "2026-02-13T19:53:02.626353Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.87,
+      "observed_price": 0.25,
+      "edge_pct": 0.6165,
+      "confidence": 0.55,
+      "rationale": "Tie outcome priced at 0.75 is implausibly high given RMU+NIA probabilities sum to ~0.87. Likely mispriced or low liquidity artifact. Fair value ~0.13 to balance to 1.0."
+    }
+  ],
+  "allocations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.033,
+      "notional": 330.0
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "resolved_market_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "bankroll_fraction": 0.033,
+      "notional": 330.0,
+      "result": "executed",
+      "error": null,
+      "report": {
+        "order_id": "paper-KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-081d057e-7a40-4cf6-a64b-a4fde363eb04",
+        "client_order_id": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE-081d057e-7a40-4cf6-a64b-a4fde363eb04",
+        "status": "Filled",
+        "filled_qty": 79.2,
+        "avg_fill_price": 0.26,
+        "fee_paid": 0.0,
+        "updated_at": "2026-02-13T19:43:02.632338Z"
+      }
+    }
+  ]
+}

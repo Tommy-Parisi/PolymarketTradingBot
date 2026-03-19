@@ -1,0 +1,81 @@
+{
+  "started_at": "2026-02-13T00:23:40.646185Z",
+  "finished_at": "2026-02-13T00:23:41.629090Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-DPY",
+      "title": "Will Dawid Pyrek win the Maciej Lamer vs Dawid Pyrek Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 63.0,
+      "volume": 673324.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-KAD",
+      "title": "Will Kacper Adamus win the Kacper Adamus vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 68.0,
+      "yes_ask_cents": 69.0,
+      "volume": 673084.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-LBE",
+      "title": "Will Lukasz Bernacki win the Kacper Adamus vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 24.0,
+      "yes_ask_cents": 27.0,
+      "volume": 669276.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-MLA",
+      "title": "Will Maciej Lamer win the Maciej Lamer vs Dawid Pyrek Table Tennis Match Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 73.0,
+      "volume": 666187.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-DPY",
+      "fair_prob_yes": 0.615,
+      "market_mid_prob_yes": 0.615,
+      "market_volume": 673324.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:33:41.628903Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-KAD",
+      "fair_prob_yes": 0.685,
+      "market_mid_prob_yes": 0.685,
+      "market_volume": 673084.0,
+      "spread_cents": 1.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:33:41.628905Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121800KADLBE-LBE",
+      "fair_prob_yes": 0.255,
+      "market_mid_prob_yes": 0.255,
+      "market_volume": 669276.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:33:41.628906Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121755MLADPY-MLA",
+      "fair_prob_yes": 0.715,
+      "market_mid_prob_yes": 0.715,
+      "market_volume": 666187.0,
+      "spread_cents": 3.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-13T00:33:41.628907Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

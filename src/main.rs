@@ -9,13 +9,19 @@ use serde::{Deserialize, Serialize};
 use tokio::time::MissedTickBehavior;
 
 mod data;
+mod datasets;
 mod execution;
+mod features;
 mod markets;
 mod model;
+mod models;
+mod outcomes;
 mod replay;
+mod research;
 
 use data::market_enrichment::{EnrichmentConfig, MarketEnricher};
 use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
+use datasets::builder::{DatasetBuildConfig, run_dataset_build};
 use execution::client::{ExchangeClient, KalshiClient};
 use execution::engine::{ExecutionEngine, ExecutionMode, summarize_performance_paths};
 use execution::paper_sim::{PaperSimClient, PaperSimConfig};
@@ -23,6 +29,9 @@ use execution::types::{EngineConfig, OrderStatus};
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
 use model::allocator::{AllocationConfig, PortfolioAllocator};
 use model::valuation::{CandidateTrade, ClaudeValuationEngine, MarketValuation, ValuationConfig, ValuationInput};
+use models::forecast::{ForecastTrainingConfig, run_forecast_training};
+use outcomes::resolver::{OutcomeResolverConfig, run_outcome_backfill};
+use research::market_recorder::{ResearchCaptureConfig, record_scan_trace};
 
 struct BotRuntime {
     mode: ExecutionMode,
@@ -39,6 +48,7 @@ struct BotRuntime {
     claude_every_n_cycles: u64,
     claude_trigger_mode: ClaudeTriggerMode,
     cycle_counter: AtomicU64,
+    research_capture: ResearchCaptureConfig,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,6 +68,30 @@ async fn main() {
                 Err(err) => eprintln!("failed to render pnl summary: {err}"),
             },
             Err(err) => eprintln!("failed to build pnl summary: {err}"),
+        }
+        return;
+    }
+
+    let outcome_cfg = OutcomeResolverConfig::from_env();
+    if outcome_cfg.enabled {
+        if let Err(err) = run_outcome_backfill(&outcome_cfg).await {
+            eprintln!("outcome backfill failed: {err}");
+        }
+        return;
+    }
+
+    let dataset_cfg = DatasetBuildConfig::from_env();
+    if dataset_cfg.enabled {
+        if let Err(err) = run_dataset_build(&dataset_cfg).await {
+            eprintln!("dataset build failed: {err}");
+        }
+        return;
+    }
+
+    let forecast_training_cfg = ForecastTrainingConfig::from_env();
+    if forecast_training_cfg.enabled {
+        if let Err(err) = run_forecast_training(&forecast_training_cfg).await {
+            eprintln!("forecast training failed: {err}");
         }
         return;
     }
@@ -95,6 +129,7 @@ async fn main() {
         claude_every_n_cycles: claude_every_n_cycles_from_env(),
         claude_trigger_mode: claude_trigger_mode_from_env(),
         cycle_counter: AtomicU64::new(0),
+        research_capture: ResearchCaptureConfig::from_env(),
     };
 
     if runtime.mode == ExecutionMode::Live && smoke_test_enabled() {
@@ -128,13 +163,14 @@ async fn run_cycle(runtime: &BotRuntime) {
     let cycle_number = runtime.cycle_counter.fetch_add(1, Ordering::Relaxed) + 1;
     let cadence_use_claude = should_use_claude_for_cycle(cycle_number, runtime.claude_every_n_cycles);
     let started_at = Utc::now();
+    let cycle_id = format!("cycle-{}-{}", started_at.format("%Y%m%dT%H%M%S"), cycle_number);
     println!(
         "starting cycle #{} (claude_trigger_mode={:?} cadence_claude_enabled={} cadence={})",
         cycle_number, runtime.claude_trigger_mode, cadence_use_claude, runtime.claude_every_n_cycles
     );
 
-    let scanned = match runtime.scanner.scan_snapshot_with_deltas().await {
-        Ok(markets) => markets,
+    let scan_trace = match runtime.scanner.scan_snapshot_with_trace().await {
+        Ok(trace) => trace,
         Err(err) => {
             eprintln!("market scan failed: {err}");
             persist_cycle_artifact(CycleArtifact {
@@ -151,6 +187,15 @@ async fn run_cycle(runtime: &BotRuntime) {
             return;
         }
     };
+    if let Err(err) = record_scan_trace(
+        &runtime.research_capture,
+        &cycle_id,
+        &scan_trace.snapshot_markets,
+        &scan_trace,
+    ) {
+        eprintln!("research capture warning (market_state): {err}");
+    }
+    let scanned = scan_trace.final_markets.clone();
     log_position_marks_from_journal(&scanned);
     let selected = runtime.scanner.select_for_valuation(scanned);
     if selected.is_empty() {

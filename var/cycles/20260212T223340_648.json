@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-02-12T22:33:40.616060Z",
+  "finished_at": "2026-02-12T22:33:41.648926Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "title": "Will Jakub Kaczmarek win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 60.0,
+      "yes_ask_cents": 62.0,
+      "volume": 31485.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "title": "Will Lukasz Bernacki win the Jakub Kaczmarek vs Lukasz Bernacki Table Tennis Match Winner?",
+      "yes_bid_cents": 50.0,
+      "yes_ask_cents": 52.0,
+      "volume": 28945.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "title": "Will Milosz Piecowski win the Dawid Kotwica vs Milosz Piecowski Table Tennis Match Winner?",
+      "yes_bid_cents": 55.00000000000001,
+      "yes_ask_cents": 56.99999999999999,
+      "volume": 28435.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121630DKOMPI-MPI",
+      "fair_prob_yes": 0.535,
+      "market_mid_prob_yes": 0.56,
+      "market_volume": 28435.0,
+      "spread_cents": 1.9999999999999858,
+      "confidence": 0.6,
+      "rationale": "Mid-probability of 0.56 suggests Milosz Piecowski slight favorite. Modest adjustment downward for potential market overround. Lower confidence due to less information available on this matchup and slightly lower volume relative to other markets.",
+      "stale_after": "2026-02-12T22:33:44.777207Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-JKA",
+      "fair_prob_yes": 0.61,
+      "market_mid_prob_yes": 0.61,
+      "market_volume": 31485.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:43:41.648778Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121620JKALBE-LBE",
+      "fair_prob_yes": 0.51,
+      "market_mid_prob_yes": 0.51,
+      "market_volume": 28945.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T22:43:41.648781Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

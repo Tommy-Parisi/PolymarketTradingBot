@@ -1,0 +1,92 @@
+{
+  "started_at": "2026-02-13T22:54:03.952200Z",
+  "finished_at": "2026-02-13T22:54:08.981229Z",
+  "status": "no_allocations",
+  "message": "allocator produced no trades after risk guard",
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 45923.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 40.0,
+      "yes_ask_cents": 50.0,
+      "volume": 42173.0
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "title": "Robert Morris vs Niagara Winner?",
+      "yes_bid_cents": 70.0,
+      "yes_ask_cents": 80.0,
+      "volume": 36784.0
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "title": "Will the high temp in Chicago be <46° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 2.0,
+      "volume": 881.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-NIA",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 45923.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Niagara underdog with mid_prob at 0.45. Moderate volume supports market efficiency. No bias detected. Confidence limited by typical college hockey volatility.",
+      "stale_after": "2026-02-13T23:04:08.978056Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-RMU",
+      "fair_prob_yes": 0.45,
+      "market_mid_prob_yes": 0.45,
+      "market_volume": 42173.0,
+      "spread_cents": 10.0,
+      "confidence": 0.65,
+      "rationale": "Robert Morris slight favorite at 0.45 probability. Similar volume and structure to Niagara contract. Consistent pricing across related markets suggests fair valuation.",
+      "stale_after": "2026-02-13T23:04:08.978073Z"
+    },
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "fair_prob_yes": 0.1,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 36784.0,
+      "spread_cents": 10.0,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 appears inflated relative to typical hockey tie probability (~5-10%). Mid_prob likely reflects illiquidity or data error. Fair value substantially lower; adjusted down to 0.10.",
+      "stale_after": "2026-02-13T23:04:08.978076Z"
+    },
+    {
+      "ticker": "KXHIGHCHI-26FEB14-T46",
+      "fair_prob_yes": 0.04,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 881.0,
+      "spread_cents": 1.0,
+      "confidence": 0.7,
+      "rationale": "Chicago Feb 14 high <46°F is rare but plausible. Mid_prob 0.015 seems slightly underpriced given positive bias (0.0472). Adjusted to 0.04. Low volume increases uncertainty.",
+      "stale_after": "2026-02-13T23:04:08.978078Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAHOCKEYGAME-26FEB131800RMUNIA-TIE",
+      "outcome_id": "no",
+      "side": "Buy",
+      "fair_price": 0.9,
+      "observed_price": 0.25,
+      "edge_pct": 0.6465000000000001,
+      "confidence": 0.75,
+      "rationale": "Tie outcome priced at 0.75 appears inflated relative to typical hockey tie probability (~5-10%). Mid_prob likely reflects illiquidity or data error. Fair value substantially lower; adjusted down to 0.10."
+    }
+  ],
+  "allocations": [],
+  "executions": []
+}

@@ -114,6 +114,14 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_REPLAY_CYCLES_PER_DAY` (default `144`)
 - `BOT_REPLAY_BANKROLL` (default `10000`)
 - `BOT_RUN_SUMMARY_ONLY` (`true/false`, default `false`; prints aggregated PnL/trade summary from journal + state and exits)
+- `BOT_RUN_OUTCOME_BACKFILL` (`true/false`, default `false`; scans captured research logs for settled tickers, fetches final market status from Kalshi, and writes outcome labels to `var/research/outcomes/outcomes.jsonl`)
+- `BOT_OUTCOME_LOOKBACK_DAYS` (default `14`; only considers captured market-state days within this lookback window for outcome backfill)
+- `BOT_RUN_DATASET_BUILD` (`true/false`, default `false`; builds labeled forecast and execution training datasets from captured research logs)
+- `BOT_RUN_FORECAST_TRAIN` (`true/false`, default `false`; trains the Step 5 baseline forecast model from `var/features/forecast/forecast_training.jsonl`)
+- `BOT_FORECAST_DATASET_PATH` (default `var/features/forecast/forecast_training.jsonl`)
+- `BOT_MODEL_FORECAST_DIR` (default `var/models/forecast`)
+- `BOT_MODEL_FORECAST_MIN_BUCKET_SAMPLES` (default `5`; minimum bucket size before the baseline model trusts a specialized segment)
+- `BOT_FEATURES_DIR` (default `var/features`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
 - `KALSHI-ACCESS-KEY`
@@ -215,6 +223,41 @@ Replay mode (`BOT_RUN_REPLAY=true`) runs synthetic multi-day cycles and prints:
 For long paper/live runs, generate an end-of-run summary without executing trades:
 
 `set -a; source .env; set +a; BOT_RUN_SUMMARY_ONLY=true cargo run --quiet`
+
+To backfill outcome labels for settled markets captured in research logs:
+
+`set -a; source .env; set +a; BOT_RUN_OUTCOME_BACKFILL=true cargo run --quiet`
+
+To build training datasets from captured research logs:
+
+`set -a; source .env; set +a; BOT_RUN_DATASET_BUILD=true cargo run --quiet`
+
+To train the baseline Step 5 forecast model artifact from the forecast dataset:
+
+`set -a; source .env; set +a; BOT_RUN_FORECAST_TRAIN=true cargo run --quiet`
+
+Current dataset builder outputs JSONL training tables at:
+
+- `var/features/forecast/forecast_training.jsonl`
+- `var/features/execution/execution_training.jsonl`
+
+These are the Step 4 foundation outputs. Parquet export is not wired yet.
+
+Current forecast training writes JSON artifacts at:
+
+- `var/models/forecast/latest.json`
+- `var/models/forecast/<version>/artifact.json`
+- `var/models/forecast/manifest.jsonl`
+
+The Step 5 baseline model is a shrinkage-based empirical forecaster that blends:
+
+1. global historical outcome rate
+2. vertical-specific outcome rate
+3. vertical + threshold-direction bucket
+4. vertical + primary-entity bucket
+5. vertical + threshold bucket
+
+It also reports validation and test log-loss/Brier metrics versus the market-mid baseline.
 
 The summary includes:
 

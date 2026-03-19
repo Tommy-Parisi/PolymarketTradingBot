@@ -1,0 +1,47 @@
+{
+  "started_at": "2026-02-12T20:03:40.604983Z",
+  "finished_at": "2026-02-12T20:03:41.515583Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "title": "Will Waldemar Glanowski win the Lukasz Oracz vs Waldemar Glanowski Table Tennis Match Winner?",
+      "yes_bid_cents": 61.0,
+      "yes_ask_cents": 63.0,
+      "volume": 24452.0
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "title": "Will Artur Daniel win the Artur Daniel vs Jakub Witkowski Table Tennis Match Winner?",
+      "yes_bid_cents": 62.0,
+      "yes_ask_cents": 67.0,
+      "volume": 24137.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240LORWGL-WGL",
+      "fair_prob_yes": 0.62,
+      "market_mid_prob_yes": 0.62,
+      "market_volume": 24452.0,
+      "spread_cents": 2.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T20:13:41.515390Z"
+    },
+    {
+      "ticker": "KXTABLETENNIS-26FEB121240ADAJWI-ADA",
+      "fair_prob_yes": 0.645,
+      "market_mid_prob_yes": 0.645,
+      "market_volume": 24137.0,
+      "spread_cents": 5.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-02-12T20:13:41.515397Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}

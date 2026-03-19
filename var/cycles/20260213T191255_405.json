@@ -1,0 +1,30 @@
+{
+  "started_at": "2026-02-13T19:12:55.438435Z",
+  "finished_at": "2026-02-13T19:13:00.405526Z",
+  "status": "no_candidates",
+  "message": "no mispricing candidates above threshold",
+  "selected_markets": [
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "title": "Will the **high temp in Austin** be 74-75° on Feb 14, 2026?",
+      "yes_bid_cents": 1.0,
+      "yes_ask_cents": 2.0,
+      "volume": 591.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXHIGHAUS-26FEB14-B74.5",
+      "fair_prob_yes": 0.028,
+      "market_mid_prob_yes": 0.015,
+      "market_volume": 591.0,
+      "spread_cents": 1.0,
+      "confidence": 0.35,
+      "rationale": "Mid-probability of 1.5% appears underpriced given historical Austin February temperatures (avg high ~63°F). A 74-75°F high is warm but not extreme for Feb 14. Positive enrich_bias (4.08%) suggests market underestimation. However, low volume (591) and specific date/range constraints limit confidence. Fair estimate incorporates bias adjustment while acknowledging uncertainty in precise temperature prediction.",
+      "stale_after": "2026-02-13T19:23:00.405195Z"
+    }
+  ],
+  "candidates": [],
+  "allocations": [],
+  "executions": []
+}
