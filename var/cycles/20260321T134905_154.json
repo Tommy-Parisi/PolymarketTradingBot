@@ -1,0 +1,3245 @@
+{
+  "started_at": "2026-03-21T13:49:05.087174Z",
+  "finished_at": "2026-03-21T13:49:23.154102Z",
+  "status": "completed",
+  "message": null,
+  "selected_markets": [
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "title": "Will Iowa St. win the 1H by over 6.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22USUARIZ-ANKL",
+      "title": "What will the announcers say during Utah St. at Arizona men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-USU6",
+      "title": "Will Utah St. win the 1H by over 6.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXEPLFIRSTGOAL-26MAR21BRILFC-BRIPGROSS13",
+      "title": "Pascal Gross: First Goalscorer",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGGVILARDI13",
+      "title": "Gabriel Vilardi: First Goalscorer",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITSCROSBY87-1",
+      "title": "Sidney Crosby: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR4",
+      "title": "Will Purdue win the 1H by over 4.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400RAHVMI-RAH",
+      "title": "Radford vs VMI winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300DELNSS-NSS",
+      "title": "Delaware State vs Norfolk State winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-NEV4",
+      "title": "Will Nevada win the 1H by over 4.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.157",
+      "title": "Dogecoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGALOWRY17-1",
+      "title": "Adam Lowry: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B69725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21DAYUNCW-UNCW14",
+      "title": "Will UNC Wilmington win the 1H by over 14.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGCPERFETTI91-2",
+      "title": "Cole Perfetti: 2+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITSCROSBY87-3",
+      "title": "Sidney Crosby: 3+ assists",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22SJUKU-KU1",
+      "title": "Will Kansas win the 1H by over 1.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T62849.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B71225",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B76725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGMSCHEIFELE55-1",
+      "title": "Mark Scheifele: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXTOPMODEL-26MAR28-GPT",
+      "title": "Top AI model this week?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22SJUKU-67",
+      "title": "St. John's vs Kansas: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-62",
+      "title": "Kentucky vs Iowa St.: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITNACCIARI55-2",
+      "title": "Noel Acciari: 2+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITTNOVAK18-2",
+      "title": "Thomas Novak: 2+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-CONN9",
+      "title": "Will UConn win the 1H by over 9.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-56",
+      "title": "Kentucky vs Iowa St.: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B78475",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-75",
+      "title": "Miami (FL) vs Purdue: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-68",
+      "title": "Kentucky vs Iowa St.: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITNACCIARI55-1",
+      "title": "Noel Acciari: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B66975",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCIKONAT5-1",
+      "title": "Ibrahima Konate: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400THEMER-THE",
+      "title": "The Citadel vs Mercer winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-ALLA",
+      "title": "What will the announcers say during Texas Tech at Alabama men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T71099.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22TTUALA-73",
+      "title": "Texas Tech vs Alabama: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXLLM1-26MAR28-GOOG",
+      "title": "Best AI this week?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T75599.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITRRAKELL67-2",
+      "title": "Rickard Rakell: 2+ assists",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-HOU15",
+      "title": "Will Houston win the 1H by over 15.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-ARIZ6",
+      "title": "Will Arizona win the 1H by over 6.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNBABLK-26MAR21GSWATL-ATLJJOHNSON1-1",
+      "title": "Jalen Johnson: 1+ blocks",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211130HACCOLG1-COL",
+      "title": "Harvard vs Columbia winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B69975",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22SJUKU-58",
+      "title": "St. John's vs Kansas: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGGVILARDI13-1",
+      "title": "Gabriel Vilardi: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B71725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22IOWAFLA-ANKL",
+      "title": "What will the announcers say during Iowa at Florida men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGKCONNOR81-3",
+      "title": "Kyle Connor: 3+ points",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-WPGKCONNOR81-2",
+      "title": "Kyle Connor: 2+ assists",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-HOU12",
+      "title": "Will Houston win the 1H by over 12.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGKCONNOR81-2",
+      "title": "Kyle Connor: 2+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21DANMAR-MAR",
+      "title": "Will Andres Martin win the Daniel vs Martin : Semifinal match?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR1",
+      "title": "Will Purdue win the 1H by over 1.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-T60850",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGJMORRISSEY44-2",
+      "title": "Josh Morrissey: 2+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B79725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITBKINDEL81",
+      "title": "Ben Kindel: First Goalscorer",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21DANMAR-DAN",
+      "title": "Will Taro Daniel win the Daniel vs Martin : Semifinal match?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-CONN12",
+      "title": "Will UConn win the 1H by over 12.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22TTUALA-85",
+      "title": "Texas Tech vs Alabama: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T79599.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B64475",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGJMORRISSEY44-1",
+      "title": "Josh Morrissey: 1+ points",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-57",
+      "title": "Miami (FL) vs Purdue: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR16",
+      "title": "Will Purdue win the 1H by over 16.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGKCONNOR81-3",
+      "title": "Kyle Connor: 3+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B75725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T71349.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-BUZZ",
+      "title": "What will the announcers say during Texas Tech at Alabama men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.107",
+      "title": "Dogecoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-T0.1849999",
+      "title": "Dogecoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNBASTL-26MAR21LACDAL-DALPWASHINGTON25-3",
+      "title": "P.J. Washington: 3+ steals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B65725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21MMOZIN-MMO",
+      "title": "Will Michael Mmoh win the Mmoh vs Zink : Semifinal match?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITSCROSBY87-1",
+      "title": "Sidney Crosby: 1+ assists",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21LIBNEV-64",
+      "title": "Liberty vs Nevada: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T78349.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300RIBMSM-RIB",
+      "title": "Rider vs Mount St. Mary's winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-NEV10",
+      "title": "Will Nevada win the 1H by over 10.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21LIBNEV-79",
+      "title": "Liberty vs Nevada: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-SCHE",
+      "title": "What will the announcers say during Texas Tech at Alabama men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UCLACONN-67",
+      "title": "UCLA vs UConn: First Half Total?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TENNUVA-ANKL",
+      "title": "What will the announcers say during Tennessee at Virginia men's college basketball game originally scheduled for Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22IOWAFLA-IOWA9",
+      "title": "Will Iowa win the 1H by over 9.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B61475",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B72725",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B73225",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300BSCWMB-BSC",
+      "title": "Ball State vs Western Michigan winner?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B75225",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B80225",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T69849.99",
+      "title": "Bitcoin price  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B78975",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-MIA6",
+      "title": "Will Miami win the 1H by over 6.5 points?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B77225",
+      "title": "Bitcoin price range  on Mar 22, 2026?",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21CADMID-MID",
+      "title": "Will Lautaro Midon win the Cadenasso vs Midon : Semifinal match?",
+      "yes_bid_cents": 42.0,
+      "yes_ask_cents": 98.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-BRILDUNK5-1",
+      "title": "Lewis Dunk: 1+ goals",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITRRAKELL67-1",
+      "title": "Rickard Rakell: 1+ assists",
+      "yes_bid_cents": 0.0,
+      "yes_ask_cents": 0.0,
+      "volume": 0.0
+    }
+  ],
+  "valuations": [
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.239076Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400RAHVMI-RAH",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561362Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGALOWRY17-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.399557Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22SJUKU-KU1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.239071Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T62849.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.399548Z"
+    },
+    {
+      "ticker": "KXTOPMODEL-26MAR28-GPT",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561356Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22SJUKU-67",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.399551Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-75",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.239070Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-68",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474300Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22USUARIZ-ANKL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235171Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-USU6",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235185Z"
+    },
+    {
+      "ticker": "KXEPLFIRSTGOAL-26MAR21BRILFC-BRIPGROSS13",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235187Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGGVILARDI13",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235189Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITSCROSBY87-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235191Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR4",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235192Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300DELNSS-NSS",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235194Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-NEV4",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235195Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.157",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235197Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B69725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235199Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21DAYUNCW-UNCW14",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235200Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGCPERFETTI91-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235202Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITSCROSBY87-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235203Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B71225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235205Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B76725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235206Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGMSCHEIFELE55-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235208Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-62",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235209Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITNACCIARI55-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.62,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235211Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITTNOVAK18-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235213Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-CONN9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235214Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-56",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235216Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B78475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235217Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITNACCIARI55-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.235219Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400THEMER-THE",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.521842Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T75599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.286793Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211130HACCOLG1-COL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474269Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B69975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.399552Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGGVILARDI13-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.321711Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22IOWAFLA-ANKL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.321715Z"
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21DANMAR-MAR",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561381Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-T60850",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.521817Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22TTUALA-85",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.321712Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B66975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309438Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCIKONAT5-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309444Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-ALLA",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309446Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T71099.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309448Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22TTUALA-73",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309449Z"
+    },
+    {
+      "ticker": "KXLLM1-26MAR28-GOOG",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309450Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITRRAKELL67-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309452Z"
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-HOU15",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309454Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-ARIZ6",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309455Z"
+    },
+    {
+      "ticker": "KXNBABLK-26MAR21GSWATL-ATLJJOHNSON1-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309457Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22SJUKU-58",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309458Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B71725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309460Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGKCONNOR81-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309461Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-WPGKCONNOR81-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309463Z"
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-HOU12",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309465Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGKCONNOR81-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309466Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309468Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGJMORRISSEY44-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309469Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B79725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309471Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITBKINDEL81",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309472Z"
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21DANMAR-DAN",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309474Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-CONN12",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309475Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T79599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.309477Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B64475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.321705Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-57",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.399540Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T71349.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.286737Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-NEV10",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.657186Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B75225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561366Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T69849.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.321708Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGJMORRISSEY44-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389651Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR16",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389655Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGKCONNOR81-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389655Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B75725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389656Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-BUZZ",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389657Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.107",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389658Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-T0.1849999",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389659Z"
+    },
+    {
+      "ticker": "KXNBASTL-26MAR21LACDAL-DALPWASHINGTON25-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389660Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B65725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389661Z"
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21MMOZIN-MMO",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389662Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITSCROSBY87-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389663Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21LIBNEV-64",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389664Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T78349.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389665Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300RIBMSM-RIB",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389666Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21LIBNEV-79",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389666Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-SCHE",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389667Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UCLACONN-67",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389668Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TENNUVA-ANKL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389669Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22IOWAFLA-IOWA9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389670Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B61475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389670Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B72725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389671Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B73225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389672Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300BSCWMB-BSC",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389673Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B80225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389674Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B78975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389675Z"
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-MIA6",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.389676Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UCLACONN-73",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.286739Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T69349.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561375Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-PITBRUST17-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474263Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400BBRISS-BBR",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561358Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T76599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561373Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITBRUST17-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474293Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B77225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476369Z"
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH-26MAR21CADMID-MID",
+      "fair_prob_yes": 0.7,
+      "market_mid_prob_yes": 0.7,
+      "market_volume": 0.0,
+      "spread_cents": 56.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476379Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-BRILDUNK5-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476380Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITRRAKELL67-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476382Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-PITSCROSBY87-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476383Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22IOWAFLA-WALK",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476385Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-TRAN",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476386Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22SJUKU-76",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476388Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGMBARRON36",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476389Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400UNCCHC-UNC",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476391Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-77",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476392Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T68099.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476394Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.042",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476396Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T61599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476397Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITBRUST17",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476399Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITJBRAZEAU16",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476400Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T61099.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476402Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR21VANNEB-RECO",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476404Z"
+    },
+    {
+      "ticker": "KXTOPMODEL-26MAR28-GROK",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476405Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300CALBCE-CAL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476407Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22IOWAFLA-RECR",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476408Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211200HCCLEHG1-HCC",
+      "fair_prob_yes": 0.75,
+      "market_mid_prob_yes": 0.75,
+      "market_volume": 0.0,
+      "spread_cents": 46.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476410Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITYCHINAKHOV59-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476412Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400NCSFLS-FLS",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 0.0,
+      "spread_cents": 99.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476413Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGJMORRISSEY44",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476415Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22TTUALA-ALA17",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.476416Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITCDEWAR19-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474261Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B65975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.561367Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21DAYUNCW-DAY16",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.521813Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22SJUKU-SJU14",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.521841Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR21VANNEB-WALK",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474265Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGCKOEPKE45-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:14.521816Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGCPERFETTI91-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548505Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B70725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548516Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B67975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548518Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22TTUALA-79",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548519Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITEKARLSSON65-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548521Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22USUARIZ-NQE",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548522Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGCPERFETTI91-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548524Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITCCLIFTON75",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548525Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B62975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548527Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211430MAIUMR-MAI",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548529Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T72599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548530Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCVVAND4-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548532Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-ALLE",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548533Z"
+    },
+    {
+      "ticker": "KXNBABLK-26MAR21GSWATL-GSWDGREEN23-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548535Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B74975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548537Z"
+    },
+    {
+      "ticker": "KXNBABLK-26MAR21GSWATL-GSWDGREEN23-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548539Z"
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-MIA3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548540Z"
+    },
+    {
+      "ticker": "KXTECHRANKLISTAICODE-26MAR28-MINI",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548542Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400UNCVIL-VIL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548543Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548545Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B67475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548547Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T65599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548548Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITPWOTHERSPOON28",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548549Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-DRAF",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548551Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300VCUDAY-VCU",
+      "fair_prob_yes": 0.505,
+      "market_mid_prob_yes": 0.505,
+      "market_volume": 0.0,
+      "spread_cents": 99.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548552Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-WPGALOWRY17-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.548554Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-LIB5",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.286814Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGALOWRY17",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627112Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGAIAFALLO9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627115Z"
+    },
+    {
+      "ticker": "KXLLM1-26MAR28-ANTH",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627116Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22IOWAFLA-FLA3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627117Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITEKARLSSON65-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627118Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400UNCVIL-UNC",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627118Z"
+    },
+    {
+      "ticker": "KXLLM1-26MAR28-ALIB",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627119Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21DAYUNCW-54",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627120Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B78725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627121Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22USUARIZ-61",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627121Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCCGAKPO18-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627122Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400MILWRI-MIL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627123Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300NIASIS-NIA",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627124Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-ARIZ3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627124Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400CFCTOW-TOW",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627125Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T61349.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627125Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22IOWAFLA-IOWA21",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627126Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400JAMCCC-JAM",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627127Z"
+    },
+    {
+      "ticker": "KXNBA1HSPREAD-26MAR21MIAHOU-MIA15",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627127Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.172",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627128Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCJFRIMP30-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627129Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22IOWAFLA-65",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627130Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T64849.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627130Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22TENNUVA-UVA1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627131Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B65225",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627131Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITAMANTHA39-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627132Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400RICSFB-SFB",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627133Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TENNUVA-WALK",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627133Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T65849.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627134Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.152",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627135Z"
+    },
+    {
+      "ticker": "KXDOGE-26MAR2217-B0.092",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.627135Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-WPGKCONNOR81",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474297Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22UKISU-80",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474277Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-PITSCROSBY87-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733555Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-66",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733558Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211430MAIUMR-UMR",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733559Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211130CORPRTG1-PRT",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733559Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22MIAPUR-PUR7",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733560Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22USUARIZ-ARIZ9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733561Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T63599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733561Z"
+    },
+    {
+      "ticker": "KXTOPMODEL-26MAR28-KIMI",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733562Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22MIAPUR-78",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733563Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-PITSCROSBY87-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733563Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-NEV16",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733564Z"
+    },
+    {
+      "ticker": "KXEPLFIRSTGOAL-26MAR21BRILFC-BRIFKADIO24",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733565Z"
+    },
+    {
+      "ticker": "KXNHLAST-26MAR21WPGPIT-WPGKCONNOR81-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733565Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300MOYWAG-WAG",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733566Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCHEKITI22-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733567Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21DAYUNCW-UNCW2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733567Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR22USUARIZ-64",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733568Z"
+    },
+    {
+      "ticker": "KXNHLFIRSTGOAL-26MAR21WPGPIT-PITEMALKIN71",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733569Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22USUARIZ-RECO",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733569Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HTOTAL-26MAR21DAYUNCW-60",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733570Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22IOWAFLA-BUZZ",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733570Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR21LIBNEV-LIB8",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733571Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-UCLA9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733572Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B75975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733572Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-UK9",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733573Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733573Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400EASLIN-EAS",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733574Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22SJUKU-SJU11",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733574Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T66599.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733575Z"
+    },
+    {
+      "ticker": "KXNHLGOAL-26MAR21WPGPIT-PITBRUST17-2",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.733575Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400JAMCCC-CCC",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:49:15.474299Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300MRFION-MRF",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818378Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-UK12",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818382Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211300CALBCE-BCE",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818383Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B77725",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818384Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B72975",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818386Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-PITEMALKIN71-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818387Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-UCLA12",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818388Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B66475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818389Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGGVILARDI13-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818390Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B73475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818391Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-ELBO",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818392Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211400WOFXAM-XAM",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818394Z"
+    },
+    {
+      "ticker": "KXNCAABBGAME-26MAR211130BRBYALG1-YAL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818395Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22IOWAFLA-IOWA3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818396Z"
+    },
+    {
+      "ticker": "KXNCAABMENTION-26MAR22TTUALA-NIL",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818397Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22TENNUVA-UVA13",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818398Z"
+    },
+    {
+      "ticker": "KXTECHRANKLISTAICODE-26MAR28-DOLA",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818399Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-BRIYMINTE11-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818400Z"
+    },
+    {
+      "ticker": "KXBTCD-26MAR2217-T75849.99",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818401Z"
+    },
+    {
+      "ticker": "KXEPLGOAL-26MAR21BRILFC-LFCAMACA10-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818402Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGJMORRISSEY44-3",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818403Z"
+    },
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UCLACONN-CONN18",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818404Z"
+    },
+    {
+      "ticker": "KXNHLPTS-26MAR21WPGPIT-WPGKCONNOR81-1",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818406Z"
+    },
+    {
+      "ticker": "KXBTC-26MAR2217-B65475",
+      "fair_prob_yes": 0.01,
+      "market_mid_prob_yes": 0.01,
+      "market_volume": 0.0,
+      "spread_cents": 0.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818407Z"
+    },
+    {
+      "ticker": "KXCS2MAP-26MAR21REGAINSPO-2-REGAIN",
+      "fair_prob_yes": 0.7,
+      "market_mid_prob_yes": 0.7,
+      "market_volume": 0.0,
+      "spread_cents": 58.0,
+      "confidence": 0.45,
+      "rationale": "heuristic valuation fallback",
+      "stale_after": "2026-03-21T13:59:14.818408Z"
+    }
+  ],
+  "candidates": [
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "outcome_id": "yes",
+      "side": "Buy",
+      "fair_price": 0.04,
+      "observed_price": 0.01,
+      "edge_pct": 0.03,
+      "confidence": 0.7,
+      "legacy_rank": 0,
+      "policy_rank": null,
+      "rank_delta": null,
+      "rationale": "forced deterministic test candidate"
+    }
+  ],
+  "policy_mode": "Legacy",
+  "policy_decisions": [],
+  "allocations": [
+    {
+      "ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "bankroll_fraction": 0.01,
+      "notional": 100.0
+    }
+  ],
+  "executions": [
+    {
+      "source_ticker": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "resolved_market_id": "KXNCAAMB1HSPREAD-26MAR22UKISU-ISU6",
+      "bankroll_fraction": 0.01,
+      "notional": 100.0,
+      "result": "execution_failed",
+      "error": "exchange error: EOF while parsing a value at line 1 column 0",
+      "report": null
+    }
+  ]
+}
