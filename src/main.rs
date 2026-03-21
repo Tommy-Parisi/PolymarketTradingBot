@@ -16,6 +16,7 @@ mod markets;
 mod model;
 mod models;
 mod outcomes;
+mod policy;
 mod replay;
 mod research;
 
@@ -25,13 +26,26 @@ use datasets::builder::{DatasetBuildConfig, run_dataset_build};
 use execution::client::{ExchangeClient, KalshiClient};
 use execution::engine::{ExecutionEngine, ExecutionMode, summarize_performance_paths};
 use execution::paper_sim::{PaperSimClient, PaperSimConfig};
-use execution::types::{EngineConfig, OrderStatus};
+use execution::types::{EngineConfig, OrderStatus, TimeInForce};
+use features::execution::{ExecutionContext, build_execution_feature_row_from_forecast};
+use features::forecast::build_forecast_feature_row;
 use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, ResolutionMode};
-use model::allocator::{AllocationConfig, PortfolioAllocator};
+use model::allocator::{AllocatedTrade, AllocationConfig, PortfolioAllocator};
 use model::valuation::{CandidateTrade, ClaudeValuationEngine, MarketValuation, ValuationConfig, ValuationInput};
-use models::forecast::{ForecastTrainingConfig, run_forecast_training};
+use models::execution::{
+    ExecutionModel, ExecutionRuntimeConfig, ExecutionTrainingConfig, load_runtime_model as load_execution_runtime_model,
+    record_shadow_outputs as record_execution_shadow_outputs, run_execution_training,
+};
+use models::forecast::{
+    ForecastModel, ForecastRuntimeConfig, ForecastTrainingConfig, load_runtime_model,
+    record_shadow_outputs, run_forecast_training,
+};
+use models::report::{ModelReportConfig, run_model_report};
 use outcomes::resolver::{OutcomeResolverConfig, run_outcome_backfill};
+use policy::decision::{PolicyConfig, PolicyDecision, PolicyMode, decide_shadow_policy, record_shadow_decisions};
+use policy::report::{PolicyReportConfig, run_policy_report};
 use research::market_recorder::{ResearchCaptureConfig, record_scan_trace};
+use research::report::{ResearchReportConfig, run_research_report};
 
 struct BotRuntime {
     mode: ExecutionMode,
@@ -49,6 +63,11 @@ struct BotRuntime {
     claude_trigger_mode: ClaudeTriggerMode,
     cycle_counter: AtomicU64,
     research_capture: ResearchCaptureConfig,
+    forecast_model: Option<ForecastModel>,
+    forecast_runtime: ForecastRuntimeConfig,
+    execution_model: Option<ExecutionModel>,
+    execution_runtime: ExecutionRuntimeConfig,
+    policy_config: PolicyConfig,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -68,6 +87,42 @@ async fn main() {
                 Err(err) => eprintln!("failed to render pnl summary: {err}"),
             },
             Err(err) => eprintln!("failed to build pnl summary: {err}"),
+        }
+        return;
+    }
+
+    let policy_report_cfg = PolicyReportConfig::from_env(&cycle_artifacts_dir());
+    if policy_report_cfg.enabled {
+        match run_policy_report(&policy_report_cfg) {
+            Ok(summary) => match serde_json::to_string_pretty(&summary) {
+                Ok(s) => println!("{s}"),
+                Err(err) => eprintln!("failed to render policy report: {err}"),
+            },
+            Err(err) => eprintln!("policy report failed: {err}"),
+        }
+        return;
+    }
+
+    let research_report_cfg = ResearchReportConfig::from_env();
+    if research_report_cfg.enabled {
+        match run_research_report(&research_report_cfg) {
+            Ok(summary) => match serde_json::to_string_pretty(&summary) {
+                Ok(s) => println!("{s}"),
+                Err(err) => eprintln!("failed to render research report: {err}"),
+            },
+            Err(err) => eprintln!("research report failed: {err}"),
+        }
+        return;
+    }
+
+    let model_report_cfg = ModelReportConfig::from_env();
+    if model_report_cfg.enabled {
+        match run_model_report(&model_report_cfg) {
+            Ok(summary) => match serde_json::to_string_pretty(&summary) {
+                Ok(s) => println!("{s}"),
+                Err(err) => eprintln!("failed to render model report: {err}"),
+            },
+            Err(err) => eprintln!("model report failed: {err}"),
         }
         return;
     }
@@ -96,6 +151,26 @@ async fn main() {
         return;
     }
 
+    let execution_training_cfg = ExecutionTrainingConfig::from_env();
+    if execution_training_cfg.enabled {
+        if let Err(err) = run_execution_training(&execution_training_cfg).await {
+            eprintln!("execution training failed: {err}");
+        }
+        return;
+    }
+
+    if research_capture_only_mode_enabled() {
+        if let Err(err) = run_research_capture_mode().await {
+            eprintln!("research capture mode failed: {err}");
+        }
+        return;
+    }
+
+    if research_paper_capture_mode_enabled() {
+        run_research_paper_capture_mode().await;
+        return;
+    }
+
     if replay_mode_enabled() {
         replay::run_multi_day_replay().await;
         return;
@@ -114,6 +189,22 @@ async fn main() {
 
     let mode = execution_mode_from_env();
     let engine = ExecutionEngine::new(client, engine_config_from_env(), mode);
+    let forecast_runtime = ForecastRuntimeConfig::from_env();
+    let forecast_model = match load_runtime_model(&forecast_runtime) {
+        Ok(model) => model,
+        Err(err) => {
+            eprintln!("forecast model load warning: {err}");
+            None
+        }
+    };
+    let execution_runtime = ExecutionRuntimeConfig::from_env();
+    let execution_model = match load_execution_runtime_model(&execution_runtime) {
+        Ok(model) => model,
+        Err(err) => {
+            eprintln!("execution model load warning: {err}");
+            None
+        }
+    };
     let runtime = BotRuntime {
         mode,
         engine,
@@ -130,6 +221,11 @@ async fn main() {
         claude_trigger_mode: claude_trigger_mode_from_env(),
         cycle_counter: AtomicU64::new(0),
         research_capture: ResearchCaptureConfig::from_env(),
+        forecast_model,
+        forecast_runtime,
+        execution_model,
+        execution_runtime,
+        policy_config: PolicyConfig::from_env(),
     };
 
     if runtime.mode == ExecutionMode::Live && smoke_test_enabled() {
@@ -159,6 +255,104 @@ async fn main() {
     }
 }
 
+async fn run_research_capture_mode() -> Result<(), execution::types::ExecutionError> {
+    let scanner = KalshiMarketScanner::new(ScannerConfig::default());
+    let enricher = MarketEnricher::new(EnrichmentConfig::default());
+    let research_capture = ResearchCaptureConfig::from_env();
+    let enrichment_limit = enrichment_market_limit_from_env();
+    let run_once = run_once_mode();
+    let every = Duration::from_secs(cycle_seconds_from_env());
+
+    if run_once {
+        run_research_capture_cycle(&scanner, &enricher, &research_capture, enrichment_limit, 1).await?;
+        return Ok(());
+    }
+
+    let mut interval = tokio::time::interval(every);
+    interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
+    let mut cycle_number = 0u64;
+    loop {
+        interval.tick().await;
+        cycle_number += 1;
+        if let Err(err) =
+            run_research_capture_cycle(&scanner, &enricher, &research_capture, enrichment_limit, cycle_number).await
+        {
+            eprintln!("research capture cycle failed: {err}");
+        }
+    }
+}
+
+async fn run_research_capture_cycle(
+    scanner: &KalshiMarketScanner,
+    enricher: &MarketEnricher,
+    research_capture: &ResearchCaptureConfig,
+    enrichment_limit: usize,
+    cycle_number: u64,
+) -> Result<(), execution::types::ExecutionError> {
+    let started_at = Utc::now();
+    let cycle_id = format!("capture-{}-{}", started_at.format("%Y%m%dT%H%M%S"), cycle_number);
+    println!("research capture cycle #{} starting", cycle_number);
+
+    let scan_trace = scanner.scan_snapshot_with_trace().await?;
+    record_scan_trace(
+        research_capture,
+        &cycle_id,
+        &scan_trace.snapshot_markets,
+        &scan_trace,
+    )?;
+
+    let selected = scanner.select_for_valuation(scan_trace.final_markets.clone());
+    let enrich_count = enrichment_limit.min(selected.len());
+    let enriched = enricher.enrich_batch(&selected[..enrich_count]).await?;
+
+    println!(
+        "research capture cycle complete: selected_markets={} enriched_markets={} research_dir={}",
+        selected.len(),
+        enriched.len(),
+        research_capture.root_dir.display()
+    );
+    Ok(())
+}
+
+async fn run_research_paper_capture_mode() {
+    let client: Arc<dyn ExchangeClient> = Arc::new(PaperSimClient::new(PaperSimConfig::default()));
+    let runtime = BotRuntime {
+        mode: ExecutionMode::Paper,
+        engine: ExecutionEngine::new(client, engine_config_from_env(), ExecutionMode::Paper),
+        scanner: KalshiMarketScanner::new(ScannerConfig::default()),
+        enricher: MarketEnricher::new(EnrichmentConfig::default()),
+        valuator: ClaudeValuationEngine::new(ValuationConfig::from_env()),
+        allocator: PortfolioAllocator::new(allocation_config_from_env()),
+        mapper: KalshiMarketMapper::from_env(),
+        resolution_mode: resolution_mode_from_env(),
+        bankroll: bankroll_from_env(),
+        valuation_limit: valuation_market_limit_from_env(),
+        enrichment_limit: enrichment_market_limit_from_env(),
+        claude_every_n_cycles: claude_every_n_cycles_from_env(),
+        claude_trigger_mode: claude_trigger_mode_from_env(),
+        cycle_counter: AtomicU64::new(0),
+        research_capture: ResearchCaptureConfig::from_env(),
+        forecast_model: None,
+        forecast_runtime: ForecastRuntimeConfig::from_env(),
+        execution_model: None,
+        execution_runtime: ExecutionRuntimeConfig::from_env(),
+        policy_config: PolicyConfig::from_env(),
+    };
+
+    if run_once_mode() {
+        run_cycle(&runtime).await;
+        return;
+    }
+
+    let every = Duration::from_secs(cycle_seconds_from_env());
+    let mut interval = tokio::time::interval(every);
+    interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
+    loop {
+        interval.tick().await;
+        run_cycle(&runtime).await;
+    }
+}
+
 async fn run_cycle(runtime: &BotRuntime) {
     let cycle_number = runtime.cycle_counter.fetch_add(1, Ordering::Relaxed) + 1;
     let cadence_use_claude = should_use_claude_for_cycle(cycle_number, runtime.claude_every_n_cycles);
@@ -181,6 +375,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                 selected_markets: Vec::new(),
                 valuations: Vec::new(),
                 candidates: Vec::new(),
+                policy_mode: format!("{:?}", runtime.policy_config.mode),
+                policy_decisions: Vec::new(),
                 allocations: Vec::new(),
                 executions: Vec::new(),
             });
@@ -208,6 +404,8 @@ async fn run_cycle(runtime: &BotRuntime) {
             selected_markets: Vec::new(),
             valuations: Vec::new(),
             candidates: Vec::new(),
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: Vec::new(),
             allocations: Vec::new(),
             executions: Vec::new(),
         });
@@ -232,6 +430,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                     .collect(),
                 valuations: Vec::new(),
                 candidates: Vec::new(),
+                policy_mode: format!("{:?}", runtime.policy_config.mode),
+                policy_decisions: Vec::new(),
                 allocations: Vec::new(),
                 executions: Vec::new(),
             });
@@ -255,6 +455,52 @@ async fn run_cycle(runtime: &BotRuntime) {
         })
         .collect();
 
+    if let Some(model) = &runtime.forecast_model {
+        let shadow_rows: Vec<_> = valuation_inputs
+            .iter()
+            .map(|input| {
+                let feature = build_forecast_feature_row(
+                    &input.market,
+                    input.enrichment.as_ref(),
+                    started_at,
+                );
+                let output = model.predict(&feature);
+                (feature, output)
+            })
+            .collect();
+        if let Some(top) = shadow_rows
+            .iter()
+            .filter_map(|(feature, output)| {
+                let market_mid = feature.mid_prob_yes?;
+                Some((feature, output, (output.fair_prob_yes - market_mid).abs()))
+            })
+            .max_by(|a, b| a.2.total_cmp(&b.2))
+        {
+            println!(
+                "forecast shadow: model_version={} rows={} top_delta_ticker={} market_mid={:.4} fair={:.4} delta={:.4}",
+                top.1.model_version,
+                shadow_rows.len(),
+                top.0.ticker,
+                top.0.mid_prob_yes.unwrap_or(0.0),
+                top.1.fair_prob_yes,
+                top.2
+            );
+        } else {
+            println!(
+                "forecast shadow: model_version={} rows={} (no comparable market mids)",
+                shadow_rows
+                    .first()
+                    .map(|(_, output)| output.model_version.as_str())
+                    .unwrap_or("unknown"),
+                shadow_rows.len()
+            );
+        }
+        let borrowed_rows: Vec<_> = shadow_rows.iter().map(|(feature, output)| (feature, output.clone())).collect();
+        if let Err(err) = record_shadow_outputs(&runtime.forecast_runtime, &cycle_id, &borrowed_rows) {
+            eprintln!("forecast shadow warning: {err}");
+        }
+    }
+
     let (valuations, claude_attempted) = match runtime.claude_trigger_mode {
         ClaudeTriggerMode::Cadence => {
             let valuations = match runtime
@@ -277,6 +523,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                             .collect(),
                         valuations: Vec::new(),
                         candidates: Vec::new(),
+                        policy_mode: format!("{:?}", runtime.policy_config.mode),
+                        policy_decisions: Vec::new(),
                         allocations: Vec::new(),
                         executions: Vec::new(),
                     });
@@ -307,6 +555,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                             .collect(),
                         valuations: Vec::new(),
                         candidates: Vec::new(),
+                        policy_mode: format!("{:?}", runtime.policy_config.mode),
+                        policy_decisions: Vec::new(),
                         allocations: Vec::new(),
                         executions: Vec::new(),
                     });
@@ -336,6 +586,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                             .collect(),
                         valuations: Vec::new(),
                         candidates: Vec::new(),
+                        policy_mode: format!("{:?}", runtime.policy_config.mode),
+                        policy_decisions: Vec::new(),
                         allocations: Vec::new(),
                         executions: Vec::new(),
                     });
@@ -373,6 +625,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                                 .collect(),
                             valuations: Vec::new(),
                             candidates: Vec::new(),
+                            policy_mode: format!("{:?}", runtime.policy_config.mode),
+                            policy_decisions: Vec::new(),
                             allocations: Vec::new(),
                             executions: Vec::new(),
                         });
@@ -395,7 +649,17 @@ async fn run_cycle(runtime: &BotRuntime) {
         valuation_summary.used_claude, valuation_summary.used_heuristic, fallback_reason_text
     );
     let mut candidates = runtime.valuator.generate_candidates(&valuations);
-    if candidates.is_empty() && force_test_candidate_enabled() {
+    let bootstrap_paper_capture =
+        runtime.mode == ExecutionMode::Paper && research_paper_capture_mode_enabled() && force_test_candidate_enabled();
+    if bootstrap_paper_capture {
+        if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
+            println!(
+                "injecting deterministic bootstrap paper candidate: ticker={} edge={:.4}",
+                injected.ticker, injected.edge_pct
+            );
+            candidates.insert(0, injected);
+        }
+    } else if candidates.is_empty() && force_test_candidate_enabled() {
         if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
             println!(
                 "injecting deterministic test candidate: ticker={} edge={:.4}",
@@ -435,6 +699,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                 .collect(),
             valuations: valuations.iter().map(artifact_valuation).collect(),
             candidates: Vec::new(),
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: Vec::new(),
             allocations: Vec::new(),
             executions: Vec::new(),
         });
@@ -442,6 +708,134 @@ async fn run_cycle(runtime: &BotRuntime) {
     }
     println!("generated {} candidates", candidates.len());
     println!("top candidate rationale: {}", candidates[0].rationale);
+
+    let mut policy_decision_artifacts = Vec::new();
+    let mut policy_decisions_by_key: std::collections::HashMap<(String, String), PolicyDecision> =
+        std::collections::HashMap::new();
+
+    if let Some(model) = &runtime.execution_model {
+        let market_by_ticker: std::collections::HashMap<_, _> = selected
+            .iter()
+            .map(|market| (market.ticker.clone(), market))
+            .collect();
+        let forecast_by_ticker: std::collections::HashMap<_, _> = valuation_inputs
+            .iter()
+            .map(|input| {
+                let feature = build_forecast_feature_row(
+                    &input.market,
+                    input.enrichment.as_ref(),
+                    started_at,
+                );
+                (input.market.ticker.clone(), feature)
+            })
+            .collect();
+        let shadow_rows: Vec<_> = candidates
+            .iter()
+            .filter_map(|candidate| {
+                let market = market_by_ticker.get(&candidate.ticker)?;
+                let forecast = forecast_by_ticker.get(&candidate.ticker)?;
+                let feature = build_execution_feature_row_from_forecast(
+                    forecast,
+                    market,
+                    candidate,
+                    TimeInForce::Gtc,
+                    candidate.observed_price,
+                    &ExecutionContext {
+                        open_order_count_same_ticker: 0,
+                        recent_fill_count_same_ticker: 0,
+                        recent_cancel_count_same_ticker: 0,
+                        same_event_exposure_notional: 0.0,
+                    },
+                );
+                let estimate = model.predict(&feature);
+                Some((feature, estimate))
+            })
+            .collect();
+        if let Some(top) = shadow_rows
+            .iter()
+            .max_by(|a, b| a.1.fill_prob_5m.total_cmp(&b.1.fill_prob_5m))
+        {
+            println!(
+                "execution shadow: model_version={} rows={} top_fill5m_ticker={} fill5m={:.4} markout5m_bps={:.2}",
+                top.1.model_version,
+                shadow_rows.len(),
+                top.0.ticker,
+                top.1.fill_prob_5m,
+                top.1.expected_markout_bps_5m
+            );
+        }
+        let borrowed_rows: Vec<_> = shadow_rows.iter().map(|(feature, estimate)| (feature, estimate.clone())).collect();
+        if let Err(err) = record_execution_shadow_outputs(&runtime.execution_runtime, &cycle_id, &borrowed_rows) {
+            eprintln!("execution shadow warning: {err}");
+        }
+    }
+
+    if let (Some(forecast_model), Some(execution_model)) = (&runtime.forecast_model, &runtime.execution_model) {
+        let market_by_ticker: std::collections::HashMap<_, _> =
+            selected.iter().map(|market| (market.ticker.clone(), market)).collect();
+        let mut shadow_decisions = Vec::new();
+        for input in &valuation_inputs {
+            let forecast_feature =
+                build_forecast_feature_row(&input.market, input.enrichment.as_ref(), started_at);
+            let forecast_output = forecast_model.predict(&forecast_feature);
+            if let Some(candidate) = candidates.iter().find(|c| c.ticker == input.market.ticker) {
+                let decision = decide_shadow_policy(
+                    &runtime.policy_config,
+                    execution_model,
+                    market_by_ticker
+                        .get(&candidate.ticker)
+                        .copied()
+                        .unwrap_or(&input.market),
+                    &forecast_feature,
+                    &forecast_output,
+                    candidate,
+                );
+                policy_decision_artifacts.push(artifact_policy_decision(candidate, &decision));
+                policy_decisions_by_key.insert(
+                    (candidate.ticker.clone(), candidate.outcome_id.clone()),
+                    decision.clone(),
+                );
+                shadow_decisions.push((candidate, decision));
+            }
+        }
+        if let Some((candidate, decision)) = shadow_decisions.iter().max_by(|a, b| {
+            a.1.expected_realized_pnl.total_cmp(&b.1.expected_realized_pnl)
+        }) {
+            println!(
+                "policy shadow: mode={:?} rows={} top_ticker={} should_trade={} tif={:?} expected_realized_pnl={:.4}",
+                runtime.policy_config.mode,
+                shadow_decisions.len(),
+                candidate.ticker,
+                decision.should_trade,
+                decision.time_in_force,
+                decision.expected_realized_pnl
+            );
+        }
+        let borrowed: Vec<_> = shadow_decisions.iter().map(|(candidate, decision)| (*candidate, decision)).collect();
+        if let Err(err) = record_shadow_decisions(&runtime.policy_config, &cycle_id, &borrowed) {
+            eprintln!("policy shadow warning: {err}");
+        }
+    } else if runtime.policy_config.mode == PolicyMode::Active {
+        eprintln!("policy active mode requested but forecast/execution models are not both loaded");
+        persist_cycle_artifact(CycleArtifact {
+            started_at,
+            finished_at: Utc::now(),
+            status: "policy_unavailable_active".to_string(),
+            message: Some("policy active mode requires both forecast and execution models".to_string()),
+            selected_markets: selected
+                .iter()
+                .map(|m| artifact_market(m))
+                .take(100)
+                .collect(),
+            valuations: valuations.iter().map(artifact_valuation).collect(),
+            candidates: candidate_artifacts_from(&candidates),
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: Vec::new(),
+            allocations: Vec::new(),
+            executions: Vec::new(),
+        });
+        return;
+    }
 
     if runtime.mode == ExecutionMode::Live
         && valuation_summary.used_heuristic
@@ -463,14 +857,76 @@ async fn run_cycle(runtime: &BotRuntime) {
                 .collect(),
             valuations: valuations.iter().map(artifact_valuation).collect(),
             candidates: candidate_artifacts_from(&candidates),
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: policy_decision_artifacts.clone(),
             allocations: Vec::new(),
             executions: Vec::new(),
         });
         return;
     }
 
-    let candidate_artifacts: Vec<ArtifactCandidate> = candidates.iter().map(artifact_candidate).collect();
-    let allocations = runtime.allocator.allocate(runtime.bankroll, candidates);
+    let allocation_candidates = if runtime.policy_config.mode == PolicyMode::Active {
+        let mut ranked = Vec::new();
+        let mut keys: Vec<_> = policy_decisions_by_key
+            .iter()
+            .filter(|(_, decision)| decision.should_trade)
+            .collect();
+        keys.sort_by(|a, b| b.1.expected_realized_pnl.total_cmp(&a.1.expected_realized_pnl));
+        for ((ticker, outcome_id), decision) in keys {
+            let Some(candidate) = candidates
+                .iter()
+                .find(|c| &c.ticker == ticker && &c.outcome_id == outcome_id)
+            else {
+                continue;
+            };
+            let mut c = candidate.clone();
+            c.observed_price = decision.limit_price;
+            c.edge_pct = decision.expected_realized_pnl.max(0.0) / 100.0;
+            c.confidence = decision.expected_fill_prob.clamp(0.0, 1.0);
+            c.rationale = format!(
+                "{} [policy_rank tif={:?} erpnl={:.4}]",
+                c.rationale, decision.time_in_force, decision.expected_realized_pnl
+            );
+            ranked.push(c);
+        }
+        ranked
+    } else {
+        candidates.clone()
+    };
+    let candidate_artifacts: Vec<ArtifactCandidate> = candidates
+        .iter()
+        .enumerate()
+        .map(|(idx, c)| {
+            artifact_candidate(
+                c,
+                Some(idx),
+                policy_decisions_by_key
+                    .get(&(c.ticker.clone(), c.outcome_id.clone()))
+                    .and_then(|_| {
+                        allocation_candidates
+                            .iter()
+                            .position(|pc| pc.ticker == c.ticker && pc.outcome_id == c.outcome_id)
+                    }),
+            )
+        })
+        .collect();
+    let allocations = if bootstrap_paper_capture {
+        allocation_candidates
+            .first()
+            .cloned()
+            .map(|candidate| {
+                let fraction = runtime.allocator.min_fraction_per_trade().max(0.01);
+                AllocatedTrade {
+                    candidate,
+                    bankroll_fraction: fraction,
+                    notional: runtime.bankroll * fraction,
+                }
+            })
+            .into_iter()
+            .collect()
+    } else {
+        runtime.allocator.allocate(runtime.bankroll, allocation_candidates)
+    };
     if allocations.is_empty() {
         eprintln!("allocator produced no trades");
         persist_cycle_artifact(CycleArtifact {
@@ -485,56 +941,87 @@ async fn run_cycle(runtime: &BotRuntime) {
                 .collect(),
             valuations: valuations.iter().map(artifact_valuation).collect(),
             candidates: candidate_artifacts,
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: policy_decision_artifacts.clone(),
             allocations: Vec::new(),
             executions: Vec::new(),
         });
         return;
     }
-    let ticker_risk = load_ticker_risk_state_from_journal();
-    let max_notional_per_ticker = max_notional_per_ticker_from_env();
-    let reentry_cooldown_secs = reentry_cooldown_secs_from_env() as i64;
-    let invalid_param_cooldown_secs = invalid_param_cooldown_secs_from_env();
-    let now = Utc::now();
-    let mut guarded_allocations = Vec::new();
-    for a in allocations {
-        if let Some(r) = ticker_risk.get(&a.candidate.ticker) {
-            if r.open_notional_estimate + a.notional > max_notional_per_ticker {
-                eprintln!(
-                    "risk guard: skipping {} due to per-ticker notional cap (current={:.2} + proposed={:.2} > cap={:.2})",
-                    a.candidate.ticker, r.open_notional_estimate, a.notional, max_notional_per_ticker
-                );
-                continue;
-            }
-            if let Some(last_fill) = r.last_fill_ts {
-                let age_secs = (now - last_fill).num_seconds();
-                if age_secs >= 0 && age_secs < reentry_cooldown_secs {
+    let mut guarded_allocations = if bootstrap_paper_capture {
+        println!("bootstrap paper capture: bypassing allocator/risk guards for one research execution");
+        allocations
+    } else {
+        let ticker_risk = load_ticker_risk_state_from_journal();
+        let max_notional_per_ticker = max_notional_per_ticker_from_env();
+        let reentry_cooldown_secs = reentry_cooldown_secs_from_env() as i64;
+        let invalid_param_cooldown_secs = invalid_param_cooldown_secs_from_env();
+        let now = Utc::now();
+        let mut guarded_allocations = Vec::new();
+        for a in allocations {
+            if let Some(r) = ticker_risk.get(&a.candidate.ticker) {
+                if r.open_notional_estimate + a.notional > max_notional_per_ticker {
                     eprintln!(
-                        "risk guard: skipping {} due to re-entry cooldown (age={}s < cooldown={}s)",
-                        a.candidate.ticker, age_secs, reentry_cooldown_secs
+                        "risk guard: skipping {} due to per-ticker notional cap (current={:.2} + proposed={:.2} > cap={:.2})",
+                        a.candidate.ticker, r.open_notional_estimate, a.notional, max_notional_per_ticker
+                    );
+                    continue;
+                }
+                if let Some(last_fill) = r.last_fill_ts {
+                    let age_secs = (now - last_fill).num_seconds();
+                    if age_secs >= 0 && age_secs < reentry_cooldown_secs {
+                        eprintln!(
+                            "risk guard: skipping {} due to re-entry cooldown (age={}s < cooldown={}s)",
+                            a.candidate.ticker, age_secs, reentry_cooldown_secs
+                        );
+                        continue;
+                    }
+                }
+                if let Some(last_invalid) = r.last_invalid_parameters_ts {
+                    let age_secs = (now - last_invalid).num_seconds();
+                    if age_secs >= 0 && age_secs < invalid_param_cooldown_secs {
+                        eprintln!(
+                            "risk guard: skipping {} due to invalid-parameters cooldown (age={}s < cooldown={}s)",
+                            a.candidate.ticker, age_secs, invalid_param_cooldown_secs
+                        );
+                        continue;
+                    }
+                }
+                let key = order_key(&a.candidate.outcome_id, a.candidate.side);
+                if r.open_order_keys.contains(&key) {
+                    eprintln!(
+                        "risk guard: skipping {} due to existing open order on same outcome/side ({})",
+                        a.candidate.ticker, key
                     );
                     continue;
                 }
             }
-            if let Some(last_invalid) = r.last_invalid_parameters_ts {
-                let age_secs = (now - last_invalid).num_seconds();
-                if age_secs >= 0 && age_secs < invalid_param_cooldown_secs {
-                    eprintln!(
-                        "risk guard: skipping {} due to invalid-parameters cooldown (age={}s < cooldown={}s)",
-                        a.candidate.ticker, age_secs, invalid_param_cooldown_secs
-                    );
-                    continue;
-                }
-            }
-            let key = order_key(&a.candidate.outcome_id, a.candidate.side);
-            if r.open_order_keys.contains(&key) {
-                eprintln!(
-                    "risk guard: skipping {} due to existing open order on same outcome/side ({})",
-                    a.candidate.ticker, key
-                );
+            guarded_allocations.push(a);
+        }
+        guarded_allocations
+    };
+    if runtime.policy_config.mode == PolicyMode::Active {
+        let mut policy_guarded = Vec::new();
+        for mut allocated in guarded_allocations {
+            let key = (
+                allocated.candidate.ticker.clone(),
+                allocated.candidate.outcome_id.clone(),
+            );
+            let Some(decision) = policy_decisions_by_key.get(&key) else {
                 continue;
+            };
+            if !decision.should_trade {
+                continue;
+            }
+            allocated.notional *= decision.size_multiplier.max(0.0);
+            allocated.bankroll_fraction *= decision.size_multiplier.max(0.0);
+            if allocated.notional > 0.0
+                && allocated.bankroll_fraction >= runtime.allocator.min_fraction_per_trade()
+            {
+                policy_guarded.push(allocated);
             }
         }
-        guarded_allocations.push(a);
+        guarded_allocations = policy_guarded;
     }
     if guarded_allocations.is_empty() {
         eprintln!("allocator produced no trades after risk guard");
@@ -550,6 +1037,8 @@ async fn run_cycle(runtime: &BotRuntime) {
                 .collect(),
             valuations: valuations.iter().map(artifact_valuation).collect(),
             candidates: candidate_artifacts,
+            policy_mode: format!("{:?}", runtime.policy_config.mode),
+            policy_decisions: policy_decision_artifacts.clone(),
             allocations: Vec::new(),
             executions: Vec::new(),
         });
@@ -564,6 +1053,14 @@ async fn run_cycle(runtime: &BotRuntime) {
     let mut execution_artifacts = Vec::new();
     for allocated in guarded_allocations {
         let mut signal = runtime.valuator.candidate_to_signal(&allocated.candidate);
+        if runtime.policy_config.mode == PolicyMode::Active {
+            if let Some(decision) = policy_decisions_by_key.get(&(
+                allocated.candidate.ticker.clone(),
+                allocated.candidate.outcome_id.clone(),
+            )) {
+                signal.observed_price = decision.limit_price;
+            }
+        }
         match runtime.mapper.resolve_market_ticker(&signal.market_id).await {
             Ok(ticker) => signal.market_id = ticker,
             Err(err) if runtime.resolution_mode == ResolutionMode::BestEffort => {
@@ -694,6 +1191,8 @@ async fn run_cycle(runtime: &BotRuntime) {
             .collect(),
         valuations: valuations.iter().map(artifact_valuation).collect(),
         candidates: candidate_artifacts,
+        policy_mode: format!("{:?}", runtime.policy_config.mode),
+        policy_decisions: policy_decision_artifacts,
         allocations: execution_artifacts
             .iter()
             .map(|e| ArtifactAllocation {
@@ -730,6 +1229,26 @@ fn run_once_mode() -> bool {
 fn replay_mode_enabled() -> bool {
     matches!(
         std::env::var("BOT_RUN_REPLAY")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn research_capture_only_mode_enabled() -> bool {
+    matches!(
+        std::env::var("BOT_RUN_RESEARCH_CAPTURE_ONLY")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn research_paper_capture_mode_enabled() -> bool {
+    matches!(
+        std::env::var("BOT_RUN_RESEARCH_PAPER_CAPTURE_ONLY")
             .unwrap_or_else(|_| "false".to_string())
             .to_ascii_lowercase()
             .as_str(),
@@ -1296,7 +1815,11 @@ fn artifact_valuation(v: &MarketValuation) -> ArtifactValuation {
     }
 }
 
-fn artifact_candidate(c: &CandidateTrade) -> ArtifactCandidate {
+fn artifact_candidate(
+    c: &CandidateTrade,
+    legacy_rank: Option<usize>,
+    policy_rank: Option<usize>,
+) -> ArtifactCandidate {
     ArtifactCandidate {
         ticker: c.ticker.clone(),
         outcome_id: c.outcome_id.clone(),
@@ -1305,12 +1828,40 @@ fn artifact_candidate(c: &CandidateTrade) -> ArtifactCandidate {
         observed_price: c.observed_price,
         edge_pct: c.edge_pct,
         confidence: c.confidence,
+        legacy_rank,
+        policy_rank,
+        rank_delta: match (legacy_rank, policy_rank) {
+            (Some(l), Some(p)) => Some(l as i64 - p as i64),
+            _ => None,
+        },
         rationale: c.rationale.clone(),
     }
 }
 
 fn candidate_artifacts_from(candidates: &[CandidateTrade]) -> Vec<ArtifactCandidate> {
-    candidates.iter().map(artifact_candidate).collect()
+    candidates
+        .iter()
+        .enumerate()
+        .map(|(idx, c)| artifact_candidate(c, Some(idx), None))
+        .collect()
+}
+
+fn artifact_policy_decision(candidate: &CandidateTrade, decision: &PolicyDecision) -> ArtifactPolicyDecision {
+    ArtifactPolicyDecision {
+        ticker: candidate.ticker.clone(),
+        outcome_id: candidate.outcome_id.clone(),
+        legacy_edge_pct: candidate.edge_pct,
+        legacy_confidence: candidate.confidence,
+        should_trade: decision.should_trade,
+        chosen_limit_price: decision.limit_price,
+        chosen_time_in_force: decision.time_in_force,
+        size_multiplier: decision.size_multiplier,
+        expected_fill_prob: decision.expected_fill_prob,
+        expected_gross_edge: decision.expected_gross_edge,
+        expected_realized_pnl: decision.expected_realized_pnl,
+        rejection_reason: decision.rejection_reason.clone(),
+        rationale: decision.rationale.clone(),
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -1322,6 +1873,8 @@ struct CycleArtifact {
     selected_markets: Vec<ArtifactMarket>,
     valuations: Vec<ArtifactValuation>,
     candidates: Vec<ArtifactCandidate>,
+    policy_mode: String,
+    policy_decisions: Vec<ArtifactPolicyDecision>,
     allocations: Vec<ArtifactAllocation>,
     executions: Vec<ArtifactExecution>,
 }
@@ -1356,6 +1909,26 @@ struct ArtifactCandidate {
     observed_price: f64,
     edge_pct: f64,
     confidence: f64,
+    legacy_rank: Option<usize>,
+    policy_rank: Option<usize>,
+    rank_delta: Option<i64>,
+    rationale: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+struct ArtifactPolicyDecision {
+    ticker: String,
+    outcome_id: String,
+    legacy_edge_pct: f64,
+    legacy_confidence: f64,
+    should_trade: bool,
+    chosen_limit_price: f64,
+    chosen_time_in_force: execution::types::TimeInForce,
+    size_multiplier: f64,
+    expected_fill_prob: f64,
+    expected_gross_edge: f64,
+    expected_realized_pnl: f64,
+    rejection_reason: Option<String>,
     rationale: String,
 }
 

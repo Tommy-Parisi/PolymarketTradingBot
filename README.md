@@ -121,6 +121,27 @@ The live Kalshi client reads auth and routing from environment variables:
 - `BOT_FORECAST_DATASET_PATH` (default `var/features/forecast/forecast_training.jsonl`)
 - `BOT_MODEL_FORECAST_DIR` (default `var/models/forecast`)
 - `BOT_MODEL_FORECAST_MIN_BUCKET_SAMPLES` (default `5`; minimum bucket size before the baseline model trusts a specialized segment)
+- `BOT_MODEL_FORECAST_PATH` (optional; when set, loads a trained forecast artifact for per-cycle shadow scoring)
+- `BOT_FORECAST_SHADOW_ENABLED` (`true/false`, default `true`; controls whether runtime forecast shadow outputs are written)
+- `BOT_RUN_EXECUTION_TRAIN` (`true/false`, default `false`; trains the Step 6 baseline execution model from `var/features/execution/execution_training.jsonl`)
+- `BOT_EXECUTION_DATASET_PATH` (default `var/features/execution/execution_training.jsonl`)
+- `BOT_MODEL_EXECUTION_DIR` (default `var/models/execution`)
+- `BOT_MODEL_EXECUTION_PATH` (optional; when set, loads a trained execution artifact for per-cycle shadow scoring)
+- `BOT_MODEL_EXECUTION_MIN_BUCKET_SAMPLES` (default `5`)
+- `BOT_EXECUTION_SHADOW_ENABLED` (`true/false`, default `true`)
+- `BOT_POLICY_SHADOW_ENABLED` (`true/false`, default `true`; enables Step 7 policy shadow decisions)
+- `BOT_POLICY_MODE` (`legacy|shadow|active`, default `legacy`)
+- `BOT_RUN_POLICY_REPORT` (`true/false`, default `false`; summarizes policy behavior from saved cycle artifacts)
+- `BOT_POLICY_REPORT_CYCLE_DIR` (optional; defaults to the normal cycle artifact directory)
+- `BOT_RUN_MODEL_REPORT` (`true/false`, default `false`; evaluates the current forecast and execution artifacts against the latest datasets)
+- `BOT_MODEL_FORECAST_REPORT_PATH` (optional; defaults to `BOT_MODEL_FORECAST_PATH` or `var/models/forecast/latest.json`)
+- `BOT_MODEL_EXECUTION_REPORT_PATH` (optional; defaults to `BOT_MODEL_EXECUTION_PATH` or `var/models/execution/latest.json`)
+- `BOT_RUN_RESEARCH_CAPTURE_ONLY` (`true/false`, default `false`; runs scan + enrichment + research logging only, with no trading path)
+- `BOT_RUN_RESEARCH_PAPER_CAPTURE_ONLY` (`true/false`, default `false`; runs the full cycle against the paper simulator so research order-lifecycle logs are captured without live orders)
+- `BOT_POLICY_MIN_EXPECTED_REALIZED_PNL` (default `0.0`)
+- `BOT_POLICY_MAX_ACTIONS_PER_CANDIDATE` (default `4`)
+- `BOT_POLICY_DEFAULT_LEGACY_FALLBACK` (`true/false`, default `true`)
+- `BOT_SHADOW_DIR` (default `var/shadow`)
 - `BOT_FEATURES_DIR` (default `var/features`)
 
 The client signs each request using Kalshi's `timestamp + METHOD + path` convention with RSA-PSS and sends:
@@ -236,6 +257,10 @@ To train the baseline Step 5 forecast model artifact from the forecast dataset:
 
 `set -a; source .env; set +a; BOT_RUN_FORECAST_TRAIN=true cargo run --quiet`
 
+To train the baseline Step 6 execution model artifact from the execution dataset:
+
+`set -a; source .env; set +a; BOT_RUN_EXECUTION_TRAIN=true cargo run --quiet`
+
 Current dataset builder outputs JSONL training tables at:
 
 - `var/features/forecast/forecast_training.jsonl`
@@ -248,6 +273,82 @@ Current forecast training writes JSON artifacts at:
 - `var/models/forecast/latest.json`
 - `var/models/forecast/<version>/artifact.json`
 - `var/models/forecast/manifest.jsonl`
+
+When `BOT_MODEL_FORECAST_PATH` is set, normal bot cycles also run the Step 5 model in shadow mode and write:
+
+- `var/shadow/forecast/YYYY-MM-DD/forecast_shadow.jsonl`
+
+This shadow path is read-only with respect to trading decisions. It does not change execution behavior yet.
+
+When `BOT_MODEL_EXECUTION_PATH` is set, normal bot cycles also run the Step 6 execution model in shadow mode and write:
+
+- `var/shadow/execution/YYYY-MM-DD/execution_shadow.jsonl`
+
+The Step 6 baseline execution model currently estimates:
+
+1. fill probability within 30 seconds
+2. fill probability within 5 minutes
+3. expected fill price
+4. expected 5-minute markout
+5. expected 30-minute markout
+
+It is still a baseline empirical model. It does not control execution yet.
+
+With both `BOT_MODEL_FORECAST_PATH` and `BOT_MODEL_EXECUTION_PATH` set, Step 7 policy shadow decisions are also written to:
+
+- `var/shadow/policy/YYYY-MM-DD/policy_shadow.jsonl`
+
+The Step 7 policy layer currently scores a small action grid:
+
+1. `skip`
+2. `GTC` near observed price
+3. `IOC` near ask
+4. slightly less/more aggressive variants depending on spread
+
+`BOT_POLICY_MODE` behavior:
+
+1. `legacy`
+   - current allocator/execution path only
+   - shadow logs may still be written
+2. `shadow`
+   - same as `legacy`, but policy decisions are explicitly tracked as comparison outputs
+3. `active`
+   - requires both forecast and execution model artifacts
+   - filters legacy allocations through policy decisions
+   - rescales notional by `size_multiplier`
+   - overrides order pricing using the chosen policy limit price
+
+Current `active` mode is still conservative:
+
+1. it fails closed if forecast or execution artifacts are missing
+2. it still uses the legacy allocator shell first
+3. policy influence is applied after legacy allocation and risk guards
+
+To summarize saved cycle artifacts and compare legacy-vs-policy ranking behavior:
+
+`set -a; source .env; set +a; BOT_RUN_POLICY_REPORT=true cargo run --quiet`
+
+To evaluate the current forecast and execution artifacts against the latest saved datasets:
+
+`set -a; source .env; set +a; BOT_RUN_MODEL_REPORT=true cargo run --quiet`
+
+To collect market-state research data without entering the trading path:
+
+`set -a; source .env; set +a; BOT_RUN_RESEARCH_CAPTURE_ONLY=true BOT_RUN_ONCE=true cargo run --quiet`
+
+For continuous capture at your normal cycle cadence:
+
+`set -a; source .env; set +a; BOT_RUN_RESEARCH_CAPTURE_ONLY=true cargo run`
+
+To capture order-lifecycle research data safely through the paper simulator:
+
+`set -a; source .env; set +a; BOT_RUN_RESEARCH_PAPER_CAPTURE_ONLY=true BOT_RUN_ONCE=true cargo run --quiet`
+
+If the strategy is not naturally producing candidates yet, add:
+
+`BOT_FORCE_TEST_CANDIDATE=true`
+
+That forces a deterministic paper-only candidate so `var/research/order_lifecycle` starts filling.
 
 The Step 5 baseline model is a shrinkage-based empirical forecaster that blends:
 

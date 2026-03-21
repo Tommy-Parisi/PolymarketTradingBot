@@ -38,6 +38,10 @@ impl PortfolioAllocator {
         Self { cfg }
     }
 
+    pub fn min_fraction_per_trade(&self) -> f64 {
+        self.cfg.min_fraction_per_trade
+    }
+
     pub fn allocate(&self, bankroll: f64, mut candidates: Vec<CandidateTrade>) -> Vec<AllocatedTrade> {
         if bankroll <= 0.0 || candidates.is_empty() {
             return Vec::new();

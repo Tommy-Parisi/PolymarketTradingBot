@@ -46,6 +46,44 @@ impl ForecastTrainingConfig {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ForecastRuntimeConfig {
+    pub model_path: Option<PathBuf>,
+    pub shadow_enabled: bool,
+    pub shadow_root: PathBuf,
+    pub min_bucket_samples: usize,
+}
+
+impl ForecastRuntimeConfig {
+    pub fn from_env() -> Self {
+        let model_path = std::env::var("BOT_MODEL_FORECAST_PATH")
+            .ok()
+            .map(PathBuf::from)
+            .filter(|path| !path.as_os_str().is_empty());
+        let shadow_enabled = matches!(
+            std::env::var("BOT_FORECAST_SHADOW_ENABLED")
+                .unwrap_or_else(|_| "true".to_string())
+                .to_ascii_lowercase()
+                .as_str(),
+            "1" | "true" | "yes"
+        );
+        let shadow_root = PathBuf::from(
+            std::env::var("BOT_SHADOW_DIR").unwrap_or_else(|_| "var/shadow".to_string()),
+        );
+        let min_bucket_samples = std::env::var("BOT_MODEL_FORECAST_MIN_BUCKET_SAMPLES")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(5)
+            .max(1);
+        Self {
+            model_path,
+            shadow_enabled,
+            shadow_root,
+            min_bucket_samples,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ForecastOutput {
     pub ticker: String,
@@ -54,6 +92,20 @@ pub struct ForecastOutput {
     pub confidence: f64,
     pub model_version: String,
     pub feature_ts: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ForecastShadowRecord {
+    pub cycle_id: String,
+    pub recorded_at: DateTime<Utc>,
+    pub ticker: String,
+    pub title: String,
+    pub vertical: String,
+    pub market_mid_prob_yes: Option<f64>,
+    pub fair_prob_yes: f64,
+    pub uncertainty: f64,
+    pub confidence: f64,
+    pub model_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -292,6 +344,64 @@ pub async fn run_forecast_training(cfg: &ForecastTrainingConfig) -> Result<(), E
         finalized.metrics.test_market_mid_brier
     );
 
+    Ok(())
+}
+
+pub fn load_runtime_model(cfg: &ForecastRuntimeConfig) -> Result<Option<ForecastModel>, ExecutionError> {
+    let Some(path) = cfg.model_path.as_ref() else {
+        return Ok(None);
+    };
+    if !path.exists() {
+        return Err(ExecutionError::Exchange(format!(
+            "forecast model path does not exist: {}",
+            path.display()
+        )));
+    }
+    let model = ForecastModel::load_from_path(path, cfg.min_bucket_samples)?;
+    Ok(Some(model))
+}
+
+pub fn record_shadow_outputs(
+    cfg: &ForecastRuntimeConfig,
+    cycle_id: &str,
+    rows: &[(&ForecastFeatureRow, ForecastOutput)],
+) -> Result<(), ExecutionError> {
+    if !cfg.shadow_enabled || rows.is_empty() {
+        return Ok(());
+    }
+    let day = Utc::now().format("%Y-%m-%d").to_string();
+    let path = cfg
+        .shadow_root
+        .join("forecast")
+        .join(day)
+        .join("forecast_shadow.jsonl");
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+    }
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+    for (feature, output) in rows {
+        let record = ForecastShadowRecord {
+            cycle_id: cycle_id.to_string(),
+            recorded_at: Utc::now(),
+            ticker: feature.ticker.clone(),
+            title: feature.title.clone(),
+            vertical: feature.vertical.clone(),
+            market_mid_prob_yes: feature.mid_prob_yes,
+            fair_prob_yes: output.fair_prob_yes,
+            uncertainty: output.uncertainty,
+            confidence: output.confidence,
+            model_version: output.model_version.clone(),
+        };
+        let line = serde_json::to_string(&record)
+            .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        file.write_all(line.as_bytes())
+            .and_then(|_| file.write_all(b"\n"))
+            .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+    }
     Ok(())
 }
 
