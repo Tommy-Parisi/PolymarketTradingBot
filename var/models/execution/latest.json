@@ -1,0 +1,118 @@
+{
+  "schema_version": "v1",
+  "model_kind": "empirical_execution_baseline",
+  "model_version": "execution-20260322T032350Z",
+  "trained_at": "2026-03-22T03:23:50.758265Z",
+  "train_rows": 42,
+  "validation_rows": 9,
+  "test_rows": 8,
+  "feature_schema_version": "v1",
+  "metrics": {
+    "validation_brier_fill_30s": 0.0007000625756143691,
+    "validation_brier_fill_5m": 0.0005258247790170134,
+    "validation_mae_fill_price": 0.04023809523809524,
+    "validation_mae_markout_5m": 1006.0221409544502,
+    "test_brier_fill_30s": 0.0007000625756143691,
+    "test_brier_fill_5m": 0.0005258247790170134,
+    "test_mae_fill_price": 0.04023809523809524,
+    "test_mae_markout_5m": 1006.0221409544502
+  },
+  "global": {
+    "total": 42.0,
+    "fill_30s": {
+      "positives": 42.0,
+      "total": 42.0
+    },
+    "fill_5m": {
+      "positives": 42.0,
+      "total": 42.0
+    },
+    "fill_price": {
+      "total": 2.5300000000000002,
+      "count": 42.0
+    },
+    "markout_5m_bps": {
+      "total": -341771.1586437309,
+      "count": 38.0
+    },
+    "markout_30m_bps": {
+      "total": -271771.1586437309,
+      "count": 31.0
+    }
+  },
+  "by_vertical": {
+    "unknown": {
+      "total": 42.0,
+      "fill_30s": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_5m": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_price": {
+        "total": 2.5300000000000002,
+        "count": 42.0
+      },
+      "markout_5m_bps": {
+        "total": -341771.1586437309,
+        "count": 38.0
+      },
+      "markout_30m_bps": {
+        "total": -271771.1586437309,
+        "count": 31.0
+      }
+    }
+  },
+  "by_vertical_tif": {
+    "unknown|Ioc": {
+      "total": 42.0,
+      "fill_30s": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_5m": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_price": {
+        "total": 2.5300000000000002,
+        "count": 42.0
+      },
+      "markout_5m_bps": {
+        "total": -341771.1586437309,
+        "count": 38.0
+      },
+      "markout_30m_bps": {
+        "total": -271771.1586437309,
+        "count": 31.0
+      }
+    }
+  },
+  "by_vertical_liquidity": {
+    "unknown|low": {
+      "total": 42.0,
+      "fill_30s": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_5m": {
+        "positives": 42.0,
+        "total": 42.0
+      },
+      "fill_price": {
+        "total": 2.5300000000000002,
+        "count": 42.0
+      },
+      "markout_5m_bps": {
+        "total": -341771.1586437309,
+        "count": 38.0
+      },
+      "markout_30m_bps": {
+        "total": -271771.1586437309,
+        "count": 31.0
+      }
+    }
+  }
+}
