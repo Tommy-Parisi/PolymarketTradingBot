@@ -58,6 +58,10 @@ pub struct ExecutionTrainingRow {
     pub schema_version: String,
     pub split: String,
     pub client_order_id: String,
+    pub execution_source_class: String,
+    pub is_bootstrap_synthetic: bool,
+    pub is_organic_paper: bool,
+    pub is_live_real: bool,
     pub terminal_status: Option<String>,
     pub label_filled_within_30s: bool,
     pub label_filled_within_5m: bool,
@@ -78,6 +82,21 @@ pub async fn run_dataset_build(cfg: &DatasetBuildConfig) -> Result<(), Execution
 
     let forecast_rows = build_forecast_dataset(&market_events, &outcomes);
     let execution_rows = build_execution_dataset(&market_events, &order_events);
+    let bootstrap_rows: Vec<_> = execution_rows
+        .iter()
+        .filter(|row| row.is_bootstrap_synthetic)
+        .cloned()
+        .collect();
+    let organic_paper_rows: Vec<_> = execution_rows
+        .iter()
+        .filter(|row| row.is_organic_paper)
+        .cloned()
+        .collect();
+    let live_real_rows: Vec<_> = execution_rows
+        .iter()
+        .filter(|row| row.is_live_real)
+        .cloned()
+        .collect();
 
     write_jsonl_dataset(
         &cfg.output_dir.join("forecast").join("forecast_training.jsonl"),
@@ -87,11 +106,32 @@ pub async fn run_dataset_build(cfg: &DatasetBuildConfig) -> Result<(), Execution
         &cfg.output_dir.join("execution").join("execution_training.jsonl"),
         &execution_rows,
     )?;
+    write_jsonl_dataset(
+        &cfg.output_dir
+            .join("execution")
+            .join("execution_training_bootstrap.jsonl"),
+        &bootstrap_rows,
+    )?;
+    write_jsonl_dataset(
+        &cfg.output_dir
+            .join("execution")
+            .join("execution_training_organic_paper.jsonl"),
+        &organic_paper_rows,
+    )?;
+    write_jsonl_dataset(
+        &cfg.output_dir
+            .join("execution")
+            .join("execution_training_live_real.jsonl"),
+        &live_real_rows,
+    )?;
 
     println!(
-        "dataset build complete: forecast_rows={} execution_rows={}",
+        "dataset build complete: forecast_rows={} execution_rows={} bootstrap_rows={} organic_paper_rows={} live_real_rows={}",
         forecast_rows.len(),
-        execution_rows.len()
+        execution_rows.len(),
+        bootstrap_rows.len(),
+        organic_paper_rows.len(),
+        live_real_rows.len()
     );
     Ok(())
 }
@@ -154,6 +194,7 @@ fn build_execution_dataset(
         let terminal_status = terminal.and_then(|e| e.status).map(|s| format!("{:?}", s));
         let terminal_filled_qty = terminal.map(|e| e.filled_qty).unwrap_or(0.0);
         let terminal_avg_fill_price = terminal.and_then(|e| e.avg_fill_price);
+        let execution_source_class = classify_execution_source(intent, &events, terminal);
         let label_canceled = terminal
             .and_then(|e| e.status)
             .map(|s| s == OrderStatus::Canceled)
@@ -170,6 +211,10 @@ fn build_execution_dataset(
             schema_version: DATASET_SCHEMA_VERSION.to_string(),
             split: String::new(),
             client_order_id,
+            is_bootstrap_synthetic: execution_source_class == "bootstrap_synthetic",
+            is_organic_paper: execution_source_class == "organic_paper",
+            is_live_real: execution_source_class == "live_real",
+            execution_source_class,
             terminal_status,
             label_filled_within_30s: filled_within_30s,
             label_filled_within_5m: filled_within_5m,
@@ -281,7 +326,55 @@ fn synthetic_signal_from_intent(intent: &OrderLifecycleEvent) -> Option<TradeSig
         edge_pct: intent.signal_edge_pct.unwrap_or(0.0),
         confidence: intent.signal_confidence.unwrap_or(0.0),
         signal_timestamp: intent.ts,
+        signal_origin: intent.signal_origin.clone(),
     })
+}
+
+fn classify_execution_source(
+    intent: &OrderLifecycleEvent,
+    events: &[OrderLifecycleEvent],
+    terminal: Option<&OrderLifecycleEvent>,
+) -> String {
+    if matches!(intent.signal_origin.as_deref(), Some("bootstrap_synthetic")) {
+        return "bootstrap_synthetic".to_string();
+    }
+
+    let is_paper = intent.execution_mode.as_deref() == Some("paper")
+        || terminal
+            .and_then(|event| event.execution_mode.as_deref())
+            .map(|mode| mode == "paper")
+            .unwrap_or(false)
+        || events.iter().any(|event| {
+            event
+                .order_id
+                .as_deref()
+                .map(|id| id.starts_with("paper-") || id.starts_with("sim-"))
+                .unwrap_or(false)
+        });
+
+    if is_paper && looks_like_bootstrap_synthetic(intent) {
+        return "bootstrap_synthetic".to_string();
+    }
+    if is_paper {
+        return "organic_paper".to_string();
+    }
+    "live_real".to_string()
+}
+
+fn looks_like_bootstrap_synthetic(intent: &OrderLifecycleEvent) -> bool {
+    let fair = intent.signal_fair_price.unwrap_or(-1.0);
+    let observed = intent.signal_observed_price.unwrap_or(-1.0);
+    let edge = intent.signal_edge_pct.unwrap_or(-1.0);
+    let confidence = intent.signal_confidence.unwrap_or(-1.0);
+    let limit_price = intent.limit_price.unwrap_or(-1.0);
+    let qty = intent.requested_qty;
+
+    (limit_price - 0.02).abs() <= 0.000_001
+        && (qty - 303.030_303_030_303).abs() <= 0.01
+        && (fair - 0.04).abs() <= 0.000_001
+        && (observed - 0.01).abs() <= 0.000_001
+        && (edge - 0.03).abs() <= 0.000_001
+        && (confidence - 0.7).abs() <= 0.000_001
 }
 
 fn compute_markout_bps(

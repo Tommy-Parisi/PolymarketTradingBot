@@ -225,7 +225,22 @@ impl ExecutionEngine {
 
         let mut survivors = Vec::new();
         for tracked in open_orders {
-            let mut report = self.client.get_order(&tracked.order_id).await?;
+            let mut report = match self.client.get_order(&tracked.order_id).await {
+                Ok(report) => report,
+                Err(ExecutionError::Exchange(msg)) if exchange_not_found(&msg) => {
+                    let _ = self.append_journal(
+                        "reconcile_order_pruned",
+                        json!({
+                            "order_id": tracked.order_id,
+                            "client_order_id": tracked.client_order_id,
+                            "market_id": tracked.market_id,
+                            "reason": "exchange_not_found"
+                        }),
+                    );
+                    continue;
+                }
+                Err(err) => return Err(err),
+            };
             if matches!(report.status, OrderStatus::New | OrderStatus::PartiallyFilled)
                 && self.execution_policy() == ExecutionPolicy::Ioc
             {
@@ -536,6 +551,13 @@ impl ExecutionEngine {
     }
 }
 
+fn exchange_not_found(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    lower.contains("404 not found")
+        || lower.contains("\"code\":\"not_found\"")
+        || lower.contains("code\":\"not_found")
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ExecutionPolicy {
     Ioc,
@@ -723,6 +745,7 @@ mod tests {
             edge_pct: 0.09,
             confidence: 0.8,
             signal_timestamp: Utc::now(),
+            signal_origin: Some("test".to_string()),
         }
     }
 

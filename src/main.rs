@@ -72,6 +72,7 @@ struct BotRuntime {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ClaudeTriggerMode {
+    Never,
     Cadence,
     OnViableMarkets,
     OnHeuristicCandidates,
@@ -502,6 +503,37 @@ async fn run_cycle(runtime: &BotRuntime) {
     }
 
     let (valuations, claude_attempted) = match runtime.claude_trigger_mode {
+        ClaudeTriggerMode::Never => {
+            let valuations = match runtime
+                .valuator
+                .value_markets_with_claude_enabled(&valuation_inputs, false)
+                .await
+            {
+                Ok(v) => v,
+                Err(err) => {
+                    eprintln!("valuation failed: {err}");
+                    persist_cycle_artifact(CycleArtifact {
+                        started_at,
+                        finished_at: Utc::now(),
+                        status: "valuation_failed".to_string(),
+                        message: Some(err.to_string()),
+                        selected_markets: selected
+                            .iter()
+                            .map(|m| artifact_market(m))
+                            .take(100)
+                            .collect(),
+                        valuations: Vec::new(),
+                        candidates: Vec::new(),
+                        policy_mode: format!("{:?}", runtime.policy_config.mode),
+                        policy_decisions: Vec::new(),
+                        allocations: Vec::new(),
+                        executions: Vec::new(),
+                    });
+                    return;
+                }
+            };
+            (valuations, false)
+        }
         ClaudeTriggerMode::Cadence => {
             let valuations = match runtime
                 .valuator
@@ -649,15 +681,17 @@ async fn run_cycle(runtime: &BotRuntime) {
         valuation_summary.used_claude, valuation_summary.used_heuristic, fallback_reason_text
     );
     let mut candidates = runtime.valuator.generate_candidates(&valuations);
-    let bootstrap_paper_capture =
+    let bootstrap_paper_capture_enabled =
         runtime.mode == ExecutionMode::Paper && research_paper_capture_mode_enabled() && force_test_candidate_enabled();
-    if bootstrap_paper_capture {
+    let mut used_forced_bootstrap_candidate = false;
+    if bootstrap_paper_capture_enabled && candidates.is_empty() {
         if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
             println!(
-                "injecting deterministic bootstrap paper candidate: ticker={} edge={:.4}",
+                "injecting fallback bootstrap paper candidate: ticker={} edge={:.4}",
                 injected.ticker, injected.edge_pct
             );
             candidates.insert(0, injected);
+            used_forced_bootstrap_candidate = true;
         }
     } else if candidates.is_empty() && force_test_candidate_enabled() {
         if let Some(injected) = build_forced_test_candidate(&selected, &valuations) {
@@ -910,7 +944,7 @@ async fn run_cycle(runtime: &BotRuntime) {
             )
         })
         .collect();
-    let allocations = if bootstrap_paper_capture {
+    let allocations = if used_forced_bootstrap_candidate {
         allocation_candidates
             .first()
             .cloned()
@@ -948,8 +982,8 @@ async fn run_cycle(runtime: &BotRuntime) {
         });
         return;
     }
-    let mut guarded_allocations = if bootstrap_paper_capture {
-        println!("bootstrap paper capture: bypassing allocator/risk guards for one research execution");
+    let mut guarded_allocations = if used_forced_bootstrap_candidate {
+        println!("bootstrap paper capture: bypassing allocator/risk guards for one fallback research execution");
         allocations
     } else {
         let ticker_risk = load_ticker_risk_state_from_journal();
@@ -1298,6 +1332,7 @@ fn claude_trigger_mode_from_env() -> ClaudeTriggerMode {
         .to_ascii_lowercase()
         .as_str()
     {
+        "never" | "off" | "disabled" => ClaudeTriggerMode::Never,
         "on_viable_markets" | "on_selected_markets" => ClaudeTriggerMode::OnViableMarkets,
         "on_heuristic_candidates" => ClaudeTriggerMode::OnHeuristicCandidates,
         _ => ClaudeTriggerMode::Cadence,
@@ -1481,7 +1516,7 @@ fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarke
         Ok(t) => t,
         Err(_) => return,
     };
-    let mut intents: std::collections::HashMap<String, IntentOrderLite> = std::collections::HashMap::new();
+    let mut intents: std::collections::HashMap<String, IntentRecordLite> = std::collections::HashMap::new();
     let mut positions: std::collections::HashMap<(String, String), PositionMarkLite> = std::collections::HashMap::new();
     for line in text.lines() {
         if line.trim().is_empty() {
@@ -1493,7 +1528,13 @@ fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarke
         };
         if entry.event == "order_intent" {
             if let Ok(payload) = serde_json::from_value::<IntentPayloadLite>(entry.payload) {
-                intents.insert(payload.order.client_order_id.clone(), payload.order);
+                intents.insert(
+                    payload.order.client_order_id.clone(),
+                    IntentRecordLite {
+                        order: payload.order,
+                        mode: payload.mode,
+                    },
+                );
             }
             continue;
         }
@@ -1510,14 +1551,17 @@ fn log_position_marks_from_journal(scanned: &[data::market_scanner::ScannedMarke
         let Some(intent) = intents.get(&payload.report.client_order_id) else {
             continue;
         };
+        if !intent.is_live() {
+            continue;
+        }
         let qty = payload.report.filled_qty.max(0.0);
         let price = payload.report.avg_fill_price.unwrap_or(0.0).max(0.0);
         if qty <= 0.0 || price <= 0.0 {
             continue;
         }
-        let key = (intent.market_id.clone(), intent.outcome_id.clone());
+        let key = (intent.order.market_id.clone(), intent.order.outcome_id.clone());
         let pos = positions.entry(key).or_default();
-        match intent.side {
+        match intent.order.side {
             execution::types::Side::Buy => {
                 pos.net_qty += qty;
                 pos.cost_basis += qty * price;
@@ -1591,7 +1635,7 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
         Ok(t) => t,
         Err(_) => return std::collections::HashMap::new(),
     };
-    let mut intents: std::collections::HashMap<String, IntentOrderLite> = std::collections::HashMap::new();
+    let mut intents: std::collections::HashMap<String, IntentRecordLite> = std::collections::HashMap::new();
     let mut state: std::collections::HashMap<String, TickerRiskState> = std::collections::HashMap::new();
     for line in text.lines() {
         if line.trim().is_empty() {
@@ -1603,7 +1647,13 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
         };
         if entry.event == "order_intent" {
             if let Ok(payload) = serde_json::from_value::<IntentPayloadLite>(entry.payload) {
-                intents.insert(payload.order.client_order_id.clone(), payload.order);
+                intents.insert(
+                    payload.order.client_order_id.clone(),
+                    IntentRecordLite {
+                        order: payload.order,
+                        mode: payload.mode,
+                    },
+                );
             }
             continue;
         }
@@ -1626,8 +1676,11 @@ fn load_ticker_risk_state_from_journal() -> std::collections::HashMap<String, Ti
         let Some(intent) = intents.get(&payload.report.client_order_id) else {
             continue;
         };
-        let row = state.entry(intent.market_id.clone()).or_default();
-        let key = order_key(&intent.outcome_id, intent.side);
+        if !intent.is_live() {
+            continue;
+        }
+        let row = state.entry(intent.order.market_id.clone()).or_default();
+        let key = order_key(&intent.order.outcome_id, intent.order.side);
         match payload.report.status {
             OrderStatus::New | OrderStatus::PartiallyFilled => {
                 row.open_order_keys.insert(key);
@@ -1670,9 +1723,28 @@ struct IntentOrderLite {
     side: execution::types::Side,
 }
 
+#[derive(Debug, Clone)]
+struct IntentRecordLite {
+    order: IntentOrderLite,
+    mode: Option<String>,
+}
+
+impl IntentRecordLite {
+    fn is_live(&self) -> bool {
+        matches!(
+            self.mode
+                .as_deref()
+                .map(|value| value.eq_ignore_ascii_case("Live"))
+                .unwrap_or(false),
+            true
+        )
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct IntentPayloadLite {
     order: IntentOrderLite,
+    mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

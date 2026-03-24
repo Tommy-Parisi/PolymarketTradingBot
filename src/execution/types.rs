@@ -32,6 +32,8 @@ pub struct TradeSignal {
     pub edge_pct: f64,
     pub confidence: f64,
     pub signal_timestamp: DateTime<Utc>,
+    #[serde(default)]
+    pub signal_origin: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

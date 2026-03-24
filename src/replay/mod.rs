@@ -68,6 +68,7 @@ pub async fn run_multi_day_replay() {
                     edge_pct: a.candidate.edge_pct,
                     confidence: a.candidate.confidence,
                     signal_timestamp: Utc::now() - Duration::seconds(1),
+                    signal_origin: Some("replay".to_string()),
                 };
                 if let Ok(report) = engine.execute_signal(&signal, a.notional).await {
                     match report.status {

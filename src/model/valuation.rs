@@ -370,6 +370,11 @@ impl ClaudeValuationEngine {
             edge_pct: c.edge_pct,
             confidence: c.confidence,
             signal_timestamp: Utc::now(),
+            signal_origin: Some(if c.rationale.contains("forced deterministic test candidate") {
+                "bootstrap_synthetic".to_string()
+            } else {
+                "model_candidate".to_string()
+            }),
         }
     }
 

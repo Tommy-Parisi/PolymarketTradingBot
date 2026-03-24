@@ -45,6 +45,10 @@ pub struct OrderLifecycleEvent {
     pub signal_observed_price: Option<f64>,
     pub signal_edge_pct: Option<f64>,
     pub signal_confidence: Option<f64>,
+    #[serde(default)]
+    pub signal_origin: Option<String>,
+    #[serde(default)]
+    pub execution_mode: Option<String>,
     pub status: Option<OrderStatus>,
     pub event_type: String,
     pub error: Option<String>,

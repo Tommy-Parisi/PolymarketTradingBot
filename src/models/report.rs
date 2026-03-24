@@ -17,6 +17,7 @@ pub struct ModelReportConfig {
     pub execution_model_path: PathBuf,
     pub forecast_min_bucket_samples: usize,
     pub execution_min_bucket_samples: usize,
+    pub execution_include_source_classes: Vec<String>,
 }
 
 impl ModelReportConfig {
@@ -57,6 +58,12 @@ impl ModelReportConfig {
                 .and_then(|v| v.parse::<usize>().ok())
                 .unwrap_or(5)
                 .max(1),
+            execution_include_source_classes: std::env::var("BOT_EXECUTION_TRAIN_SOURCES")
+                .unwrap_or_else(|_| "organic_paper,live_real".to_string())
+                .split(',')
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+                .collect(),
         }
     }
 }
@@ -94,9 +101,14 @@ pub struct ExecutionReportSummary {
     pub model_path: String,
     pub dataset_path: String,
     pub model_version: String,
+    pub included_source_classes: Vec<String>,
     pub total_rows: usize,
+    pub total_rows_raw: usize,
     pub validation_rows: usize,
     pub test_rows: usize,
+    pub bootstrap_rows: usize,
+    pub organic_paper_rows: usize,
+    pub live_real_rows: usize,
     pub validation_brier_fill_30s: Option<f64>,
     pub validation_brier_fill_5m: Option<f64>,
     pub validation_mae_fill_price: Option<f64>,
@@ -113,7 +125,16 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
     let execution_model =
         ExecutionModel::load_from_path(&cfg.execution_model_path, cfg.execution_min_bucket_samples)?;
     let forecast_rows = load_jsonl::<ForecastTrainingRow>(&cfg.forecast_dataset_path)?;
-    let execution_rows = load_jsonl::<ExecutionTrainingRow>(&cfg.execution_dataset_path)?;
+    let execution_rows_raw = load_jsonl::<ExecutionTrainingRow>(&cfg.execution_dataset_path)?;
+    let execution_rows: Vec<_> = execution_rows_raw
+        .iter()
+        .filter(|row| {
+            cfg.execution_include_source_classes
+                .iter()
+                .any(|source| source == &row.execution_source_class)
+        })
+        .cloned()
+        .collect();
 
     let forecast_validation: Vec<_> = forecast_rows
         .iter()
@@ -168,9 +189,23 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
         model_version: execution_model
             .predict(&execution_rows.first().map(|r| r.feature.clone()).unwrap_or_else(empty_execution_feature))
             .model_version,
+        included_source_classes: cfg.execution_include_source_classes.clone(),
         total_rows: execution_rows.len(),
+        total_rows_raw: execution_rows_raw.len(),
         validation_rows: execution_validation.len(),
         test_rows: execution_test.len(),
+        bootstrap_rows: execution_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "bootstrap_synthetic")
+            .count(),
+        organic_paper_rows: execution_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "organic_paper")
+            .count(),
+        live_real_rows: execution_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "live_real")
+            .count(),
         validation_brier_fill_30s: execution_brier(&execution_model, &execution_validation, true),
         validation_brier_fill_5m: execution_brier(&execution_model, &execution_validation, false),
         validation_mae_fill_price: execution_mae_fill_price(&execution_model, &execution_validation),

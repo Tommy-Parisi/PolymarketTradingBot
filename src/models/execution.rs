@@ -19,6 +19,7 @@ pub struct ExecutionTrainingConfig {
     pub dataset_path: PathBuf,
     pub output_root: PathBuf,
     pub min_bucket_samples: usize,
+    pub include_source_classes: Vec<String>,
 }
 
 impl ExecutionTrainingConfig {
@@ -42,6 +43,12 @@ impl ExecutionTrainingConfig {
                 .and_then(|v| v.parse::<usize>().ok())
                 .unwrap_or(5)
                 .max(1),
+            include_source_classes: std::env::var("BOT_EXECUTION_TRAIN_SOURCES")
+                .unwrap_or_else(|_| "organic_paper,live_real".to_string())
+                .split(',')
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+                .collect(),
         }
     }
 }
@@ -332,7 +339,14 @@ impl ExecutionModel {
 }
 
 pub async fn run_execution_training(cfg: &ExecutionTrainingConfig) -> Result<(), ExecutionError> {
-    let rows = load_execution_training_rows(&cfg.dataset_path)?;
+    let rows = load_execution_training_rows(&cfg.dataset_path)?
+        .into_iter()
+        .filter(|row| {
+            cfg.include_source_classes
+                .iter()
+                .any(|source| source == &row.execution_source_class)
+        })
+        .collect::<Vec<_>>();
     if rows.is_empty() {
         return Err(ExecutionError::Exchange(format!(
             "no execution training rows found at {}",
@@ -377,8 +391,12 @@ pub async fn run_execution_training(cfg: &ExecutionTrainingConfig) -> Result<(),
     };
     write_artifact(&cfg.output_root, &artifact)?;
     println!(
-        "execution training complete: version={} train_rows={} validation_rows={} test_rows={}",
-        artifact.model_version, artifact.train_rows, artifact.validation_rows, artifact.test_rows
+        "execution training complete: version={} train_rows={} validation_rows={} test_rows={} sources={}",
+        artifact.model_version,
+        artifact.train_rows,
+        artifact.validation_rows,
+        artifact.test_rows,
+        cfg.include_source_classes.join(",")
     );
     println!(
         "execution metrics: val_brier_fill30={:?} val_brier_fill5m={:?} val_mae_fill={:?} val_mae_markout5m={:?}",
@@ -623,6 +641,10 @@ mod tests {
             schema_version: "v1".to_string(),
             split: split.to_string(),
             client_order_id: "1".to_string(),
+            execution_source_class: "organic_paper".to_string(),
+            is_bootstrap_synthetic: false,
+            is_organic_paper: true,
+            is_live_real: false,
             terminal_status: Some(if fill_5m { "Filled" } else { "Canceled" }.to_string()),
             label_filled_within_30s: fill_5m,
             label_filled_within_5m: fill_5m,

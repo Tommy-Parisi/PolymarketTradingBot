@@ -35,6 +35,8 @@ pub fn record_order_intent(
             signal_observed_price: Some(signal.observed_price),
             signal_edge_pct: Some(signal.edge_pct),
             signal_confidence: Some(signal.confidence),
+            signal_origin: signal.signal_origin.clone(),
+            execution_mode: Some(detect_execution_mode().to_string()),
             status: None,
             event_type: "intent".to_string(),
             error: None,
@@ -67,6 +69,8 @@ pub fn record_order_ack(
             signal_observed_price: None,
             signal_edge_pct: None,
             signal_confidence: None,
+            signal_origin: None,
+            execution_mode: Some(detect_execution_mode().to_string()),
             status: Some(OrderStatus::New),
             event_type: "ack".to_string(),
             error: None,
@@ -102,6 +106,8 @@ pub fn record_order_report(
             signal_observed_price: None,
             signal_edge_pct: None,
             signal_confidence: None,
+            signal_origin: None,
+            execution_mode: Some(infer_execution_mode_from_report(report).to_string()),
             status: Some(report.status),
             event_type: event_type.to_string(),
             error: None,
@@ -135,6 +141,8 @@ pub fn record_order_error(
             signal_observed_price: None,
             signal_edge_pct: None,
             signal_confidence: None,
+            signal_origin: None,
+            execution_mode: Some(detect_execution_mode().to_string()),
             status: None,
             event_type: event_type.to_string(),
             error: Some(error.to_string()),
@@ -168,4 +176,33 @@ fn append_json_line<T: serde::Serialize>(path: &Path, row: &T) -> Result<(), Exe
     file.write_all(line.as_bytes())
         .and_then(|_| file.write_all(b"\n"))
         .map_err(|e| ExecutionError::Exchange(e.to_string()))
+}
+
+fn detect_execution_mode() -> &'static str {
+    if matches!(
+        std::env::var("BOT_RUN_RESEARCH_PAPER_CAPTURE_ONLY")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "1" | "true" | "yes"
+    ) {
+        "paper"
+    } else {
+        match std::env::var("BOT_EXECUTION_MODE")
+            .unwrap_or_else(|_| "live".to_string())
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "paper" => "paper",
+            _ => "live",
+        }
+    }
+}
+
+fn infer_execution_mode_from_report(report: &ExecutionReport) -> &'static str {
+    if report.order_id.starts_with("paper-") || report.order_id.starts_with("sim-") {
+        "paper"
+    } else {
+        detect_execution_mode()
+    }
 }
