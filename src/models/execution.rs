@@ -142,6 +142,14 @@ pub struct ExecutionModelArtifact {
     pub train_rows: usize,
     pub validation_rows: usize,
     pub test_rows: usize,
+    #[serde(default)]
+    pub included_source_classes: Vec<String>,
+    #[serde(default)]
+    pub bootstrap_rows: usize,
+    #[serde(default)]
+    pub organic_paper_rows: usize,
+    #[serde(default)]
+    pub live_real_rows: usize,
     pub feature_schema_version: String,
     pub metrics: ExecutionModelMetrics,
     pub global: ExecutionBucket,
@@ -246,6 +254,10 @@ impl ExecutionModel {
         let artifact = serde_json::from_str::<ExecutionModelArtifact>(&raw)
             .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
         Ok(Self::from_artifact(artifact, min_bucket_samples))
+    }
+
+    pub fn artifact(&self) -> &ExecutionModelArtifact {
+        &self.artifact
     }
 
     pub fn predict(&self, feature: &ExecutionFeatureRow) -> ExecutionEstimate {
@@ -399,7 +411,13 @@ pub async fn run_execution_training(cfg: &ExecutionTrainingConfig) -> Result<(),
         .collect();
     let test_rows: Vec<_> = rows.iter().filter(|row| row.split == "test").cloned().collect();
 
-    let mut artifact = train_artifact(&train_rows, validation_rows.len(), test_rows.len());
+    let mut artifact = train_artifact(
+        &train_rows,
+        validation_rows.len(),
+        test_rows.len(),
+        &rows,
+        &cfg.include_source_classes,
+    );
     let model = ExecutionModel::from_artifact(artifact.clone(), cfg.min_bucket_samples);
     artifact.metrics = ExecutionModelMetrics {
         validation_brier_fill_30s: eval_brier(&model, &validation_rows, |e| e.fill_prob_30s, |r| {
@@ -513,6 +531,8 @@ fn train_artifact(
     train_rows: &[ExecutionTrainingRow],
     validation_rows: usize,
     test_rows: usize,
+    all_rows: &[ExecutionTrainingRow],
+    included_source_classes: &[String],
 ) -> ExecutionModelArtifact {
     let mut global = ExecutionBucket::default();
     let mut by_vertical = HashMap::new();
@@ -546,6 +566,19 @@ fn train_artifact(
         train_rows: train_rows.len(),
         validation_rows,
         test_rows,
+        included_source_classes: included_source_classes.to_vec(),
+        bootstrap_rows: all_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "bootstrap_synthetic")
+            .count(),
+        organic_paper_rows: all_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "organic_paper")
+            .count(),
+        live_real_rows: all_rows
+            .iter()
+            .filter(|row| row.execution_source_class == "live_real")
+            .count(),
         feature_schema_version: train_rows
             .first()
             .map(|row| row.feature.schema_version.clone())
@@ -747,7 +780,7 @@ mod tests {
             sample_row("train", "weather", TimeInForce::Gtc, true),
             sample_row("train", "weather", TimeInForce::Gtc, false),
         ];
-        let artifact = train_artifact(&train_rows, 0, 0);
+        let artifact = train_artifact(&train_rows, 0, 0, &train_rows, &["organic_paper".to_string()]);
         let model = ExecutionModel::from_artifact(artifact, 1);
         let out = model.predict(&sample_row("test", "weather", TimeInForce::Gtc, true).feature);
         assert!(out.fill_prob_30s > 0.0 && out.fill_prob_30s < 1.0);
@@ -782,7 +815,7 @@ mod tests {
             sample_row("train", "weather", TimeInForce::Gtc, true),
             sample_row("train", "weather", TimeInForce::Gtc, false),
         ];
-        let artifact = train_artifact(&train_rows, 0, 0);
+        let artifact = train_artifact(&train_rows, 0, 0, &train_rows, &["organic_paper".to_string()]);
         // min_bucket_samples=10 means our 3-row bucket won't qualify
         let model_strict = ExecutionModel::from_artifact(artifact.clone(), 10);
         // min_bucket_samples=1 means it qualifies
@@ -818,7 +851,7 @@ mod tests {
         }
         let mut all = at_market_rows;
         all.extend(deep_miss_rows);
-        let artifact = train_artifact(&all, 0, 0);
+        let artifact = train_artifact(&all, 0, 0, &all, &["organic_paper".to_string()]);
         let model = ExecutionModel::from_artifact(artifact, 1);
 
         let mut feat_at_market = sample_row("test", "sports", TimeInForce::Ioc, true).feature;

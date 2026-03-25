@@ -498,6 +498,9 @@ Policy mode is controlled by `BOT_POLICY_MODE`.
 ### `active`
 
 - policy decisions influence ranking, pricing, and sizing
+- fails closed at startup if policy prerequisites are not met
+- checks model age and minimum training-row thresholds
+- can require a minimum count of `live_real` execution rows
 - should only be used after manual review and stronger execution-data coverage
 
 ## Reports and Artifacts
@@ -599,6 +602,11 @@ This project is heavily env-driven. The most important controls are:
 - `BOT_POLICY_SHADOW_ENABLED`
 - `BOT_POLICY_MIN_EXPECTED_REALIZED_PNL`
 - `BOT_POLICY_MAX_ACTIONS_PER_CANDIDATE`
+- `BOT_POLICY_ACTIVE_MAX_MODEL_AGE_HOURS`
+- `BOT_POLICY_ACTIVE_MIN_FORECAST_TRAIN_ROWS`
+- `BOT_POLICY_ACTIVE_MIN_EXECUTION_TRAIN_ROWS`
+- `BOT_POLICY_ACTIVE_MIN_EXECUTION_LIVE_REAL_ROWS`
+- `BOT_POLICY_ACTIVE_REQUIRE_LIVE_REAL`
 
 ## Common Workflows
 

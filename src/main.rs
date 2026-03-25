@@ -33,11 +33,12 @@ use markets::kalshi_mapper::{resolution_mode_from_env, KalshiMarketMapper, Resol
 use model::allocator::{AllocatedTrade, AllocationConfig, PortfolioAllocator};
 use model::valuation::{CandidateTrade, ClaudeValuationEngine, MarketValuation, ValuationConfig, ValuationInput};
 use models::execution::{
-    ExecutionModel, ExecutionRuntimeConfig, ExecutionTrainingConfig, load_runtime_model as load_execution_runtime_model,
+    ExecutionModel, ExecutionModelArtifact, ExecutionRuntimeConfig, ExecutionTrainingConfig,
+    load_runtime_model as load_execution_runtime_model,
     record_shadow_outputs as record_execution_shadow_outputs, run_execution_training,
 };
 use models::forecast::{
-    ForecastModel, ForecastRuntimeConfig, ForecastTrainingConfig, load_runtime_model,
+    ForecastModel, ForecastModelArtifact, ForecastRuntimeConfig, ForecastTrainingConfig, load_runtime_model,
     record_shadow_outputs, run_forecast_training,
 };
 use models::report::{ModelReportConfig, run_model_report};
@@ -210,6 +211,15 @@ async fn main() {
         eprintln!("startup validation failed: {err}");
         return;
     }
+    let policy_config = PolicyConfig::from_env();
+    if let Err(err) = validate_active_policy_requirements(
+        &policy_config,
+        forecast_model.as_ref(),
+        execution_model.as_ref(),
+    ) {
+        eprintln!("policy active mode validation failed: {err}");
+        return;
+    }
     let engine = ExecutionEngine::new(client, engine_cfg, mode);
 
     let runtime = BotRuntime {
@@ -232,7 +242,7 @@ async fn main() {
         forecast_runtime,
         execution_model,
         execution_runtime,
-        policy_config: PolicyConfig::from_env(),
+        policy_config,
     };
 
     if runtime.mode == ExecutionMode::Live && smoke_test_enabled() {
@@ -292,6 +302,75 @@ fn ensure_optional_path_parent(path: Option<&PathBuf>) -> Result<(), String> {
     };
     fs::create_dir_all(parent)
         .map_err(|err| format!("failed to prepare {}: {}", parent.display(), err))
+}
+
+fn validate_active_policy_requirements(
+    policy_config: &PolicyConfig,
+    forecast_model: Option<&ForecastModel>,
+    execution_model: Option<&ExecutionModel>,
+) -> Result<(), String> {
+    if policy_config.mode != PolicyMode::Active {
+        return Ok(());
+    }
+
+    let forecast_model =
+        forecast_model.ok_or_else(|| "active mode requires a loaded forecast model".to_string())?;
+    let execution_model =
+        execution_model.ok_or_else(|| "active mode requires a loaded execution model".to_string())?;
+
+    validate_forecast_artifact_for_active(policy_config, forecast_model.artifact())?;
+    validate_execution_artifact_for_active(policy_config, execution_model.artifact())?;
+    Ok(())
+}
+
+fn validate_forecast_artifact_for_active(
+    policy_config: &PolicyConfig,
+    artifact: &ForecastModelArtifact,
+) -> Result<(), String> {
+    let age_hours = (Utc::now() - artifact.trained_at).num_hours();
+    if age_hours > policy_config.active_max_model_age_hours {
+        return Err(format!(
+            "forecast model {} is too old for active mode (age={}h > limit={}h)",
+            artifact.model_version, age_hours, policy_config.active_max_model_age_hours
+        ));
+    }
+    if artifact.train_rows < policy_config.active_min_forecast_train_rows {
+        return Err(format!(
+            "forecast model {} has too little training data for active mode (train_rows={} < min={})",
+            artifact.model_version, artifact.train_rows, policy_config.active_min_forecast_train_rows
+        ));
+    }
+    Ok(())
+}
+
+fn validate_execution_artifact_for_active(
+    policy_config: &PolicyConfig,
+    artifact: &ExecutionModelArtifact,
+) -> Result<(), String> {
+    let age_hours = (Utc::now() - artifact.trained_at).num_hours();
+    if age_hours > policy_config.active_max_model_age_hours {
+        return Err(format!(
+            "execution model {} is too old for active mode (age={}h > limit={}h)",
+            artifact.model_version, age_hours, policy_config.active_max_model_age_hours
+        ));
+    }
+    if artifact.train_rows < policy_config.active_min_execution_train_rows {
+        return Err(format!(
+            "execution model {} has too little training data for active mode (train_rows={} < min={})",
+            artifact.model_version, artifact.train_rows, policy_config.active_min_execution_train_rows
+        ));
+    }
+    if policy_config.active_require_live_real
+        && artifact.live_real_rows < policy_config.active_min_execution_live_real_rows
+    {
+        return Err(format!(
+            "execution model {} lacks enough live-real rows for active mode (live_real_rows={} < min={})",
+            artifact.model_version,
+            artifact.live_real_rows,
+            policy_config.active_min_execution_live_real_rows
+        ));
+    }
+    Ok(())
 }
 
 async fn run_research_capture_mode() -> Result<(), execution::types::ExecutionError> {
@@ -2106,6 +2185,8 @@ struct ArtifactExecution {
 mod tests {
     use super::*;
     use tempfile::tempdir;
+    use crate::models::execution::{ExecutionBucket, ExecutionModelMetrics};
+    use crate::models::forecast::{ForecastModelMetrics, RateBucket};
 
     #[test]
     fn startup_validation_creates_parent_directories() {
@@ -2139,5 +2220,89 @@ mod tests {
         assert!(journal_path.parent().unwrap().exists());
         assert!(forecast_model_path.parent().unwrap().exists());
         assert!(execution_model_path.parent().unwrap().exists());
+    }
+
+    fn active_policy_config() -> PolicyConfig {
+        PolicyConfig {
+            mode: PolicyMode::Active,
+            shadow_enabled: true,
+            shadow_root: PathBuf::from("/tmp"),
+            min_expected_realized_pnl: 0.0,
+            max_actions_per_candidate: 4,
+            default_legacy_fallback: true,
+            active_max_model_age_hours: 24 * 14,
+            active_min_forecast_train_rows: 1_000,
+            active_min_execution_train_rows: 100,
+            active_min_execution_live_real_rows: 25,
+            active_require_live_real: true,
+        }
+    }
+
+    fn good_forecast_model() -> ForecastModel {
+        ForecastModel::from_artifact(
+            ForecastModelArtifact {
+                schema_version: "v1".to_string(),
+                model_kind: "test".to_string(),
+                model_version: "forecast-test".to_string(),
+                trained_at: Utc::now(),
+                train_rows: 5_000,
+                validation_rows: 100,
+                test_rows: 100,
+                feature_schema_version: "v1".to_string(),
+                metrics: ForecastModelMetrics::default(),
+                global: RateBucket { positives: 50.0, total: 100.0 },
+                vertical: std::collections::HashMap::new(),
+                vertical_direction: std::collections::HashMap::new(),
+                vertical_entity: std::collections::HashMap::new(),
+                vertical_threshold: std::collections::HashMap::new(),
+            },
+            5,
+        )
+    }
+
+    fn execution_model_with_live_rows(live_real_rows: usize) -> ExecutionModel {
+        ExecutionModel::from_artifact(
+            ExecutionModelArtifact {
+                schema_version: "v1".to_string(),
+                model_kind: "test".to_string(),
+                model_version: "execution-test".to_string(),
+                trained_at: Utc::now(),
+                train_rows: 500,
+                validation_rows: 50,
+                test_rows: 50,
+                included_source_classes: vec!["organic_paper".to_string(), "live_real".to_string()],
+                bootstrap_rows: 0,
+                organic_paper_rows: 200,
+                live_real_rows,
+                feature_schema_version: "v1".to_string(),
+                metrics: ExecutionModelMetrics::default(),
+                global: ExecutionBucket::default(),
+                by_vertical: std::collections::HashMap::new(),
+                by_vertical_tif: std::collections::HashMap::new(),
+                by_vertical_liquidity: std::collections::HashMap::new(),
+                by_aggressiveness: std::collections::HashMap::new(),
+            },
+            5,
+        )
+    }
+
+    #[test]
+    fn active_policy_validation_rejects_insufficient_live_real_rows() {
+        let cfg = active_policy_config();
+        let forecast = good_forecast_model();
+        let execution = execution_model_with_live_rows(0);
+
+        let err = validate_active_policy_requirements(&cfg, Some(&forecast), Some(&execution))
+            .expect_err("expected active policy validation to fail");
+        assert!(err.contains("live-real rows"));
+    }
+
+    #[test]
+    fn active_policy_validation_accepts_sufficient_models() {
+        let cfg = active_policy_config();
+        let forecast = good_forecast_model();
+        let execution = execution_model_with_live_rows(50);
+
+        validate_active_policy_requirements(&cfg, Some(&forecast), Some(&execution)).unwrap();
     }
 }

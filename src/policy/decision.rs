@@ -21,6 +21,11 @@ pub struct PolicyConfig {
     pub min_expected_realized_pnl: f64,
     pub max_actions_per_candidate: usize,
     pub default_legacy_fallback: bool,
+    pub active_max_model_age_hours: i64,
+    pub active_min_forecast_train_rows: usize,
+    pub active_min_execution_train_rows: usize,
+    pub active_min_execution_live_real_rows: usize,
+    pub active_require_live_real: bool,
 }
 
 impl PolicyConfig {
@@ -48,6 +53,30 @@ impl PolicyConfig {
                 .max(1),
             default_legacy_fallback: matches!(
                 std::env::var("BOT_POLICY_DEFAULT_LEGACY_FALLBACK")
+                    .unwrap_or_else(|_| "true".to_string())
+                    .to_ascii_lowercase()
+                    .as_str(),
+                "1" | "true" | "yes"
+            ),
+            active_max_model_age_hours: std::env::var("BOT_POLICY_ACTIVE_MAX_MODEL_AGE_HOURS")
+                .ok()
+                .and_then(|v| v.parse::<i64>().ok())
+                .unwrap_or(24 * 14)
+                .max(1),
+            active_min_forecast_train_rows: std::env::var("BOT_POLICY_ACTIVE_MIN_FORECAST_TRAIN_ROWS")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(1_000),
+            active_min_execution_train_rows: std::env::var("BOT_POLICY_ACTIVE_MIN_EXECUTION_TRAIN_ROWS")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(100),
+            active_min_execution_live_real_rows: std::env::var("BOT_POLICY_ACTIVE_MIN_EXECUTION_LIVE_REAL_ROWS")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(25),
+            active_require_live_real: matches!(
+                std::env::var("BOT_POLICY_ACTIVE_REQUIRE_LIVE_REAL")
                     .unwrap_or_else(|_| "true".to_string())
                     .to_ascii_lowercase()
                     .as_str(),
@@ -313,6 +342,11 @@ mod tests {
             min_expected_realized_pnl: 0.0,
             max_actions_per_candidate: 4,
             default_legacy_fallback: true,
+            active_max_model_age_hours: 24 * 14,
+            active_min_forecast_train_rows: 1_000,
+            active_min_execution_train_rows: 100,
+            active_min_execution_live_real_rows: 25,
+            active_require_live_real: true,
         };
         let candidate = CandidateTrade {
             ticker: "KXTEST".to_string(),
@@ -361,6 +395,11 @@ mod tests {
             min_expected_realized_pnl: min_pnl,
             max_actions_per_candidate: 4,
             default_legacy_fallback: true,
+            active_max_model_age_hours: 24 * 14,
+            active_min_forecast_train_rows: 1_000,
+            active_min_execution_train_rows: 100,
+            active_min_execution_live_real_rows: 25,
+            active_require_live_real: true,
         }
     }
 
