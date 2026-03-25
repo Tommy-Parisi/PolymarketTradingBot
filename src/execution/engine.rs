@@ -790,7 +790,7 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     use crate::execution::client::ExchangeClient;
-    use crate::execution::types::Side;
+    use crate::execution::types::{OrderType, Side};
     use tempfile::tempdir;
 
     fn base_signal() -> TradeSignal {
@@ -901,7 +901,108 @@ mod tests {
         ));
     }
 
+    #[tokio::test]
+    async fn reconcile_prunes_exchange_not_found_orders() {
+        let dir = tempdir().unwrap();
+        let state_path = dir.path().join("runtime_state.json");
+        let journal_path = dir.path().join("trade_journal.jsonl");
+
+        let state = RuntimeState {
+            schema_version: RUNTIME_STATE_SCHEMA_VERSION.to_string(),
+            day: Utc::now().format("%Y-%m-%d").to_string(),
+            daily_realized_pnl: 0.0,
+            open_exposure_notional: 0.0,
+            recent_order_unix_secs: Vec::new(),
+            seen_client_order_ids: Vec::new(),
+            open_orders: vec![OpenOrderState {
+                order_id: "missing-order".to_string(),
+                client_order_id: "cid-1".to_string(),
+                market_id: "KXTEST".to_string(),
+                notional: 10.0,
+                created_at: Utc::now(),
+            }],
+        };
+        fs::write(&state_path, serde_json::to_string(&state).unwrap()).unwrap();
+
+        let mut cfg = EngineConfig::default();
+        cfg.state_path = state_path.display().to_string();
+        cfg.journal_path = journal_path.display().to_string();
+        let engine = ExecutionEngine::new(Arc::new(MissingOrderClient), cfg, ExecutionMode::Live);
+
+        engine.reconcile_open_orders().await.unwrap();
+
+        let reloaded: RuntimeState = serde_json::from_str(&fs::read_to_string(&state_path).unwrap()).unwrap();
+        assert!(reloaded.open_orders.is_empty());
+
+        let journal = fs::read_to_string(&journal_path).unwrap();
+        assert!(journal.contains("\"event\":\"reconcile_order_pruned\""));
+    }
+
+    #[test]
+    fn summarize_performance_ignores_malformed_journal_lines() {
+        let dir = tempdir().unwrap();
+        let state_path = dir.path().join("runtime_state.json");
+        let journal_path = dir.path().join("trade_journal.jsonl");
+
+        let order = OrderRequest {
+            client_order_id: "cid-1".to_string(),
+            market_id: "KXTEST".to_string(),
+            outcome_id: "yes".to_string(),
+            side: Side::Buy,
+            order_type: OrderType::Limit,
+            limit_price: Some(0.50),
+            quantity: 10.0,
+            time_in_force: TimeInForce::Ioc,
+            created_at: Utc::now(),
+        };
+        let intent = serde_json::json!({
+            "schema_version": JOURNAL_SCHEMA_VERSION,
+            "ts": Utc::now(),
+            "event": "order_intent",
+            "payload": {
+                "order": order,
+                "mode": "Live",
+                "signal_edge_pct": 0.10
+            }
+        });
+        let report = serde_json::json!({
+            "schema_version": JOURNAL_SCHEMA_VERSION,
+            "ts": Utc::now(),
+            "event": "order_report",
+            "payload": {
+                "report": {
+                    "order_id": "oid-1",
+                    "client_order_id": "cid-1",
+                    "status": "Filled",
+                    "submitted_time_in_force": "Ioc",
+                    "filled_qty": 10.0,
+                    "avg_fill_price": 0.50,
+                    "fee_paid": 0.01,
+                    "updated_at": Utc::now()
+                }
+            }
+        });
+        let content = format!("{{bad json\n{}\n{}\n", intent, report);
+        fs::write(&journal_path, content).unwrap();
+        fs::write(
+            &state_path,
+            serde_json::to_string(&RuntimeState::default_for_today()).unwrap(),
+        )
+        .unwrap();
+
+        let summary = summarize_performance_paths(
+            &state_path.display().to_string(),
+            &journal_path.display().to_string(),
+        )
+        .unwrap();
+        assert_eq!(summary.orders_reported, 1);
+        assert_eq!(summary.filled_orders, 1);
+        assert!(summary.traded_notional > 0.0);
+    }
+
     struct NoopClient;
+
+    struct MissingOrderClient;
 
     #[async_trait]
     impl ExchangeClient for NoopClient {
@@ -911,6 +1012,28 @@ mod tests {
 
         async fn get_order(&self, _order_id: &str) -> Result<ExecutionReport, ExecutionError> {
             Err(ExecutionError::Exchange("noop".to_string()))
+        }
+
+        async fn cancel_order(&self, _order_id: &str) -> Result<(), ExecutionError> {
+            Ok(())
+        }
+
+        async fn smoke_test(&self) -> Result<(), ExecutionError> {
+            Ok(())
+        }
+    }
+
+    #[async_trait]
+    impl ExchangeClient for MissingOrderClient {
+        async fn place_order(&self, _request: &OrderRequest) -> Result<OrderAck, ExecutionError> {
+            Err(ExecutionError::Exchange("noop".to_string()))
+        }
+
+        async fn get_order(&self, _order_id: &str) -> Result<ExecutionReport, ExecutionError> {
+            Err(ExecutionError::Exchange(
+                "GET /trade-api/v2/portfolio/orders/x failed (404 Not Found): {\"error\":{\"code\":\"not_found\"}}"
+                    .to_string(),
+            ))
         }
 
         async fn cancel_order(&self, _order_id: &str) -> Result<(), ExecutionError> {

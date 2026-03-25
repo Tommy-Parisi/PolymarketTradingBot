@@ -2101,3 +2101,43 @@ struct ArtifactExecution {
     error: Option<String>,
     report: Option<execution::types::ExecutionReport>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn startup_validation_creates_parent_directories() {
+        let dir = tempdir().unwrap();
+        let state_path = dir.path().join("nested/state/runtime_state.json");
+        let journal_path = dir.path().join("nested/logs/trade_journal.jsonl");
+        let forecast_model_path = dir.path().join("nested/models/forecast/latest.json");
+        let execution_model_path = dir.path().join("nested/models/execution/latest.json");
+
+        let engine_cfg = EngineConfig {
+            state_path: state_path.display().to_string(),
+            journal_path: journal_path.display().to_string(),
+            ..EngineConfig::default()
+        };
+        let forecast_runtime = ForecastRuntimeConfig {
+            model_path: Some(forecast_model_path.clone()),
+            shadow_enabled: true,
+            shadow_root: dir.path().join("shadow"),
+            min_bucket_samples: 5,
+        };
+        let execution_runtime = ExecutionRuntimeConfig {
+            model_path: Some(execution_model_path.clone()),
+            shadow_enabled: true,
+            shadow_root: dir.path().join("shadow"),
+            min_bucket_samples: 5,
+        };
+
+        validate_startup_paths(&engine_cfg, &forecast_runtime, &execution_runtime).unwrap();
+
+        assert!(state_path.parent().unwrap().exists());
+        assert!(journal_path.parent().unwrap().exists());
+        assert!(forecast_model_path.parent().unwrap().exists());
+        assert!(execution_model_path.parent().unwrap().exists());
+    }
+}
