@@ -450,6 +450,30 @@ Important caveat:
 
 The execution model is still small-sample and should be treated as provisional. It is useful for shadow analysis and research iteration, not as an unquestioned live control surface.
 
+### Data governance rules
+
+- Keep execution provenance separated:
+  - `bootstrap_synthetic`
+  - `organic_paper`
+  - `live_real`
+- Do not use `bootstrap_synthetic` as a default training source for execution models intended to inform rollout decisions.
+- Treat `organic_paper + live_real` as the clean execution slice.
+- Keep `BOT_POLICY_MODE=shadow` until execution reports show enough clean rows and enough `live_real` coverage.
+
+### Retraining rules of thumb
+
+- Forecast:
+  - retrain after meaningful new settled outcomes are available
+  - prefer waiting for larger labeled batches over constant tiny refreshes
+  - a forecast model is more trustworthy once train rows are comfortably above `1000`
+- Execution:
+  - retrain when clean execution rows (`organic_paper + live_real`) materially increase
+  - avoid trusting retrains built on fewer than `100` clean execution train rows
+  - treat `live_real < 25` as below the bar for active-mode trust
+- Reports:
+  - `BOT_RUN_MODEL_REPORT=true` now surfaces warning messages when sample size or source mix is weak
+  - read those warnings before considering rollout changes
+
 ## Policy Layer
 
 The policy layer lives in `src/policy/decision.rs`.

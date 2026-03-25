@@ -461,6 +461,9 @@ pub async fn run_execution_training(cfg: &ExecutionTrainingConfig) -> Result<(),
         artifact.metrics.validation_mae_fill_price,
         artifact.metrics.validation_mae_markout_5m
     );
+    for warning in governance_warnings(&artifact) {
+        eprintln!("execution governance warning: {warning}");
+    }
     Ok(())
 }
 
@@ -608,6 +611,35 @@ fn load_execution_training_rows(path: &Path) -> Result<Vec<ExecutionTrainingRow>
         );
     }
     Ok(rows)
+}
+
+fn governance_warnings(artifact: &ExecutionModelArtifact) -> Vec<String> {
+    let mut warnings = Vec::new();
+    if artifact.train_rows < 100 {
+        warnings.push(format!(
+            "train_rows={} is below the recommended minimum of 100 clean execution rows",
+            artifact.train_rows
+        ));
+    }
+    if artifact.live_real_rows == 0 {
+        warnings.push("live_real_rows=0; keep BOT_POLICY_MODE=shadow".to_string());
+    } else if artifact.live_real_rows < 25 {
+        warnings.push(format!(
+            "live_real_rows={} is below the recommended minimum of 25 for active-mode trust",
+            artifact.live_real_rows
+        ));
+    }
+    if artifact
+        .included_source_classes
+        .iter()
+        .any(|source| source == "bootstrap_synthetic")
+    {
+        warnings.push(
+            "included_source_classes contains bootstrap_synthetic; this should stay a research-only training configuration"
+                .to_string(),
+        );
+    }
+    warnings
 }
 
 fn write_artifact(root: &Path, artifact: &ExecutionModelArtifact) -> Result<(), ExecutionError> {

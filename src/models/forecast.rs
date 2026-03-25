@@ -343,6 +343,9 @@ pub async fn run_forecast_training(cfg: &ForecastTrainingConfig) -> Result<(), E
         finalized.metrics.test_market_mid_log_loss,
         finalized.metrics.test_market_mid_brier
     );
+    for warning in governance_warnings(&finalized) {
+        eprintln!("forecast governance warning: {warning}");
+    }
 
     Ok(())
 }
@@ -359,6 +362,23 @@ pub fn load_runtime_model(cfg: &ForecastRuntimeConfig) -> Result<Option<Forecast
     }
     let model = ForecastModel::load_from_path(path, cfg.min_bucket_samples)?;
     Ok(Some(model))
+}
+
+fn governance_warnings(artifact: &ForecastModelArtifact) -> Vec<String> {
+    let mut warnings = Vec::new();
+    if artifact.train_rows < 1_000 {
+        warnings.push(format!(
+            "train_rows={} is below the recommended minimum of 1000 labeled forecast rows",
+            artifact.train_rows
+        ));
+    }
+    if artifact.validation_rows < 100 || artifact.test_rows < 100 {
+        warnings.push(format!(
+            "validation/test coverage is thin (validation_rows={}, test_rows={}); calibration may be unstable",
+            artifact.validation_rows, artifact.test_rows
+        ));
+    }
+    warnings
 }
 
 pub fn record_shadow_outputs(

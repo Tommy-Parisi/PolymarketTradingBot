@@ -79,9 +79,12 @@ pub struct ForecastReportSummary {
     pub model_path: String,
     pub dataset_path: String,
     pub model_version: String,
+    pub trained_at: String,
     pub total_rows: usize,
     pub validation_rows: usize,
     pub test_rows: usize,
+    pub train_rows: usize,
+    pub warning_messages: Vec<String>,
     pub validation_log_loss: Option<f64>,
     pub validation_brier: Option<f64>,
     pub validation_market_mid_log_loss: Option<f64>,
@@ -101,14 +104,17 @@ pub struct ExecutionReportSummary {
     pub model_path: String,
     pub dataset_path: String,
     pub model_version: String,
+    pub trained_at: String,
     pub included_source_classes: Vec<String>,
     pub total_rows: usize,
     pub total_rows_raw: usize,
+    pub train_rows: usize,
     pub validation_rows: usize,
     pub test_rows: usize,
     pub bootstrap_rows: usize,
     pub organic_paper_rows: usize,
     pub live_real_rows: usize,
+    pub warning_messages: Vec<String>,
     pub validation_brier_fill_30s: Option<f64>,
     pub validation_brier_fill_5m: Option<f64>,
     pub validation_mae_fill_price: Option<f64>,
@@ -154,9 +160,12 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
         model_path: cfg.forecast_model_path.display().to_string(),
         dataset_path: cfg.forecast_dataset_path.display().to_string(),
         model_version: forecast_model.artifact().model_version.clone(),
+        trained_at: forecast_model.artifact().trained_at.to_rfc3339(),
         total_rows: forecast_rows.len(),
+        train_rows: forecast_model.artifact().train_rows,
         validation_rows: forecast_validation.len(),
         test_rows: forecast_test.len(),
+        warning_messages: forecast_warning_messages(&forecast_model, &forecast_rows),
         validation_log_loss: forecast_log_loss(&forecast_model, &forecast_validation),
         validation_brier: forecast_brier(&forecast_model, &forecast_validation),
         validation_market_mid_log_loss: forecast_mid_log_loss(&forecast_validation),
@@ -186,12 +195,12 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
     let execution = ExecutionReportSummary {
         model_path: cfg.execution_model_path.display().to_string(),
         dataset_path: cfg.execution_dataset_path.display().to_string(),
-        model_version: execution_model
-            .predict(&execution_rows.first().map(|r| r.feature.clone()).unwrap_or_else(empty_execution_feature))
-            .model_version,
+        model_version: execution_model.artifact().model_version.clone(),
+        trained_at: execution_model.artifact().trained_at.to_rfc3339(),
         included_source_classes: cfg.execution_include_source_classes.clone(),
         total_rows: execution_rows.len(),
         total_rows_raw: execution_rows_raw.len(),
+        train_rows: execution_model.artifact().train_rows,
         validation_rows: execution_validation.len(),
         test_rows: execution_test.len(),
         bootstrap_rows: execution_rows
@@ -206,6 +215,11 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
             .iter()
             .filter(|row| row.execution_source_class == "live_real")
             .count(),
+        warning_messages: execution_warning_messages(
+            execution_model.artifact().train_rows,
+            &cfg.execution_include_source_classes,
+            &execution_rows,
+        ),
         validation_brier_fill_30s: execution_brier(&execution_model, &execution_validation, true),
         validation_brier_fill_5m: execution_brier(&execution_model, &execution_validation, false),
         validation_mae_fill_price: execution_mae_fill_price(&execution_model, &execution_validation),
@@ -217,6 +231,69 @@ pub fn run_model_report(cfg: &ModelReportConfig) -> Result<ModelReportSummary, E
     };
 
     Ok(ModelReportSummary { forecast, execution })
+}
+
+fn forecast_warning_messages(model: &ForecastModel, rows: &[ForecastTrainingRow]) -> Vec<String> {
+    let mut warnings = Vec::new();
+    if model.artifact().train_rows < 1_000 {
+        warnings.push(format!(
+            "forecast model has low train_rows={} (<1000); treat calibration and lift as provisional",
+            model.artifact().train_rows
+        ));
+    }
+    let labeled = rows.iter().filter(|row| row.label_outcome_yes.is_some()).count();
+    if labeled < 1_000 {
+        warnings.push(format!(
+            "forecast dataset has only {} labeled rows; retraining is more trustworthy after more outcomes settle",
+            labeled
+        ));
+    }
+    warnings
+}
+
+fn execution_warning_messages(
+    train_rows: usize,
+    included_source_classes: &[String],
+    rows: &[ExecutionTrainingRow],
+) -> Vec<String> {
+    let mut warnings = Vec::new();
+    if train_rows < 100 {
+        warnings.push(format!(
+            "execution model has low train_rows={} (<100); treat estimates as research-grade only",
+            train_rows
+        ));
+    }
+    let organic = rows
+        .iter()
+        .filter(|row| row.execution_source_class == "organic_paper")
+        .count();
+    let live_real = rows
+        .iter()
+        .filter(|row| row.execution_source_class == "live_real")
+        .count();
+    if included_source_classes.iter().any(|s| s == "bootstrap_synthetic") {
+        warnings.push(
+            "execution report includes bootstrap_synthetic rows; do not use this configuration for active-mode trust decisions"
+                .to_string(),
+        );
+    }
+    if live_real == 0 {
+        warnings.push(
+            "execution dataset contains zero live_real rows; active mode should remain disabled".to_string(),
+        );
+    } else if live_real < 25 {
+        warnings.push(format!(
+            "execution dataset has only {} live_real rows; active mode remains high risk",
+            live_real
+        ));
+    }
+    if organic + live_real < 100 {
+        warnings.push(format!(
+            "execution dataset has only {} clean rows across organic_paper + live_real; collect more data before trusting policy outputs",
+            organic + live_real
+        ));
+    }
+    warnings
 }
 
 fn load_jsonl<T>(path: &PathBuf) -> Result<Vec<T>, ExecutionError>
@@ -323,36 +400,5 @@ fn lift(baseline: Option<f64>, model: Option<f64>) -> Option<f64> {
     match (baseline, model) {
         (Some(b), Some(m)) if b.abs() > f64::EPSILON => Some((b - m) / b),
         _ => None,
-    }
-}
-
-fn empty_execution_feature() -> crate::features::execution::ExecutionFeatureRow {
-    crate::features::execution::ExecutionFeatureRow {
-        schema_version: "v1".to_string(),
-        feature_ts: chrono::Utc::now(),
-        ticker: String::new(),
-        outcome_id: "yes".to_string(),
-        side: crate::execution::types::Side::Buy,
-        tif: crate::execution::types::TimeInForce::Gtc,
-        title: String::new(),
-        vertical: "unknown".to_string(),
-        candidate_limit_price: 0.5,
-        candidate_observed_price: 0.5,
-        candidate_fair_price: 0.5,
-        raw_edge_pct: 0.0,
-        confidence: 0.0,
-        yes_bid_cents: None,
-        yes_ask_cents: None,
-        spread_cents: None,
-        mid_prob_yes: None,
-        volume: 0.0,
-        time_to_close_secs: None,
-        price_vs_best_bid_cents: None,
-        price_vs_best_ask_cents: None,
-        aggressiveness_bps: None,
-        open_order_count_same_ticker: 0,
-        recent_fill_count_same_ticker: 0,
-        recent_cancel_count_same_ticker: 0,
-        same_event_exposure_notional: 0.0,
     }
 }
