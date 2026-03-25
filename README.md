@@ -618,6 +618,33 @@ python3 scripts/evaluate_shadow.py                           # forecast calibrat
 BOT_RUN_FORECAST_TRAIN=true cargo run --release --quiet      # retrain forecast model on new outcomes
 ```
 
+### Operational profiles
+
+The project now includes stable entrypoint scripts for the main operating modes:
+
+```bash
+scripts/run_live_shadow.sh
+scripts/run_research_capture.sh
+scripts/run_research_paper_capture.sh
+scripts/rebuild_models.sh
+scripts/morning_review.sh
+```
+
+Each script:
+- sources `.env` if present
+- uses sensible defaults for that mode
+- still allows env-var overrides when needed
+
+Examples:
+
+```bash
+BOT_RUN_ONCE=true scripts/run_live_shadow.sh
+BOT_RUN_ONCE=true scripts/run_research_capture.sh
+BOT_RUN_ONCE=true scripts/run_research_paper_capture.sh
+BOT_CARGO_PROFILE=release scripts/rebuild_models.sh
+scripts/morning_review.sh
+```
+
 ### Overnight run
 
 ```bash
