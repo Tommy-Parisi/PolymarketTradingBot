@@ -64,6 +64,8 @@ pub fn record_scan_trace(
                 close_time: market.close_time,
                 yes_bid_cents: delta.yes_bid_cents.or(market.yes_bid_cents),
                 yes_ask_cents: delta.yes_ask_cents.or(market.yes_ask_cents),
+                yes_bid_size: delta.yes_bid_size.or(market.yes_bid_size),
+                yes_ask_size: delta.yes_ask_size.or(market.yes_ask_size),
                 mid_prob_yes: implied_mid_prob_yes(
                     delta.yes_bid_cents.or(market.yes_bid_cents),
                     delta.yes_ask_cents.or(market.yes_ask_cents),
@@ -103,6 +105,8 @@ fn market_to_event(
         close_time: market.close_time,
         yes_bid_cents: market.yes_bid_cents,
         yes_ask_cents: market.yes_ask_cents,
+        yes_bid_size: market.yes_bid_size,
+        yes_ask_size: market.yes_ask_size,
         mid_prob_yes: implied_mid_prob_yes(market.yes_bid_cents, market.yes_ask_cents),
         spread_cents: implied_spread_cents(market.yes_bid_cents, market.yes_ask_cents),
         volume: market.volume,

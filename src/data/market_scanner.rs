@@ -144,6 +144,8 @@ pub struct ScannedMarket {
     pub series_ticker: Option<String>,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
+    pub yes_bid_size: Option<f64>,
+    pub yes_ask_size: Option<f64>,
     pub volume: f64,
     pub close_time: Option<DateTime<Utc>>,
 }
@@ -443,6 +445,12 @@ fn apply_deltas(index: &mut HashMap<String, ScannedMarket>, deltas: Vec<MarketDe
             if delta.yes_ask_cents.is_some() {
                 m.yes_ask_cents = delta.yes_ask_cents;
             }
+            if delta.yes_bid_size.is_some() {
+                m.yes_bid_size = delta.yes_bid_size;
+            }
+            if delta.yes_ask_size.is_some() {
+                m.yes_ask_size = delta.yes_ask_size;
+            }
             if let Some(traded) = delta.traded_count_delta {
                 m.volume += traded.max(0.0);
             }
@@ -488,6 +496,10 @@ struct KalshiMarketWire {
     yes_bid_dollars: Option<String>,
     #[serde(alias = "yes_ask_dollars", alias = "yesAskDollars")]
     yes_ask_dollars: Option<String>,
+    #[serde(alias = "yes_bid_size", alias = "yesBidSize", alias = "yes_bid_size_fp")]
+    yes_bid_size: Option<String>,
+    #[serde(alias = "yes_ask_size", alias = "yesAskSize", alias = "yes_ask_size_fp")]
+    yes_ask_size: Option<String>,
     // volume_fp is a quoted decimal string ("4109.00"), same format as price fields.
     #[serde(alias = "volume_fp")]
     volume: Option<String>,
@@ -507,6 +519,9 @@ fn to_scanned_market(m: KalshiMarketWire) -> ScannedMarket {
         .and_then(parse_price_dollars_to_cents)
         .or(m.yes_ask);
 
+    let yes_bid_size = m.yes_bid_size.as_deref().and_then(|s| s.parse::<f64>().ok());
+    let yes_ask_size = m.yes_ask_size.as_deref().and_then(|s| s.parse::<f64>().ok());
+
     let volume = m.volume.as_deref().and_then(|s| s.parse::<f64>().ok()).unwrap_or(0.0);
 
     ScannedMarket {
@@ -518,6 +533,8 @@ fn to_scanned_market(m: KalshiMarketWire) -> ScannedMarket {
         series_ticker: m.series_ticker,
         yes_bid_cents,
         yes_ask_cents,
+        yes_bid_size,
+        yes_ask_size,
         volume,
         close_time: m.close_time,
     }

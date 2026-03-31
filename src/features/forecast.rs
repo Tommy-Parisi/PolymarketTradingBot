@@ -31,8 +31,11 @@ pub struct ForecastFeatureRow {
     pub time_to_close_secs: Option<i64>,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
+    pub yes_bid_size: Option<f64>,
+    pub yes_ask_size: Option<f64>,
     pub mid_prob_yes: Option<f64>,
     pub spread_cents: Option<f64>,
+    pub book_pressure: Option<f64>,
     pub volume: f64,
     pub vertical: String,
     pub weather_signal: Option<f64>,
@@ -73,8 +76,11 @@ pub fn build_forecast_feature_row(
         time_to_close_secs: market.close_time.map(|close| (close - feature_ts).num_seconds()),
         yes_bid_cents: market.yes_bid_cents,
         yes_ask_cents: market.yes_ask_cents,
+        yes_bid_size: market.yes_bid_size,
+        yes_ask_size: market.yes_ask_size,
         mid_prob_yes: market_mid_prob_yes(market.yes_bid_cents, market.yes_ask_cents),
         spread_cents: market.spread_cents(),
+        book_pressure: calculate_book_pressure(market.yes_bid_size, market.yes_ask_size),
         volume: market.volume,
         vertical: parsed.vertical,
         weather_signal: enrichment.and_then(|e| e.weather_signal),
@@ -112,8 +118,11 @@ pub fn build_forecast_feature_row_from_event(event: &MarketStateEvent) -> Foreca
         time_to_close_secs: event.close_time.map(|close| (close - event.ts).num_seconds()),
         yes_bid_cents: event.yes_bid_cents,
         yes_ask_cents: event.yes_ask_cents,
+        yes_bid_size: event.yes_bid_size,
+        yes_ask_size: event.yes_ask_size,
         mid_prob_yes: event.mid_prob_yes,
         spread_cents: event.spread_cents,
+        book_pressure: calculate_book_pressure(event.yes_bid_size, event.yes_ask_size),
         volume: event.volume,
         vertical: parsed.vertical,
         weather_signal: None,
@@ -133,6 +142,15 @@ pub fn build_forecast_feature_row_from_event(event: &MarketStateEvent) -> Foreca
 
 fn market_mid_prob_yes(bid: Option<f64>, ask: Option<f64>) -> Option<f64> {
     Some(((bid? + ask?) / 2.0 / 100.0).clamp(0.0, 1.0))
+}
+
+fn calculate_book_pressure(bid_size: Option<f64>, ask_size: Option<f64>) -> Option<f64> {
+    let b = bid_size?;
+    let a = ask_size?;
+    if b + a == 0.0 {
+        return Some(0.5);
+    }
+    Some(b / (b + a))
 }
 
 fn infer_vertical_from_event(event: &MarketStateEvent) -> Option<MarketVertical> {
@@ -218,6 +236,8 @@ fn infer_vertical_from_title_or_ticker(ticker: &str, title: &str) -> MarketVerti
         series_ticker: None,
         yes_bid_cents: None,
         yes_ask_cents: None,
+        yes_bid_size: None,
+        yes_ask_size: None,
         volume: 0.0,
         close_time: None,
     };

@@ -335,6 +335,8 @@ fn nearest_market_before(
         series_ticker: event.series_ticker.clone(),
         yes_bid_cents: event.yes_bid_cents,
         yes_ask_cents: event.yes_ask_cents,
+        yes_bid_size: event.yes_bid_size,
+        yes_ask_size: event.yes_ask_size,
         volume: event.volume,
         close_time: event.close_time,
     })

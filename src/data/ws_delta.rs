@@ -29,6 +29,8 @@ pub struct MarketDelta {
     pub ticker: String,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
+    pub yes_bid_size: Option<f64>,
+    pub yes_ask_size: Option<f64>,
     pub traded_count_delta: Option<f64>,
 }
 
@@ -125,6 +127,16 @@ pub fn parse_ws_delta(raw: &str) -> Option<MarketDelta> {
                     .or_else(|| data.get("yes_ask"))
                     .or_else(|| data.get("yesAsk")),
             ),
+            yes_bid_size: data
+                .get("yes_bid_size_fp")
+                .or_else(|| data.get("yesBidSize"))
+                .or_else(|| data.get("yes_bid_size"))
+                .and_then(value_as_f64),
+            yes_ask_size: data
+                .get("yes_ask_size_fp")
+                .or_else(|| data.get("yesAskSize"))
+                .or_else(|| data.get("yes_ask_size"))
+                .and_then(value_as_f64),
             traded_count_delta: None,
         });
     }
@@ -140,6 +152,8 @@ pub fn parse_ws_delta(raw: &str) -> Option<MarketDelta> {
             ticker,
             yes_bid_cents: None,
             yes_ask_cents: None,
+            yes_bid_size: None,
+            yes_ask_size: None,
             traded_count_delta,
         });
     }

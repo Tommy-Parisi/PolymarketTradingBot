@@ -18,6 +18,8 @@ pub struct MarketStateEvent {
     pub close_time: Option<DateTime<Utc>>,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
+    pub yes_bid_size: Option<f64>,
+    pub yes_ask_size: Option<f64>,
     pub mid_prob_yes: Option<f64>,
     pub spread_cents: Option<f64>,
     pub volume: f64,

@@ -61,6 +61,7 @@ NUMERIC_FEATURES = [
     "crypto_sentiment_signal",
     "sports_injury_signal",
     "recent_trade_count_delta",
+    "book_pressure",
 ]
 
 # Categorical features — label-encoded to int, nulls → -1
