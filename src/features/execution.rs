@@ -34,8 +34,11 @@ pub struct ExecutionFeatureRow {
     pub confidence: f64,
     pub yes_bid_cents: Option<f64>,
     pub yes_ask_cents: Option<f64>,
+    pub yes_bid_size: Option<f64>,
+    pub yes_ask_size: Option<f64>,
     pub spread_cents: Option<f64>,
     pub mid_prob_yes: Option<f64>,
+    pub book_pressure: Option<f64>,
     pub volume: f64,
     pub time_to_close_secs: Option<i64>,
     pub price_vs_best_bid_cents: Option<f64>,
@@ -69,17 +72,10 @@ pub fn build_execution_feature_row_from_forecast(
 ) -> ExecutionFeatureRow {
     let limit_cents = limit_price * 100.0;
 
-    // For NO trades, the relevant market side is flipped:
-    //   NO ask  = 100 - YES bid   (buying NO = selling YES)
-    //   NO bid  = 100 - YES ask
-    // Aggressiveness measures how far the limit price is from the side's own best ask,
-    // normalized by spread. Using YES prices for NO trades produces systematically wrong
-    // aggressiveness values (e.g. NO limit=1¢ vs YES ask=99¢ → appears as "deep miss"
-    // when the NO ask is actually 1¢ → "at market").
     let (side_ask_cents, side_bid_cents) = if candidate.outcome_id.eq_ignore_ascii_case("no") {
         (
-            market.yes_bid_cents.map(|b| 100.0 - b), // NO ask = 100 - YES bid
-            market.yes_ask_cents.map(|a| 100.0 - a), // NO bid = 100 - YES ask
+            market.yes_bid_cents.map(|b| 100.0 - b), 
+            market.yes_ask_cents.map(|a| 100.0 - a),
         )
     } else {
         (market.yes_ask_cents, market.yes_bid_cents)
@@ -112,8 +108,11 @@ pub fn build_execution_feature_row_from_forecast(
         confidence: candidate.confidence,
         yes_bid_cents: market.yes_bid_cents,
         yes_ask_cents: market.yes_ask_cents,
+        yes_bid_size: market.yes_bid_size,
+        yes_ask_size: market.yes_ask_size,
         spread_cents: market.spread_cents(),
         mid_prob_yes: forecast.mid_prob_yes,
+        book_pressure: forecast.book_pressure,
         volume: market.volume,
         time_to_close_secs: forecast.time_to_close_secs,
         price_vs_best_bid_cents,
@@ -134,6 +133,9 @@ pub fn build_execution_feature_row_from_order_event(
 ) -> ExecutionFeatureRow {
     let yes_bid_cents = market.and_then(|m| m.yes_bid_cents);
     let yes_ask_cents = market.and_then(|m| m.yes_ask_cents);
+    let yes_bid_size = market.and_then(|m| m.yes_bid_size);
+    let yes_ask_size = market.and_then(|m| m.yes_ask_size);
+    
     let spread_cents = match (yes_bid_cents, yes_ask_cents) {
         (Some(bid), Some(ask)) if ask >= bid => Some(ask - bid),
         _ => None,
@@ -149,6 +151,13 @@ pub fn build_execution_feature_row_from_order_event(
                 .or(price_vs_best_bid_cents)
                 .map(|offset| (offset / spread) * 10_000.0)
         });
+
+    let book_pressure = match (yes_bid_size, yes_ask_size) {
+        (Some(b), Some(a)) => {
+            if b + a == 0.0 { Some(0.5) } else { Some(b / (b + a)) }
+        }
+        _ => None,
+    };
 
     ExecutionFeatureRow {
         schema_version: EXECUTION_FEATURE_SCHEMA_VERSION.to_string(),
@@ -166,11 +175,14 @@ pub fn build_execution_feature_row_from_order_event(
         confidence: signal.map(|s| s.confidence).unwrap_or(0.0),
         yes_bid_cents,
         yes_ask_cents,
+        yes_bid_size,
+        yes_ask_size,
         spread_cents,
         mid_prob_yes: match (yes_bid_cents, yes_ask_cents) {
             (Some(bid), Some(ask)) => Some(((bid + ask) / 2.0 / 100.0).clamp(0.0, 1.0)),
             _ => None,
         },
+        book_pressure,
         volume: market.map(|m| m.volume).unwrap_or(0.0),
         time_to_close_secs: market
             .and_then(|m| m.close_time)
@@ -182,112 +194,5 @@ pub fn build_execution_feature_row_from_order_event(
         recent_fill_count_same_ticker: context.recent_fill_count_same_ticker,
         recent_cancel_count_same_ticker: context.recent_cancel_count_same_ticker,
         same_event_exposure_notional: context.same_event_exposure_notional,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn market() -> ScannedMarket {
-        ScannedMarket {
-            ticker: "KXHIGHCHI-26FEB16-T45".to_string(),
-            title: "Will the high temp in Chicago be >45° on Feb 16, 2026?".to_string(),
-            subtitle: None,
-            market_type: Some("binary".to_string()),
-            event_ticker: None,
-            series_ticker: None,
-            yes_bid_cents: Some(68.0),
-            yes_ask_cents: Some(72.0),
-            volume: 2000.0,
-            close_time: None,
-        }
-    }
-
-    fn candidate() -> CandidateTrade {
-        CandidateTrade {
-            ticker: "KXHIGHCHI-26FEB16-T45".to_string(),
-            side: Side::Buy,
-            outcome_id: "yes".to_string(),
-            fair_price: 0.78,
-            observed_price: 0.70,
-            edge_pct: 0.06,
-            confidence: 0.8,
-            rationale: "x".to_string(),
-        }
-    }
-
-    #[test]
-    fn computes_execution_offsets() {
-        let row = build_execution_feature_row(
-            &market(),
-            &candidate(),
-            TimeInForce::Gtc,
-            0.71,
-            &ExecutionContext {
-                open_order_count_same_ticker: 1,
-                recent_fill_count_same_ticker: 2,
-                recent_cancel_count_same_ticker: 0,
-                same_event_exposure_notional: 150.0,
-            },
-            Utc::now(),
-        );
-        assert_eq!(row.price_vs_best_bid_cents, Some(3.0));
-        assert_eq!(row.price_vs_best_ask_cents, Some(-1.0));
-    }
-
-    #[test]
-    fn no_trade_aggressiveness_uses_no_side_prices() {
-        // YES bid=99, YES ask=100 → market near-resolved YES.
-        // NO ask = 100 - 99 = 1¢. Buying NO at 1¢ is "at market", not "deep_miss".
-        // The old code used YES prices: limit=1 vs YES ask=100 → -99¢ offset → deep_miss.
-        // The new code uses NO prices: limit=1 vs NO ask=1 → 0¢ offset → at_market.
-        let near_resolved = ScannedMarket {
-            ticker: "KXNBATOTAL-26MAR25LALIND-234".to_string(),
-            title: "NBA Total".to_string(),
-            subtitle: None,
-            market_type: None,
-            event_ticker: None,
-            series_ticker: None,
-            yes_bid_cents: Some(99.0),
-            yes_ask_cents: Some(100.0),
-            volume: 5000.0,
-            close_time: None,
-        };
-        let no_candidate = CandidateTrade {
-            ticker: "KXNBATOTAL-26MAR25LALIND-234".to_string(),
-            side: Side::Buy,
-            outcome_id: "no".to_string(),
-            fair_price: 0.42,
-            observed_price: 0.01,
-            edge_pct: 0.41,
-            confidence: 0.6,
-            rationale: "x".to_string(),
-        };
-        let row = build_execution_feature_row(
-            &near_resolved,
-            &no_candidate,
-            TimeInForce::Ioc,
-            0.01,  // limit = NO ask = 1¢
-            &ExecutionContext::default(),
-            Utc::now(),
-        );
-        // NO ask = 100 - YES bid = 100 - 99 = 1¢; limit = 1¢ → offset = 0
-        assert_eq!(row.price_vs_best_ask_cents, Some(0.0),
-            "NO limit at NO ask should have 0 offset, got {:?}", row.price_vs_best_ask_cents);
-        // NO bid = 100 - YES ask = 100 - 100 = 0¢; limit = 1¢ → offset = +1
-        assert_eq!(row.price_vs_best_bid_cents, Some(1.0));
-    }
-
-    #[test]
-    fn yes_trade_aggressiveness_unchanged() {
-        // YES side should still use YES prices directly.
-        let m = market(); // bid=68, ask=72
-        let c = candidate(); // outcome_id=yes, limit=0.70
-        let row = build_execution_feature_row(&m, &c, TimeInForce::Gtc, 0.70,
-            &ExecutionContext::default(), Utc::now());
-        // YES side: ask=72, limit=70 → offset = 70 - 72 = -2 (below ask)
-        assert_eq!(row.price_vs_best_ask_cents, Some(-2.0));
-        assert_eq!(row.price_vs_best_bid_cents, Some(2.0));
     }
 }

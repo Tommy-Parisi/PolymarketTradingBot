@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::time::sleep;
 
+use crate::data::market_scanner::ScannedMarket;
 use crate::execution::client::ExchangeClient;
 use crate::execution::types::{
     new_client_order_id, EngineConfig, ExecutionError, ExecutionReport, OrderAck, OrderRequest, OrderStatus,
@@ -71,6 +72,7 @@ impl ExecutionEngine {
         &self,
         signal: &TradeSignal,
         bankroll: f64,
+        market: Option<&ScannedMarket>,
     ) -> Result<ExecutionReport, ExecutionError> {
         self.validate_signal(signal)?;
         let total_quantity = self.compute_position_size(signal, bankroll)?;
@@ -79,11 +81,11 @@ impl ExecutionEngine {
         let policy = self.execution_policy();
         match policy {
             ExecutionPolicy::Ioc => {
-                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Ioc)
+                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Ioc, market)
                     .await
             }
             ExecutionPolicy::Gtc => {
-                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Gtc)
+                self.execute_single_order(signal, bankroll, total_quantity, TimeInForce::Gtc, market)
                     .await
             }
             ExecutionPolicy::Hybrid => {
@@ -91,7 +93,7 @@ impl ExecutionEngine {
                     .max(self.config.min_order_quantity)
                     .min(total_quantity);
                 let first_report = self
-                    .execute_single_order(signal, bankroll, ioc_qty, TimeInForce::Ioc)
+                    .execute_single_order(signal, bankroll, ioc_qty, TimeInForce::Ioc, market)
                     .await?;
 
                 let remaining = (total_quantity - first_report.filled_qty).max(0.0);
@@ -103,7 +105,7 @@ impl ExecutionEngine {
                 }
 
                 match self
-                    .execute_single_order(signal, bankroll, remaining, TimeInForce::Gtc)
+                    .execute_single_order(signal, bankroll, remaining, TimeInForce::Gtc, market)
                     .await
                 {
                     Ok(report) => Ok(report),
@@ -130,9 +132,10 @@ impl ExecutionEngine {
         bankroll: f64,
         quantity: f64,
         time_in_force: TimeInForce,
+        market: Option<&ScannedMarket>,
     ) -> Result<ExecutionReport, ExecutionError> {
         self.validate_quantity_bounds(quantity)?;
-        let order = self.build_order(signal, quantity, time_in_force)?;
+        let order = self.build_order(signal, quantity, time_in_force, market)?;
         self.pre_trade_checks(&order, bankroll)?;
 
         let mut state = self.load_state()?;
@@ -330,6 +333,7 @@ impl ExecutionEngine {
         signal: &TradeSignal,
         quantity: f64,
         time_in_force: TimeInForce,
+        market: Option<&ScannedMarket>,
     ) -> Result<OrderRequest, ExecutionError> {
         let limit_price = compute_limit_price(signal.side, signal.observed_price);
         let notional = quantity * limit_price;
@@ -349,6 +353,8 @@ impl ExecutionEngine {
             quantity,
             time_in_force,
             created_at: Utc::now(),
+            market_yes_bid_size: market.and_then(|m| m.yes_bid_size),
+            market_yes_ask_size: market.and_then(|m| m.yes_ask_size),
         })
     }
 
@@ -954,6 +960,8 @@ mod tests {
             quantity: 10.0,
             time_in_force: TimeInForce::Ioc,
             created_at: Utc::now(),
+            market_yes_bid_size: None,
+            market_yes_ask_size: None,
         };
         let intent = serde_json::json!({
             "schema_version": JOURNAL_SCHEMA_VERSION,

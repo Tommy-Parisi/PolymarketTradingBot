@@ -68,8 +68,27 @@ impl ExchangeClient for PaperSimClient {
         let order_id = format!("sim-{}", inner.seq);
 
         let seed = stable_hash(&(request.client_order_id.as_str(), request.market_id.as_str()));
+        
+        // Base fill ratio from deterministic seed
         let fill_ratio_bucket = (seed % 4) as usize;
-        let fill_ratio = [0.0, 0.35, 0.65, 1.0][fill_ratio_bucket];
+        let mut fill_ratio: f64 = [0.0, 0.35, 0.65, 1.0][fill_ratio_bucket];
+
+        // Apply size-aware capping if hints are available
+        let market_depth = if request.outcome_id.eq_ignore_ascii_case("no") {
+            request.market_yes_bid_size
+        } else {
+            request.market_yes_ask_size
+        };
+
+        if let Some(depth) = market_depth {
+            if depth <= 0.0 {
+                fill_ratio = 0.0;
+            } else if depth < request.quantity {
+                // Not enough depth for full fill, cap it.
+                let depth_ratio = depth / request.quantity;
+                fill_ratio = fill_ratio.min(depth_ratio);
+            }
+        }
 
         let slip_unit = (seed % 10_000) as f64 / 10_000.0;
         let slippage_bps = (slip_unit * 2.0 - 1.0) * self.cfg.max_slippage_bps;
@@ -220,6 +239,8 @@ mod tests {
             quantity: 100.0,
             time_in_force: TimeInForce::Ioc,
             created_at: Utc::now(),
+            market_yes_bid_size: None,
+            market_yes_ask_size: None,
         }
     }
 

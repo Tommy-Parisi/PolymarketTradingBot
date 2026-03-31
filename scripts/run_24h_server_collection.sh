@@ -23,10 +23,25 @@ LOG_FILE="${THEBANK_LOG_DIR}/24h_collection_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 echo "Logging to ${LOG_FILE}"
 
+# --- LOG ROTATION ---
+# Clean up logs and research artifacts older than 7 days to save disk space
+echo "Performing 7-day log cleanup..."
+find var/logs -name "*.log" -mtime +7 -delete 2>/dev/null || true
+find var/research -name "*.jsonl" -mtime +7 -delete 2>/dev/null || true
+find var/cycles -name "*.json" -mtime +7 -delete 2>/dev/null || true
+# Also clean up old collection logs on the external drive
+find "${THEBANK_LOG_DIR}" -name "24h_collection_*.log" -mtime +7 -delete 2>/dev/null || true
+
 # --- IMMUNITY: Override .env settings that block collection ---
 export BOT_CLAUDE_VERTICAL_BLOCKLIST="" # ALLOW Claude to value all verticals
 export BOT_CLAUDE_TRIGGER_MODE="on_heuristic_candidates"
 export BOT_VALUATION_CACHE_TTL_SECS="60"
+
+# --- PERIODIC BACKGROUND TASKS ---
+# Enable periodic outcome backfill and dataset building in the main loop
+export BOT_RUN_OUTCOME_BACKFILL="true"
+export BOT_RUN_DATASET_BUILD="true"
+export BOT_OUTCOME_LOOKBACK_DAYS="14"
 
 # --- Execution & Capture Configuration ---
 export BOT_EXECUTION_MODE="paper"

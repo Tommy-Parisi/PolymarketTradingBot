@@ -47,6 +47,9 @@ pub struct OrderRequest {
     pub quantity: f64,
     pub time_in_force: TimeInForce,
     pub created_at: DateTime<Utc>,
+    // Simulation hints (optional, populated by engine if available)
+    pub market_yes_bid_size: Option<f64>,
+    pub market_yes_ask_size: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

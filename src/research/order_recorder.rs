@@ -235,6 +235,8 @@ mod tests {
             quantity: 10.0,
             time_in_force: TimeInForce::Gtc,
             created_at: Utc::now(),
+            market_yes_bid_size: None,
+            market_yes_ask_size: None,
         }
     }
 

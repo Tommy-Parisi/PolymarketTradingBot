@@ -70,7 +70,7 @@ pub async fn run_multi_day_replay() {
                     signal_timestamp: Utc::now() - Duration::seconds(1),
                     signal_origin: Some("replay".to_string()),
                 };
-                if let Ok(report) = engine.execute_signal(&signal, a.notional).await {
+                if let Ok(report) = engine.execute_signal(&signal, a.notional, None).await {
                     match report.status {
                         OrderStatus::Filled => filled += 1,
                         OrderStatus::PartiallyFilled => partial += 1,

@@ -21,7 +21,7 @@ mod replay;
 mod research;
 
 use data::market_enrichment::{EnrichmentConfig, MarketEnricher, select_for_enrichment};
-use data::market_scanner::{KalshiMarketScanner, ScannerConfig};
+use data::market_scanner::{KalshiMarketScanner, ScannedMarket, ScannerConfig};
 use datasets::builder::{DatasetBuildConfig, run_dataset_build};
 use execution::client::{ExchangeClient, KalshiClient};
 use execution::engine::{ExecutionEngine, ExecutionMode, summarize_performance_paths};
@@ -578,6 +578,19 @@ async fn run_cycle(runtime: &BotRuntime) {
         "starting cycle #{} (claude_trigger_mode={:?} cadence_claude_enabled={} cadence={})",
         cycle_number, runtime.claude_trigger_mode, cadence_use_claude, runtime.claude_every_n_cycles
     );
+
+    // Periodically run outcome backfill and dataset build (every 3 hours / 18 cycles)
+    if cycle_number > 1 && cycle_number % 18 == 0 {
+        println!("periodic background tasks: starting outcome backfill and dataset build");
+        let outcome_cfg = OutcomeResolverConfig::from_env();
+        if let Err(err) = run_outcome_backfill(&outcome_cfg).await {
+            eprintln!("periodic outcome backfill failed: {err}");
+        }
+        let dataset_cfg = DatasetBuildConfig::from_env();
+        if let Err(err) = run_dataset_build(&dataset_cfg).await {
+            eprintln!("periodic dataset build failed: {err}");
+        }
+    }
 
     let scan_trace = match runtime.scanner.scan_snapshot_with_trace().await {
         Ok(trace) => trace,
@@ -1364,6 +1377,10 @@ async fn run_cycle(runtime: &BotRuntime) {
         .iter()
         .map(|m| (m.ticker.clone(), m.title.clone()))
         .collect();
+    let market_by_ticker: std::collections::HashMap<String, &ScannedMarket> = selected
+        .iter()
+        .map(|m| (m.ticker.clone(), m))
+        .collect();
 
     let mut execution_artifacts = Vec::new();
     for allocated in guarded_allocations {
@@ -1409,7 +1426,8 @@ async fn run_cycle(runtime: &BotRuntime) {
             }
         }
 
-        match runtime.engine.execute_signal(&signal, allocated.notional).await {
+        let market_ptr = market_by_ticker.get(&allocated.candidate.ticker).cloned();
+        match runtime.engine.execute_signal(&signal, allocated.notional, market_ptr).await {
             Ok(report) => {
                 let lookup_hint = kalshi_lookup_hint(&signal.market_id);
                 let market_title = title_by_ticker
