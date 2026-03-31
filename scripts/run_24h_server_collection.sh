@@ -13,30 +13,28 @@ source "${SCRIPT_DIR}/common.sh"
 load_repo_env
 ensure_logs_dir
 
+# --- IMMUNITY: Override .env settings that block collection ---
+export BOT_CLAUDE_VERTICAL_BLOCKLIST="" # ALLOW Claude to value all verticals
+export BOT_CLAUDE_TRIGGER_MODE="on_heuristic_candidates"
+export BOT_VALUATION_CACHE_TTL_SECS="60"
+
 # --- Execution & Capture Configuration ---
 export BOT_EXECUTION_MODE="paper"
 export BOT_RUN_RESEARCH_PAPER_CAPTURE_ONLY="true"
 export BOT_CARGO_PROFILE="release"
-export BOT_CYCLE_SECONDS="600" # 10-minute cycles (144 per day)
+export BOT_CYCLE_SECONDS="600" 
 
 # --- Claude Cost Management (~$3/day target) ---
-# Cost per 1k tokens: ~$0.015 (mixed input/output). 
-# At 144 cycles/day, we can afford ~1.4k tokens per cycle to hit ~$3/day.
-export BOT_CLAUDE_TRIGGER_MODE="on_heuristic_candidates"
-export BOT_VALUATION_MARKETS="30"      # Keep batches small to manage token count
-export BOT_CLAUDE_EVERY_N_CYCLES="1"   # Check every cycle, but only pay if heuristic likes it
-export BOT_VALUATION_CACHE_TTL_SECS="60" # Short cache to get more frequent re-valuations
+export BOT_VALUATION_MARKETS="30"      
+export BOT_CLAUDE_EVERY_N_CYCLES="1"   
 
 # --- Maximising Data Variety (Lowering the Bar) ---
-# Trigger Claude and execution even on small perceived edges to grow the "smart" dataset.
-# Brutally honest truth: we need volume across verticals, even if noise increases.
 export BOT_MISPRICING_THRESHOLD="0.01" 
 export BOT_MIN_EDGE_PCT="0.01"
 export BOT_FALLBACK_MISPRICING_THRESHOLD="0.005"
 export BOT_MIN_CANDIDATES="10"
 
 # --- Scanning Strategy ---
-# Lower volume floor and increase spread limit to bring in Sports/Weather.
 export BOT_SCAN_MIN_VOLUME="100"
 export BOT_SCAN_MAX_SPREAD_CENTS="15.0"
 export BOT_SCAN_SERIES_ALLOWLIST="KXSILVERD,KXGOLDMON,KXBTCD,KXETHD,KXSOLD,KXXRPD,KXNASDAQ100MINY"
@@ -44,7 +42,8 @@ export BOT_SCAN_TIER2_CATEGORIES="Sports,Crypto,Financials,Climate and Weather"
 export BOT_SCAN_MAX_TIER2_SERIES="40"
 export BOT_ENRICHMENT_MARKETS="60"
 
-echo "Starting 24/7 Server Collection Mode (Permissive Data Mode)..."
+echo "Starting 24/7 Server Collection Mode (Override Mode)..."
+echo "Override: Claude is now ENABLED for Crypto."
 echo "Targeting Claude valuations on heuristic candidates every 10m."
 echo "Budgeted for ~\$3/day Claude usage."
 

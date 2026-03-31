@@ -68,8 +68,8 @@ impl Default for ValuationConfig {
             adaptive_confidence_weight: 0.20,
             adaptive_liquidity_weight: 0.55,
             adaptive_spread_weight: 0.25,
-            fee_bps: 15.0,
-            slippage_bps: 20.0,
+            fee_bps: 5.0,
+            slippage_bps: 5.0,
         }
     }
 }
@@ -802,7 +802,7 @@ fn enrichment_bias(e: &MarketEnrichment, ticker: &str) -> f64 {
             .or(e.crypto_sentiment_signal)
             .unwrap_or(0.0)
     };
-    raw_signal * 0.02
+    raw_signal * 0.05
 }
 
 #[derive(Debug, Serialize)]
