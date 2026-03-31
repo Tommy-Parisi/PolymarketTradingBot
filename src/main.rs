@@ -861,7 +861,7 @@ async fn run_cycle(runtime: &BotRuntime) {
         ClaudeTriggerMode::OnHeuristicCandidates => {
             let heuristic_vals = match runtime
                 .valuator
-                .value_markets_with_claude_enabled(&valuation_inputs, false)
+                .value_markets_screening(&valuation_inputs)
                 .await
             {
                 Ok(v) => v,

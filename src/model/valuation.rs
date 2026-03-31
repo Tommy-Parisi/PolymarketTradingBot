@@ -251,6 +251,25 @@ impl ClaudeValuationEngine {
         inputs: &[ValuationInput],
         claude_enabled: bool,
     ) -> Result<Vec<MarketValuation>, ExecutionError> {
+        self.value_markets_impl(inputs, claude_enabled, true).await
+    }
+
+    /// Like `value_markets_with_claude_enabled` but does not write results to the cache.
+    /// Used for heuristic pre-passes (e.g. OnHeuristicCandidates) where the results are
+    /// only used for candidate screening and will be superseded by a Claude pass.
+    pub async fn value_markets_screening(
+        &self,
+        inputs: &[ValuationInput],
+    ) -> Result<Vec<MarketValuation>, ExecutionError> {
+        self.value_markets_impl(inputs, false, false).await
+    }
+
+    async fn value_markets_impl(
+        &self,
+        inputs: &[ValuationInput],
+        claude_enabled: bool,
+        write_cache: bool,
+    ) -> Result<Vec<MarketValuation>, ExecutionError> {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
@@ -280,7 +299,9 @@ impl ClaudeValuationEngine {
                     // Attach actual bid/ask from market data — Claude doesn't return these.
                     v.yes_ask_cents = input.market.yes_ask_cents;
                     v.yes_bid_cents = input.market.yes_bid_cents;
-                    self.put_cached(input, &v);
+                    if write_cache {
+                        self.put_cached(input, &v);
+                    }
                 }
                 out.push(v);
             }
@@ -502,10 +523,18 @@ impl ClaudeValuationEngine {
             max_tokens: self.cfg.max_tokens_per_batch,
             temperature: 0.0,
             system: "You are a pricing engine. Output strict JSON only.".to_string(),
-            messages: vec![ClaudeMessage {
-                role: "user".to_string(),
-                content: prompt,
-            }],
+            messages: vec![
+                ClaudeMessage {
+                    role: "user".to_string(),
+                    content: prompt,
+                },
+                // Assistant prefill: forces the response to begin with '[', guaranteeing
+                // we get a JSON array without any preamble text.
+                ClaudeMessage {
+                    role: "assistant".to_string(),
+                    content: "[".to_string(),
+                },
+            ],
         };
 
         let req = self
@@ -546,7 +575,12 @@ impl ClaudeValuationEngine {
             .map(|c| c.text.clone())
             .ok_or_else(|| ExecutionError::Exchange("claude missing text content".to_string()))?;
 
-        let parsed = parse_claude_valuation_items(&content_text)?;
+        // The assistant prefill consumed the opening '[', so we restore it before parsing.
+        let content_with_prefix = format!("[{content_text}");
+        let parsed = parse_claude_valuation_items(&content_with_prefix).map_err(|e| {
+            let preview: String = content_with_prefix.chars().take(300).collect();
+            ExecutionError::Exchange(format!("{e} | raw: {preview}"))
+        })?;
 
         let mut by_ticker: HashMap<String, &ValuationInput> = HashMap::new();
         for i in inputs {
