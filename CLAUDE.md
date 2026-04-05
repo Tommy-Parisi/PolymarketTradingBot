@@ -48,14 +48,16 @@ src/
 └── replay/            # Multi-day replay/backtesting
 ```
 
-### Weather Specialist Sidecar
+### Specialist Sidecar Architecture
 
-Out-of-process Python/FastAPI service (`../kalshi_stack/WeatherPredictor/`) — XGBoost model (AUC 0.9959) for `KXHIGHPHI-*` markets. Fetches NOAA data, returns calibrated probability via `GET /predict?ticker=<ticker>`.
+Forecast is handled by a **motorcade of out-of-process Python/FastAPI sidecars** — one per vertical, each purpose-built for its data sources and semantics. The Rust bot falls back to the bucket model for any vertical not yet covered by a sidecar.
 
-- `src/data/market_enrichment.rs` calls the sidecar for Philadelphia weather tickers and populates `ForecastFeatureRow.specialist_prob_yes`
-- `src/models/forecast.rs` uses `specialist_prob_yes` as a **direct override** of the bucket model (tagged `_specialist` in model version)
-- 3s timeout; any failure falls back to bucket model silently
-- `WEATHER_SPECIALIST_URL` (bot) and `NOAA_API_TOKEN` (sidecar) must be set to activate
+**Pattern:** `src/data/market_enrichment.rs` detects vertical from ticker, calls the appropriate sidecar, and populates `ForecastFeatureRow.specialist_prob_yes`. `src/models/forecast.rs` uses this as a **hard override** of the bucket model (tagged `_specialist` in model version). Sidecar down = silent fallback to bucket, trading continues.
+
+**Active sidecars:**
+- `../kalshi_stack/WeatherPredictor/` — XGBoost (AUC 0.9959) for `KXHIGHPHI-*`. Fetches NOAA data. Env: `WEATHER_SPECIALIST_URL`, `NOAA_API_TOKEN`.
+
+**Next to build:** CryptoPredictor (`KXBTCD-*`, `KXETHD-*`) — price distance, rolling vol, momentum from exchange APIs.
 
 **Operating modes** (set via `BOT_POLICY_MODE` in `.env`):
 - `legacy` — only legacy path (current trusted mode)
@@ -83,11 +85,11 @@ The entire `var/` tree (`cycles/`, `logs/`, `research/`, `features/`, `models/`,
 
 ## Known Issues (Priority Order)
 
-See `docs/execution_aware_prediction_plan.md` for the full roadmap. Post shadow-mode post-mortem (2026-03-29):
+See `docs/execution_aware_prediction_plan.md` for the full roadmap.
 
-1. **Issue 4:** Execution model is 99.4% synthetic data (246K synthetic vs 1.4K organic rows). Accumulate more organic paper fills before relying on execution model predictions.
-2. **Issue 1 (General Forecast GBT — not yet wired in):** `scripts/train_forecast_gbt.py` exists and `var/models/forecast/xgb_v1.ubj` is trained, but Rust still uses the bucket model for non-weather verticals. Brier skill score is -2.64 (worse than market mid) because enrichment signals are null in most training rows. Fix: collect live enrichment data, retrain, wire in once skill score is positive. Note: the **weather specialist sidecar already bypasses this path** for `KXHIGHPHI-*` markets.
-3. **Issue 2 (Execution GBT — not started):** Execution model remains a bucket lookup table (`empirical_execution_baseline`). No GBT training script exists for execution yet. Do not prioritize until Issue 1 is resolved and organic execution data is sufficient.
+1. **Execution model is almost entirely synthetic data.** 1,215 organic paper rows vs ~1.16M retroactive synthetic. Accumulate more organic fills before trusting execution model predictions. Active mode remains disabled.
+2. **Bucket model underperforms market mid in shadow** (-15.3% Brier lift, 04-05 audit). This is expected — enrichment signals are null for non-weather verticals. Fix: build CryptoPredictor sidecar next, which will cover the highest-volume shadow rows.
+3. **Execution GBT not started.** Execution model is still a bucket lookup table. Do not prioritize until organic execution data is sufficient (target: ~5K organic rows).
 
 ## Important Files
 
@@ -103,8 +105,6 @@ See `docs/execution_aware_prediction_plan.md` for the full roadmap. Post shadow-
 | `docs/execution_aware_prediction_plan.md` | Full modeling roadmap |
 | `scripts/evaluate_shadow.py` | Forecast calibration + policy hit-rate analysis |
 | `scripts/check_fills.py` | Paper fill win/loss rate vs resolved outcomes |
-| `scripts/train_forecast_gbt.py` | Offline XGBoost forecast training (not yet wired into Rust serving) |
-| `var/models/forecast/xgb_v1.ubj` | Trained XGBoost artifact (currently underperforms market mid — see Issue 1) |
 | `../kalshi_stack/WeatherPredictor/sidecar.py` | Weather specialist sidecar — FastAPI service exposing XGBoost via HTTP |
 | `../kalshi_stack/WeatherPredictor/src/modeling/train_weather_model.py` | Offline training for weather specialist model |
 | `src/data/market_enrichment.rs` | Calls weather sidecar; populates `specialist_prob_yes` |

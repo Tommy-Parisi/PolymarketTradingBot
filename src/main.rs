@@ -1221,6 +1221,26 @@ async fn run_cycle(runtime: &BotRuntime) {
     } else {
         candidates.clone()
     };
+
+    // Restrict execution to allowed series prefixes (BOT_EXECUTION_SERIES_ALLOWLIST).
+    // Valuation and shadow logging are unaffected — only allocation is filtered.
+    let allocation_candidates = {
+        let allowlist: Vec<String> = std::env::var("BOT_EXECUTION_SERIES_ALLOWLIST")
+            .unwrap_or_default()
+            .split(',')
+            .map(|s| s.trim().to_ascii_uppercase())
+            .filter(|s| !s.is_empty())
+            .collect();
+        if allowlist.is_empty() {
+            allocation_candidates
+        } else {
+            allocation_candidates
+                .into_iter()
+                .filter(|c| allowlist.iter().any(|prefix| c.ticker.starts_with(prefix.as_str())))
+                .collect()
+        }
+    };
+
     let candidate_artifacts: Vec<ArtifactCandidate> = candidates
         .iter()
         .enumerate()

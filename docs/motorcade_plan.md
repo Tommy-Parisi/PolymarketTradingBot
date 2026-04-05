@@ -12,7 +12,7 @@ The better architecture is a **motorcade**: the Rust bot runs in the center, fla
 |-----------|--------|
 | Data infrastructure (market state, order lifecycle, outcomes, feature builder) | Done |
 | Weather specialist sidecar (`KXHIGHPHI-*`, AUC 0.9959) | **THIS MIGHT BE MISLEADING AND SHOULD MAKE US NERVOUS --> INFLATED, SEE ../WeatherPredictor/next_steps.md before expanding to other cities** |
-| General forecast GBT (`xgb_v1.ubj`) | Trained, BSS -2.64 — not wired, deprioritized |
+| General forecast GBT (`xgb_v1.ubj`) | **Deleted** — BSS -2.64, architecture flawed; replaced by sidecar pattern |
 | Execution model | Bucket lookup table — no GBT yet |
 | Policy layer | Wired in shadow mode |
 | Shadow mode infrastructure | Done |
@@ -218,11 +218,11 @@ Each per-ticker probability entry needs a `valid_until` timestamp (e.g. game tip
 
 ---
 
-## What the General Forecast GBT Becomes
+## General Forecast GBT — Deleted
 
-`var/models/forecast/xgb_v1.ubj` has BSS -2.64 — worse than market mid. It is **not** the active fallback for non-specialist markets. The bucket model is the current fallback and is preferable to `xgb_v1.ubj` until the GBT is retrained on rows with real enrichment signals. `src/models/forecast.rs` should reflect this: `xgb_v1.ubj` must not be used as a fallback while its skill score is negative.
+`var/models/forecast/xgb_v1.ubj` and `scripts/train_forecast_gbt.py` have been removed (2026-04-05). The architecture was fundamentally flawed: a single cross-vertical GBT has nothing to learn beyond market mid when enrichment signals are null for most rows. BSS was -2.64.
 
-`var/models/forecast/xgb_v1.ubj` and `scripts/train_forecast_gbt.py` are not deleted. Retrain only after specialists cover the main volume verticals (weather + crypto) and enrichment signals are actually populating for the remaining rows. Its role shrinks permanently as specialist coverage grows.
+The bucket model is the permanent fallback for non-specialist verticals. As sidecar coverage expands (crypto next), the bucket model's role shrinks naturally — no general GBT needed.
 
 ---
 

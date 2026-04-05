@@ -38,9 +38,9 @@ export BOT_CLAUDE_TRIGGER_MODE="on_heuristic_candidates"
 export BOT_VALUATION_CACHE_TTL_SECS="60"
 
 # --- PERIODIC BACKGROUND TASKS ---
-# Enable periodic outcome backfill and dataset building in the main loop
-export BOT_RUN_OUTCOME_BACKFILL="true"
-export BOT_RUN_DATASET_BUILD="true"
+# Outcome backfill and dataset build run automatically every 18 cycles inside the loop.
+# Do NOT set BOT_RUN_OUTCOME_BACKFILL or BOT_RUN_DATASET_BUILD here — those are one-shot
+# modes that exit immediately after running, preventing the trading loop from starting.
 export BOT_OUTCOME_LOOKBACK_DAYS="14"
 
 # --- Execution & Capture Configuration ---
@@ -65,10 +65,14 @@ export BOT_MIN_CANDIDATES="10"
 # --- Scanning Strategy ---
 export BOT_SCAN_MIN_VOLUME="100"
 export BOT_SCAN_MAX_SPREAD_CENTS="15.0"
-export BOT_SCAN_SERIES_ALLOWLIST="KXSILVERD,KXGOLDMON,KXBTCD,KXETHD,KXSOLD,KXXRPD,KXNASDAQ100MINY"
+export BOT_SCAN_SERIES_ALLOWLIST="KXHIGHPHI,KXSILVERD,KXGOLDMON,KXBTCD,KXETHD,KXSOLD,KXXRPD,KXNASDAQ100MINY"
 export BOT_SCAN_TIER2_CATEGORIES="Sports,Crypto,Financials,Climate and Weather"
-export BOT_SCAN_MAX_TIER2_SERIES="40"
-export BOT_ENRICHMENT_MARKETS="60"
+export BOT_SCAN_MAX_TIER2_SERIES="60"
+export BOT_ENRICHMENT_MARKETS="80"
+
+# Paper-trade crypto + commodities. Excludes sports (binary/lumpy microstructure, no specialist signal)
+# and non-PHI weather cities (no sidecar coverage). Maximizes organic execution rows on consistent markets.
+export BOT_EXECUTION_SERIES_ALLOWLIST="KXHIGHPHI,KXBTCD,KXETHD,KXXRPD,KXSOLD,KXGOLDD,KXGOLDMON,KXSILVERD,KXSILVERMON,KXSILVERW,KXBRENTW,KXBRENTMON,KXWTIMAX,KXNATGASMON,KXSUGARMON,KXLCATTLEMON,KXCOPPERMON,KXNASDAQ100MINY"
 
 echo "Starting 24/7 Server Collection Mode (Override Mode)..."
 echo "Override: Claude is now ENABLED for Crypto."

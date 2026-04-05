@@ -466,14 +466,14 @@ Rather than a single general forecast GBT (Issue 1), the preferred architecture 
 - Blocked until a reliable, timely injury feed is identified — without it the model just replicates market mid
 - Do not prioritize until data sourcing is solved
 
-### General Forecast GBT (Issue 1) — deprioritized
-The general XGBoost in `var/models/forecast/xgb_v1.ubj` remains a fallback for verticals not yet covered by a specialist. Do not invest in it until specialists cover the main volume verticals (crypto, weather). At that point the general model's role shrinks to thin/miscellaneous markets.
+### General Forecast GBT — Deleted (2026-04-05)
+The general XGBoost (`var/models/forecast/xgb_v1.ubj`) and its training script have been removed. BSS -2.64; architecture flawed — a cross-vertical GBT cannot learn signal when enrichment is null for most rows. The bucket model is the permanent fallback for non-specialist verticals.
 
 ---
 
 ### Completed: Weather Vertical Specialist (2026-04-04)
 
-The Philadelphia high-temperature vertical (`KXHIGHPHI-*`) is fully served by the **weather specialist sidecar** (`../kalshi_stack/WeatherPredictor/`) — an out-of-process XGBoost model (AUC 0.9959) that bypasses the general bucket model and the general GBT (Issue 1). This is the first realized instance of the per-vertical specialist model pattern described in Phase 5. Sports, crypto, and global fallback verticals still use the bucket model.
+The Philadelphia high-temperature vertical (`KXHIGHPHI-*`) is fully served by the **weather specialist sidecar** (`../kalshi_stack/WeatherPredictor/`) — an out-of-process XGBoost model (AUC 0.9959) that bypasses the bucket model. This is the first realized instance of the per-vertical specialist model pattern. Sports, crypto, and global fallback verticals still use the bucket model.
 
 ---
 
