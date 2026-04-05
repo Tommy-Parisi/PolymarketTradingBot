@@ -21,7 +21,7 @@ The bot is running in shadow. Legacy path executes. Specialist prob overrides bu
 
 ---
 
-## Architecture
+## Architecture 
 
 ```
 ┌─────────────────────────────────────────────────────┐
