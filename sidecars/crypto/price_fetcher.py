@@ -46,12 +46,12 @@ ASSET_MAP = {
     "XRP": "XRP-USD",
 }
 
-COINBASE_BASE = "https://api.coinbase.com"
-BINANCE_BASE  = "https://api.binance.com"
+COINBASE_BASE          = "https://api.exchange.coinbase.com"  # public, no auth
+COINBASE_SPOT_BASE     = "https://api.coinbase.com"            # v2 spot price fallback
 
-# Coinbase granularities (seconds) → label
-GRANULARITY_ONE_MINUTE = "ONE_MINUTE"   # 60s candles
-GRANULARITY_ONE_HOUR   = "ONE_HOUR"     # 3600s candles
+# Coinbase Exchange candle granularities in seconds
+GRANULARITY_ONE_MINUTE = 60    # 1-minute candles
+GRANULARITY_ONE_HOUR   = 3600  # 1-hour candles
 
 # Number of candles to fetch for vol estimation windows.
 # 15m vol → 15 one-minute candles; 1h vol → 60; 4h vol → 4 one-hour candles.
@@ -73,97 +73,51 @@ _ohlcv_1h:    dict[str, tuple[list, datetime]]  = {}   # asset → (candles, fet
 # ── Coinbase fetch ─────────────────────────────────────────────────────────────
 
 def _coinbase_spot(product_id: str, session: requests.Session) -> Optional[float]:
-    """Fetch mid price from Coinbase best_bid_ask endpoint."""
+    """Fetch mid price from Coinbase Exchange ticker (public, no auth)."""
     try:
-        url = f"{COINBASE_BASE}/api/v3/brokerage/best_bid_ask"
-        resp = session.get(url, params={"product_ids": product_id}, timeout=5)
+        url  = f"{COINBASE_BASE}/products/{product_id}/ticker"
+        resp = session.get(url, timeout=5)
         resp.raise_for_status()
-        entries = resp.json().get("pricebooks", [])
-        if not entries:
-            return None
-        pb = entries[0]
-        bid = float(pb.get("bids", [{}])[0].get("price", 0))
-        ask = float(pb.get("asks", [{}])[0].get("price", 0))
+        data = resp.json()
+        bid  = float(data.get("bid", 0))
+        ask  = float(data.get("ask", 0))
         if bid > 0 and ask > 0:
             return (bid + ask) / 2
-        return None
+        price = float(data.get("price", 0))
+        return price if price > 0 else None
     except Exception as exc:
-        logger.debug(f"Coinbase spot failed for {product_id}: {exc}")
+        logger.debug(f"Coinbase Exchange ticker failed for {product_id}: {exc}")
         return None
 
 
 def _coinbase_candles(
     product_id: str,
-    granularity: str,
+    granularity: int,
     count: int,
     session: requests.Session,
 ) -> Optional[list]:
-    """Fetch recent OHLCV candles from Coinbase. Returns list of close prices (float)."""
+    """Fetch recent OHLCV candles from Coinbase Exchange (public, no auth).
+    Returns list of close prices (float), ordered oldest→newest.
+
+    Coinbase Exchange candle format: [timestamp, low, high, open, close, volume]
+    Results are returned newest-first, so we reverse before returning.
+    """
     try:
         end   = int(time.time())
-        gran_secs = 60 if granularity == GRANULARITY_ONE_MINUTE else 3600
-        start = end - gran_secs * count
-        url   = f"{COINBASE_BASE}/api/v3/brokerage/market/candles"
+        start = end - granularity * count
+        url   = f"{COINBASE_BASE}/products/{product_id}/candles"
         resp  = session.get(
             url,
-            params={
-                "product_id":  product_id,
-                "start":       str(start),
-                "end":         str(end),
-                "granularity": granularity,
-            },
+            params={"granularity": granularity, "start": start, "end": end},
             timeout=5,
         )
         resp.raise_for_status()
-        candles = resp.json().get("candles", [])
-        # Each candle: {"start": str, "low": str, "high": str, "open": str, "close": str, ...}
-        closes = [float(c["close"]) for c in candles if "close" in c]
+        candles = resp.json()
+        # Each entry: [timestamp, low, high, open, close, volume]
+        closes  = [float(c[4]) for c in reversed(candles)]
         return closes if len(closes) >= 2 else None
     except Exception as exc:
-        logger.debug(f"Coinbase candles failed for {product_id} gran={granularity}: {exc}")
-        return None
-
-
-# ── Binance fallback ───────────────────────────────────────────────────────────
-
-def _binance_spot(symbol: str, session: requests.Session) -> Optional[float]:
-    """Fetch mid price from Binance ticker/bookTicker."""
-    try:
-        url  = f"{BINANCE_BASE}/api/v3/ticker/bookTicker"
-        resp = session.get(url, params={"symbol": symbol}, timeout=5)
-        resp.raise_for_status()
-        data = resp.json()
-        bid  = float(data.get("bidPrice", 0))
-        ask  = float(data.get("askPrice", 0))
-        if bid > 0 and ask > 0:
-            return (bid + ask) / 2
-        return None
-    except Exception as exc:
-        logger.debug(f"Binance spot failed for {symbol}: {exc}")
-        return None
-
-
-def _binance_candles(
-    symbol: str,
-    interval: str,
-    limit: int,
-    session: requests.Session,
-) -> Optional[list]:
-    """Fetch klines from Binance. Returns list of close prices (float)."""
-    try:
-        url  = f"{BINANCE_BASE}/api/v3/klines"
-        resp = session.get(
-            url,
-            params={"symbol": symbol, "interval": interval, "limit": limit},
-            timeout=5,
-        )
-        resp.raise_for_status()
-        klines = resp.json()
-        # Each kline: [open_time, open, high, low, close, volume, ...]
-        closes = [float(k[4]) for k in klines]
-        return closes if len(closes) >= 2 else None
-    except Exception as exc:
-        logger.debug(f"Binance candles failed for {symbol} interval={interval}: {exc}")
+        logger.debug(f"Coinbase Exchange candles failed for {product_id} gran={granularity}: {exc}")
         return None
 
 
@@ -171,29 +125,15 @@ def _binance_candles(
 
 def _refresh_asset(asset: str, session: requests.Session) -> None:
     """Refresh spot price and OHLCV candles for one asset. Writes to cache."""
-    product_id    = ASSET_MAP[asset]
-    binance_sym   = asset + "USDT"
-    now           = datetime.now(timezone.utc)
+    product_id = ASSET_MAP[asset]
+    now        = datetime.now(timezone.utc)
 
-    # Spot price — try Coinbase, fall back to Binance
-    spot = _coinbase_spot(product_id, session)
-    if spot is None:
-        logger.info(f"{asset}: Coinbase spot failed, trying Binance")
-        spot = _binance_spot(binance_sym, session)
-    if spot is None:
-        logger.warning(f"{asset}: all spot sources failed")
-
-    # 1-minute candles — try Coinbase, fall back to Binance
+    spot      = _coinbase_spot(product_id, session)
     closes_1m = _coinbase_candles(product_id, GRANULARITY_ONE_MINUTE, CANDLES_1M_COUNT, session)
-    if closes_1m is None:
-        logger.info(f"{asset}: Coinbase 1m candles failed, trying Binance")
-        closes_1m = _binance_candles(binance_sym, "1m", CANDLES_1M_COUNT, session)
+    closes_1h = _coinbase_candles(product_id, GRANULARITY_ONE_HOUR,   CANDLES_1H_COUNT, session)
 
-    # 1-hour candles — try Coinbase, fall back to Binance
-    closes_1h = _coinbase_candles(product_id, GRANULARITY_ONE_HOUR, CANDLES_1H_COUNT, session)
-    if closes_1h is None:
-        logger.info(f"{asset}: Coinbase 1h candles failed, trying Binance")
-        closes_1h = _binance_candles(binance_sym, "1h", CANDLES_1H_COUNT, session)
+    if spot is None:
+        logger.warning(f"{asset}: spot fetch failed")
 
     with _cache_lock:
         if spot is not None:
