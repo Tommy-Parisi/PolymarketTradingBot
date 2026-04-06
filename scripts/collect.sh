@@ -8,6 +8,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ── Single-instance guard ─────────────────────────────────────────────────────
+LOCKFILE="/tmp/motorcade_collect.lock"
+exec 9>"${LOCKFILE}"
+if ! flock -n 9; then
+  echo "ERROR: collect.sh is already running (lock held by $(cat ${LOCKFILE} 2>/dev/null)). Exiting." >&2
+  exit 1
+fi
+echo $$ >&9
+
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/common.sh"
 
