@@ -127,6 +127,7 @@ See `docs/execution_aware_prediction_plan.md` for the full roadmap.
 ## Analysis Scripts (Python)
 
 ```bash
+python3 scripts/evaluate_verticals.py     # weather + crypto sidecar W/L by vertical (--since YYYY-MM-DD, --detail)
 python3 scripts/evaluate_shadow.py        # calibration + policy hit rate
 python3 scripts/check_fills.py           # fill win/loss vs outcomes
 python3 scripts/simulate_pnl.py          # realistic PnL with live guards (use before going live)
