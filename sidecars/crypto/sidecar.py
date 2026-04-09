@@ -140,11 +140,15 @@ def _parse_ticker(ticker: str) -> tuple[Optional[str], Optional[date], Optional[
     if asset is None:
         return None, None, None, False
 
-    # Date part
+    # Date part — handle both daily (YYMONDD) and intraday (YYMONDDHR) formats
     settlement_date = None
-    try:
-        settlement_date = datetime.strptime(parts[1], "%y%b%d").date()
-    except ValueError:
+    for fmt in ("%y%b%d%H", "%y%b%d"):
+        try:
+            settlement_date = datetime.strptime(parts[1], fmt).date()
+            break
+        except ValueError:
+            continue
+    if settlement_date is None:
         return asset, None, None, False
 
     # Threshold part: T or B followed by a number

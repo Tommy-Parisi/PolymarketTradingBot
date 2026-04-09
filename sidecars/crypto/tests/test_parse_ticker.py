@@ -76,6 +76,28 @@ def test_different_date():
     assert dt    == date(2026, 12, 31)
 
 
+def test_intraday_midnight():
+    asset, dt, strike, below = _parse_ticker("KXBTCD-26APR0700-T68699.99")
+    assert asset  == "BTC"
+    assert dt     == date(2026, 4, 7)
+    assert strike == 68699.99
+    assert below  is False
+
+
+def test_intraday_17h():
+    asset, dt, strike, below = _parse_ticker("KXBTCD-26APR0717-T68499.99")
+    assert asset  == "BTC"
+    assert dt     == date(2026, 4, 7)
+    assert strike == 68499.99
+
+
+def test_intraday_eth():
+    asset, dt, strike, below = _parse_ticker("KXETHD-26APR1017-T2089.99")
+    assert asset  == "ETH"
+    assert dt     == date(2026, 4, 10)
+    assert strike == 2089.99
+
+
 # ── Error / unrecognized cases ────────────────────────────────────────────────
 
 def test_unrecognized_prefix_returns_none_asset():
