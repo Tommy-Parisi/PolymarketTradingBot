@@ -31,7 +31,8 @@ if [[ ! -d "${THEBANK_LOG_DIR}" ]]; then
   exit 1
 fi
 LOG_FILE="${THEBANK_LOG_DIR}/24h_collection_$(date +%Y%m%d_%H%M%S).log"
-exec > >(tee -a "${LOG_FILE}") 2>&1
+FIXED_LOG="${SCRIPT_DIR}/../var/logs/bot.log"
+exec > >(tee -a "${LOG_FILE}" | tee -a "${FIXED_LOG}") 2>&1
 echo "Logging to ${LOG_FILE}"
 
 # --- LOG ROTATION ---
