@@ -1,0 +1,48 @@
+Logging to /mnt/TheBank/polymarketbot/logs/24h_collection_20260410_170259.log
+Performing 7-day log cleanup...
+Starting 24/7 Server Collection Mode...
+Claude: disabled. Forecast model + heuristic only.
+Weather: GEFS sidecar covering all KXHIGHT cities.
+warning: method `scan_snapshot_with_deltas` is never used
+   --> src/data/market_scanner.rs:351:18
+    |
+174 | impl KalshiMarketScanner {
+    | ------------------------ method in this implementation
+...
+351 |     pub async fn scan_snapshot_with_deltas(&self) -> Result<Vec<ScannedMarket>, ExecutionError> {
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `generated_at` is never read
+  --> src/data/market_enrichment.rs:88:9
+   |
+58 | pub struct MarketEnrichment {
+   |            ---------------- field in this struct
+...
+88 |     pub generated_at: DateTime<Utc>,
+   |         ^^^^^^^^^^^^
+   |
+   = note: `MarketEnrichment` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: function `is_fed_ticker` is never used
+   --> src/data/market_enrichment.rs:777:4
+    |
+777 | fn is_fed_ticker(ticker: &str) -> bool {
+    |    ^^^^^^^^^^^^^
+
+warning: function `build_execution_feature_row` is never used
+  --> src/features/execution.rs:53:8
+   |
+53 | pub fn build_execution_feature_row(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `update` is never used
+   --> src/models/forecast.rs:155:8
+    |
+154 | impl RateBucket {
+    | --------------- method in this implementation
+155 |     fn update(&mut self, outcome_yes: bool) {
+    |        ^^^^^^
+
+starting cycle #1 (claude_trigger_mode=Never cadence_claude_enabled=true cadence=1)
