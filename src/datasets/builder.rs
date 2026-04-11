@@ -1,4 +1,6 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -84,12 +86,24 @@ pub struct ExecutionTrainingRow {
 }
 
 pub async fn run_dataset_build(cfg: &DatasetBuildConfig) -> Result<(), ExecutionError> {
-    let market_events = load_market_state_events(&cfg.research_dir, cfg.max_days)?;
+    // Load order events first (small — ~1MB) so we know which tickers need market snapshots.
     let order_events = load_order_lifecycle_events(&cfg.research_dir, cfg.max_days)?;
     let outcomes = load_outcomes(&cfg.research_dir)?;
 
-    let forecast_rows = build_forecast_dataset(&market_events, &outcomes);
-    let execution_rows = build_execution_dataset(&market_events, &order_events, &outcomes);
+    // Tickers we have orders for — used to limit what we keep in the market index.
+    let order_tickers: HashSet<String> = order_events.iter().map(|e| e.ticker.clone()).collect();
+
+    // Single streaming pass over market_state JSONL: builds forecast rows + market index
+    // without ever materialising a Vec<MarketStateEvent> of the full dataset.
+    let (forecast_rows_unsplit, mut market_index) =
+        scan_market_state_events(&cfg.research_dir, cfg.max_days, &outcomes, &order_tickers)?;
+
+    for events in market_index.values_mut() {
+        events.sort_by_key(|e| e.ts);
+    }
+
+    let forecast_rows = assign_splits_forecast(forecast_rows_unsplit);
+    let execution_rows = build_execution_dataset(&market_index, &order_events, &outcomes);
     let bootstrap_rows: Vec<_> = execution_rows
         .iter()
         .filter(|row| row.is_bootstrap_synthetic)
@@ -144,24 +158,68 @@ pub async fn run_dataset_build(cfg: &DatasetBuildConfig) -> Result<(), Execution
     Ok(())
 }
 
-fn build_forecast_dataset(
-    market_events: &[MarketStateEvent],
+/// Streams market_state JSONL files in one pass, producing:
+/// - forecast rows (for any ticker with a resolved outcome)
+/// - market index (only for tickers in `order_tickers`, used by execution model)
+///
+/// Never materialises a Vec<MarketStateEvent> of the full dataset, keeping peak
+/// memory proportional to (forecast rows + traded-ticker snapshots) rather than
+/// all observed market events.
+fn scan_market_state_events(
+    root: &Path,
+    max_days: u64,
     outcomes: &HashMap<String, MarketOutcomeRecord>,
-) -> Vec<ForecastTrainingRow> {
-    let mut rows = Vec::new();
-    for event in market_events {
-        let Some(outcome) = outcomes.get(&event.ticker) else {
-            continue;
-        };
-        rows.push(ForecastTrainingRow {
-            schema_version: DATASET_SCHEMA_VERSION.to_string(),
-            split: String::new(),
-            label_outcome_yes: outcome.outcome_yes,
-            label_resolution_status: outcome.resolution_status.clone(),
-            feature: build_forecast_feature_row_from_event(event),
-        });
+    order_tickers: &HashSet<String>,
+) -> Result<(Vec<ForecastTrainingRow>, HashMap<String, Vec<MarketStateEvent>>), ExecutionError> {
+    let mut forecast_rows: Vec<ForecastTrainingRow> = Vec::new();
+    let mut market_index: HashMap<String, Vec<MarketStateEvent>> = HashMap::new();
+
+    let dir = root.join("market_state");
+    if !dir.exists() {
+        return Ok((forecast_rows, market_index));
     }
-    assign_splits_forecast(rows)
+    for day_dir in fs::read_dir(dir).map_err(|e| ExecutionError::Exchange(e.to_string()))? {
+        let day_dir = day_dir.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+        let day_path = day_dir.path();
+        if !day_path.is_dir() {
+            continue;
+        }
+        if !day_dir_is_within_window(&day_path, max_days) {
+            continue;
+        }
+        for file in fs::read_dir(day_path).map_err(|e| ExecutionError::Exchange(e.to_string()))? {
+            let file = file.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+            let file_path = file.path();
+            if file_path.extension().and_then(|s| s.to_str()) != Some("jsonl") {
+                continue;
+            }
+            let reader = BufReader::new(
+                File::open(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?,
+            );
+            for line in reader.lines() {
+                let line = line.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+                if line.trim().is_empty() {
+                    continue;
+                }
+                let Ok(event) = serde_json::from_str::<MarketStateEvent>(&line) else {
+                    continue;
+                };
+                if let Some(outcome) = outcomes.get(&event.ticker) {
+                    forecast_rows.push(ForecastTrainingRow {
+                        schema_version: DATASET_SCHEMA_VERSION.to_string(),
+                        split: String::new(),
+                        label_outcome_yes: outcome.outcome_yes,
+                        label_resolution_status: outcome.resolution_status.clone(),
+                        feature: build_forecast_feature_row_from_event(&event),
+                    });
+                }
+                if order_tickers.contains(&event.ticker) {
+                    market_index.entry(event.ticker.clone()).or_default().push(event);
+                }
+            }
+        }
+    }
+    Ok((forecast_rows, market_index))
 }
 
 fn parse_window_secs_env(var: &str, default: &str) -> Vec<i64> {
@@ -173,7 +231,7 @@ fn parse_window_secs_env(var: &str, default: &str) -> Vec<i64> {
 }
 
 fn build_execution_dataset(
-    market_events: &[MarketStateEvent],
+    market_index: &HashMap<String, Vec<MarketStateEvent>>,
     order_events: &[OrderLifecycleEvent],
     outcomes: &HashMap<String, MarketOutcomeRecord>,
 ) -> Vec<ExecutionTrainingRow> {
@@ -189,7 +247,6 @@ fn build_execution_dataset(
     let markout_window_0 = markout_windows.first().copied().unwrap_or(300);
     let markout_window_1 = markout_windows.get(1).copied().unwrap_or(1800);
 
-    let market_index = build_market_index(market_events);
     let mut by_client_order_id: BTreeMap<String, Vec<OrderLifecycleEvent>> = BTreeMap::new();
     for event in order_events {
         by_client_order_id
@@ -465,43 +522,6 @@ fn day_dir_is_within_window(day_path: &Path, max_days: u64) -> bool {
     day >= cutoff
 }
 
-fn load_market_state_events(root: &Path, max_days: u64) -> Result<Vec<MarketStateEvent>, ExecutionError> {
-    let mut out = Vec::new();
-    let dir = root.join("market_state");
-    if !dir.exists() {
-        return Ok(out);
-    }
-    for day_dir in fs::read_dir(dir).map_err(|e| ExecutionError::Exchange(e.to_string()))? {
-        let day_dir = day_dir.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-        let day_path = day_dir.path();
-        if !day_path.is_dir() {
-            continue;
-        }
-        if !day_dir_is_within_window(&day_path, max_days) {
-            continue;
-        }
-        for file in fs::read_dir(day_path).map_err(|e| ExecutionError::Exchange(e.to_string()))? {
-            let file = file.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-            let file_path = file.path();
-            if file_path.extension().and_then(|s| s.to_str()) != Some("jsonl") {
-                continue;
-            }
-            let text =
-                fs::read_to_string(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-            for line in text.lines() {
-                if line.trim().is_empty() {
-                    continue;
-                }
-                if let Ok(event) = serde_json::from_str::<MarketStateEvent>(line) {
-                    out.push(event);
-                }
-            }
-        }
-    }
-    out.sort_by_key(|e| e.ts);
-    Ok(out)
-}
-
 fn load_order_lifecycle_events(root: &Path, max_days: u64) -> Result<Vec<OrderLifecycleEvent>, ExecutionError> {
     let mut out = Vec::new();
     let dir = root.join("order_lifecycle");
@@ -523,13 +543,15 @@ fn load_order_lifecycle_events(root: &Path, max_days: u64) -> Result<Vec<OrderLi
             if file_path.extension().and_then(|s| s.to_str()) != Some("jsonl") {
                 continue;
             }
-            let text =
-                fs::read_to_string(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-            for line in text.lines() {
+            let reader = BufReader::new(
+                File::open(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?,
+            );
+            for line in reader.lines() {
+                let line = line.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
                 if line.trim().is_empty() {
                     continue;
                 }
-                if let Ok(event) = serde_json::from_str::<OrderLifecycleEvent>(line) {
+                if let Ok(event) = serde_json::from_str::<OrderLifecycleEvent>(&line) {
                     out.push(event);
                 }
             }
@@ -545,12 +567,15 @@ fn load_outcomes(root: &Path) -> Result<HashMap<String, MarketOutcomeRecord>, Ex
     if !path.exists() {
         return Ok(out);
     }
-    let text = fs::read_to_string(path).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-    for line in text.lines() {
+    let reader = BufReader::new(
+        File::open(path).map_err(|e| ExecutionError::Exchange(e.to_string()))?,
+    );
+    for line in reader.lines() {
+        let line = line.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
         if line.trim().is_empty() {
             continue;
         }
-        if let Ok(record) = serde_json::from_str::<MarketOutcomeRecord>(line) {
+        if let Ok(record) = serde_json::from_str::<MarketOutcomeRecord>(&line) {
             out.insert(record.ticker.clone(), record);
         }
     }

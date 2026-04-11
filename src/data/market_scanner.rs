@@ -175,6 +175,7 @@ impl KalshiMarketScanner {
     pub fn new(cfg: ScannerConfig) -> Self {
         let http = Client::builder()
             .connect_timeout(Duration::from_secs(10))
+            .timeout(Duration::from_secs(30))
             .build()
             .unwrap_or_default();
         Self { cfg, http }

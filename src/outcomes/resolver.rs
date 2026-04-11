@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::fs::{self, File, OpenOptions};
+use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 
 use chrono::{DateTime, Duration, Utc};
@@ -121,13 +121,15 @@ fn collect_candidate_tickers(
                 if file_path.extension().and_then(|s| s.to_str()) != Some("jsonl") {
                     continue;
                 }
-                let text =
-                    fs::read_to_string(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-                for line in text.lines() {
+                let reader = BufReader::new(
+                    File::open(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?,
+                );
+                for line in reader.lines() {
+                    let line = line.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
                     if line.trim().is_empty() {
                         continue;
                     }
-                    let event: MarketStateEvent = match serde_json::from_str(line) {
+                    let event: MarketStateEvent = match serde_json::from_str(&line) {
                         Ok(v) => v,
                         Err(_) => continue,
                     };
@@ -163,13 +165,15 @@ fn collect_candidate_tickers(
                 if file_path.extension().and_then(|s| s.to_str()) != Some("jsonl") {
                     continue;
                 }
-                let text = fs::read_to_string(&file_path)
-                    .map_err(|e| ExecutionError::Exchange(e.to_string()))?;
-                for line in text.lines() {
+                let reader = BufReader::new(
+                    File::open(&file_path).map_err(|e| ExecutionError::Exchange(e.to_string()))?,
+                );
+                for line in reader.lines() {
+                    let line = line.map_err(|e| ExecutionError::Exchange(e.to_string()))?;
                     if line.trim().is_empty() {
                         continue;
                     }
-                    let event: OrderLifecycleEvent = match serde_json::from_str(line) {
+                    let event: OrderLifecycleEvent = match serde_json::from_str(&line) {
                         Ok(v) => v,
                         Err(_) => continue,
                     };
