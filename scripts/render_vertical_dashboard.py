@@ -32,8 +32,10 @@ WEATHER_PREFIXES = ("KXHIGHT",)
 FED_PREFIXES = ("KXFED", "KXFOMC")
 FEE_RATE = 0.07
 TRADE_TABLE_LIMIT = 18
-SIDECAR_ACTIVE_MAX_AGE_MINUTES = 20
+SIDECAR_ACTIVE_MAX_AGE_MINUTES = 60
+WEATHER_ACTIVE_MAX_AGE_MINUTES = 720
 BOT_ACTIVE_MAX_AGE_MINUTES = 15
+
 
 SIDECARS = (
     {
@@ -199,28 +201,63 @@ def load_filled_orders(base: Path, since: str) -> list[dict[str, Any]]:
                 ticker = str(row.get("ticker", ""))
                 if vertical_for_ticker(ticker) is None:
                     continue
-                filled_qty = safe_float(row.get("filled_qty")) or 0.0
-                if filled_qty <= 0:
-                    continue
                 client_order_id = str(row.get("client_order_id") or "")
-                key = client_order_id or f"{ticker}:{row.get('ts')}:{filled_qty}"
+                
+                # We skip rows with no filled_qty unless we're merging them into an existing one.
+                # Actually, the user says "intent" events might not have filled_qty but they have the signals.
+                # "Currently these fields are lost because fill events don't have them and they replace the intent event in the deduped map."
+                # So we should track all events for a client_order_id.
+                
+                if not client_order_id:
+                    # Fallback for old logs or internal error: still dedupe by ticker/ts if possible
+                    filled_qty = safe_float(row.get("filled_qty")) or 0.0
+                    if filled_qty <= 0:
+                        continue
+                    key = f"{ticker}:{row.get('ts')}:{filled_qty}"
+                else:
+                    key = client_order_id
+
                 existing = deduped.get(key)
                 row_ts = parse_ts(row.get("ts"))
                 row["_parsed_ts"] = isoformat(row_ts)
+                
                 if existing is None:
                     deduped[key] = row
                     continue
-                existing_qty = safe_float(existing.get("filled_qty")) or 0.0
-                existing_ts = parse_ts(existing.get("ts"))
-                should_replace = filled_qty > existing_qty or (
-                    math.isclose(filled_qty, existing_qty)
-                    and (row_ts or datetime.min.replace(tzinfo=UTC))
-                    > (existing_ts or datetime.min.replace(tzinfo=UTC))
-                )
-                if should_replace:
-                    deduped[key] = row
+                
+                # Merge logic: if we have an existing entry, we want to keep the "best" fields from both.
+                # Fill events (reports) usually have filled_qty, avg_fill_price, etc.
+                # Intent events have signal_edge_pct, signal_confidence, etc.
+                
+                # Update existing with non-None values from row
+                for field in [
+                    "signal_fair_price", "signal_observed_price", "signal_edge_pct", 
+                    "signal_confidence", "execution_mode", "signal_origin"
+                ]:
+                    val = row.get(field)
+                    if val is not None and existing.get(field) is None:
+                        existing[field] = val
+                
+                # If the new row has a fill, update fill-related fields
+                new_filled_qty = safe_float(row.get("filled_qty")) or 0.0
+                existing_filled_qty = safe_float(existing.get("filled_qty")) or 0.0
+                
+                if new_filled_qty > existing_filled_qty:
+                    existing["filled_qty"] = new_filled_qty
+                    existing["avg_fill_price"] = row.get("avg_fill_price")
+                    existing["fee_paid"] = row.get("fee_paid")
+                    # Use the latest timestamp for the trade
+                    existing["ts"] = row.get("ts")
+                    existing["_parsed_ts"] = row.get("_parsed_ts")
+                elif math.isclose(new_filled_qty, existing_filled_qty) and new_filled_qty > 0:
+                    # Prefer the later one if qty is the same
+                    existing_ts = parse_ts(existing.get("ts"))
+                    if (row_ts or datetime.min.replace(tzinfo=UTC)) > (existing_ts or datetime.min.replace(tzinfo=UTC)):
+                        existing["ts"] = row.get("ts")
+                        existing["_parsed_ts"] = row.get("_parsed_ts")
 
-    rows = list(deduped.values())
+    # Final filter: only return orders that actually got filled
+    rows = [r for r in deduped.values() if (safe_float(r.get("filled_qty")) or 0.0) > 0]
     rows.sort(key=lambda row: row.get("_parsed_ts") or "")
     return rows
 
@@ -502,10 +539,13 @@ def build_payload(research_dir: Path, since: str, bot_log_path: Path | None = No
             "prediction_count": len(rows),
             "latest_prediction_ts": isoformat(latest_prediction_ts),
         }
+        
+        max_age = WEATHER_ACTIVE_MAX_AGE_MINUTES if sidecar["key"] == "weather" else SIDECAR_ACTIVE_MAX_AGE_MINUTES
+        
         sidecar_status[sidecar["key"]] = status_payload(
             sidecar["label"],
             latest_prediction_ts,
-            SIDECAR_ACTIVE_MAX_AGE_MINUTES,
+            max_age,
             now,
         )
 
@@ -571,13 +611,16 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
   <title>Motorcade Vertical Dashboard</title>
   <style>
     :root {{
-      --bg: #08111c;
-      --panel: rgba(10, 19, 32, 0.86);
-      --panel-strong: #0f1c2e;
-      --muted: #8ea3bd;
-      --text: #eff6ff;
-      --border: rgba(173, 201, 235, 0.14);
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+      --bg: #030303;
+      --panel: rgba(10, 10, 10, 0.95);
+      --panel-strong: #0a0a0a;
+      --muted: #888888;
+      --text: #e0e0e0;
+      --silver: #c0c0c0;
+      --silver-bright: #ffffff;
+      --border: rgba(192, 192, 192, 0.15);
+      --border-shiny: rgba(192, 192, 192, 0.4);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
       --good: #29d391;
       --bad: #ff6b6b;
       --warn: #ffd166;
@@ -589,10 +632,10 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       margin: 0;
       font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(46, 196, 182, 0.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(255, 159, 28, 0.16), transparent 30%),
-        linear-gradient(180deg, #09101a 0%, #060c14 100%);
+      background: #000000;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(192, 192, 192, 0.05), transparent 50%),
+        linear-gradient(180deg, #050505 0%, #000000 100%);
       min-height: 100vh;
     }}
     .shell {{
@@ -601,8 +644,8 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       padding: 28px 0 40px;
     }}
     .hero {{
-      background: linear-gradient(145deg, rgba(12, 25, 42, 0.95), rgba(7, 15, 27, 0.92));
-      border: 1px solid var(--border);
+      background: linear-gradient(145deg, #111111, #000000);
+      border: 1px solid var(--border-shiny);
       border-radius: 28px;
       box-shadow: var(--shadow);
       overflow: hidden;
@@ -613,8 +656,7 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(90deg, rgba(46, 196, 182, 0.12), transparent 35%),
-        linear-gradient(120deg, transparent 55%, rgba(255, 159, 28, 0.09), transparent 80%);
+        linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.03) 45%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.03) 55%, transparent 70%);
       pointer-events: none;
     }}
     .hero-inner {{
@@ -625,11 +667,12 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       gap: 22px;
     }}
     .eyebrow {{
-      color: #7ce4d8;
-      font-size: 12px;
+      color: var(--silver);
+      font-size: 64px;
       text-transform: uppercase;
       letter-spacing: 0.18em;
       font-weight: 700;
+      text-shadow: 0 0 10px rgba(192, 192, 192, 0.2);
     }}
     h1 {{
       margin: 8px 0 10px;
@@ -637,9 +680,10 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       line-height: 0.98;
       letter-spacing: -0.04em;
       max-width: 12ch;
+      color: var(--silver-bright);
     }}
     .lede {{
-      color: #c1d0e2;
+      color: var(--muted);
       max-width: 70ch;
       margin: 0;
       line-height: 1.55;
@@ -654,11 +698,12 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
     }}
     .meta-chip, .range-picker button {{
       border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.02);
       color: var(--text);
       padding: 10px 14px;
       font-size: 0.93rem;
+      backdrop-filter: blur(5px);
     }}
     .status-row {{
       display: flex;
@@ -672,8 +717,8 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       gap: 8px;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(20, 20, 20, 0.6);
+      border: 1px solid var(--border);
       font-size: 0.88rem;
       color: var(--text);
       white-space: nowrap;
@@ -683,20 +728,20 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       height: 10px;
       border-radius: 999px;
       background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.12);
+      box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.1);
       flex: 0 0 auto;
     }}
     .status-pill.active .status-dot {{
       background: var(--good);
-      box-shadow: 0 0 0 4px rgba(41, 211, 145, 0.12);
+      box-shadow: 0 0 0 4px rgba(41, 211, 145, 0.1);
     }}
     .status-pill.stale .status-dot {{
       background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.12);
+      box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.1);
     }}
     .status-pill.inactive .status-dot {{
       background: var(--bad);
-      box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.12);
+      box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
     }}
     .range-picker {{
       grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
@@ -704,17 +749,20 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
     }}
     .range-picker button {{
       cursor: pointer;
-      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      transition: all 150ms ease;
       font-weight: 600;
       text-align: left;
+      border-color: var(--border);
     }}
     .range-picker button:hover {{
       transform: translateY(-1px);
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: var(--silver);
+      background: rgba(255, 255, 255, 0.05);
     }}
     .range-picker button.active {{
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--silver-bright);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     }}
     .summary-grid {{
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -725,10 +773,15 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       border: 1px solid var(--border);
       border-radius: 22px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(15px);
+      transition: border-color 0.3s ease;
+    }}
+    .stat-card:hover, .section-card:hover {{
+      border-color: var(--border-shiny);
     }}
     .stat-card {{
       padding: 18px 18px 16px;
+      background: linear-gradient(165deg, #0a0a0a, #020202);
     }}
     .stat-label {{
       color: var(--muted);
@@ -742,78 +795,144 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       line-height: 1;
       letter-spacing: -0.04em;
       margin-bottom: 8px;
+      color: var(--silver-bright);
     }}
     .stat-sub {{
-      color: #c8d7e7;
+      color: var(--muted);
       font-size: 0.94rem;
     }}
-    .good {{ color: var(--good); }}
-    .bad {{ color: var(--bad); }}
-    .warn {{ color: var(--warn); }}
+    .good {{ color: var(--good) !important; }}
+    .bad {{ color: var(--bad) !important; }}
+    .warn {{ color: var(--warn) !important; }}
     .muted {{ color: var(--muted); }}
     .section-grid {{
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      grid-template-columns: 1fr;
       margin-top: 26px;
     }}
     .section-card {{
-      padding: 22px;
+      padding: 24px;
       overflow: hidden;
       position: relative;
+      background: linear-gradient(165deg, #0c0c0c, #000000);
     }}
     .section-card::before {{
       content: "";
       position: absolute;
       inset: 0 auto auto 0;
-      height: 4px;
+      height: 2px;
       width: 100%;
-      background: linear-gradient(90deg, var(--accent), transparent 85%);
-      opacity: 0.95;
+      background: linear-gradient(90deg, var(--silver), transparent 85%);
+      opacity: 0.5;
     }}
-    .section-header {{
+    .section-header-top {{
       display: flex;
       justify-content: space-between;
-      gap: 16px;
       align-items: flex-start;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }}
     .section-title {{
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       letter-spacing: -0.03em;
+      color: var(--silver-bright);
     }}
-    .section-copy {{
-      margin: 6px 0 0;
-      color: #c1d0e2;
-      line-height: 1.5;
+    .section-header-stats {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }}
+    .header-stat-item {{
+      display: flex;
+      flex-direction: column;
+    }}
+    .header-stat-label {{
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }}
+    .header-stat-value {{
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--silver);
+    }}
+    .toggle-trades-btn {{
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--silver);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }}
+    .toggle-trades-btn:hover {{
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--silver);
+      color: var(--silver-bright);
+    }}
+    .toggle-trades-btn .icon {{
+      transition: transform 0.3s;
+    }}
+    .section-card.collapsed .toggle-trades-btn .icon {{
+      transform: rotate(-90deg);
+    }}
+    .trades-content {{
+      max-height: 2000px;
+      transition: max-height 0.5s ease-in-out, opacity 0.3s;
+      overflow: hidden;
+      opacity: 1;
+    }}
+    .section-card.collapsed .trades-content {{
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }}
+    .section-card.collapsed .table-wrap {{
+      padding-top: 0;
+      border-top: none;
     }}
     .mini-grid {{
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
     }}
     .mini-card {{
-      padding: 14px 0;
-      border-top: 1px solid var(--border);
+      padding: 0;
     }}
     .mini-label {{
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 7px;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
     }}
     .mini-value {{
-      font-size: 1.25rem;
-      letter-spacing: -0.03em;
-      margin-bottom: 3px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      color: var(--silver);
     }}
     .mini-sub {{
-      color: #c4d2e3;
-      font-size: 0.91rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.3;
     }}
     .table-wrap {{
       overflow: auto;
       border-top: 1px solid var(--border);
-      padding-top: 14px;
+      padding-top: 24px;
     }}
     table {{
       width: 100%;
@@ -823,7 +942,7 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
     th, td {{
       text-align: left;
       padding: 11px 10px;
-      border-bottom: 1px solid rgba(173, 201, 235, 0.09);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       font-size: 0.92rem;
       vertical-align: top;
     }}
@@ -834,11 +953,12 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       font-size: 0.74rem;
       position: sticky;
       top: 0;
-      background: rgba(10, 19, 32, 0.98);
+      background: rgba(5, 5, 5, 0.98);
     }}
     .ticker {{
       font-weight: 700;
       letter-spacing: -0.02em;
+      color: var(--silver);
     }}
     .badge {{
       display: inline-flex;
@@ -848,19 +968,19 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       border-radius: 999px;
       font-size: 0.79rem;
       font-weight: 700;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
       white-space: nowrap;
     }}
-    .badge.win {{ color: var(--good); }}
-    .badge.loss {{ color: var(--bad); }}
-    .badge.open {{ color: var(--warn); }}
+    .badge.win {{ color: var(--good); border-color: rgba(41, 211, 145, 0.2); }}
+    .badge.loss {{ color: var(--bad); border-color: rgba(255, 107, 107, 0.2); }}
+    .badge.open {{ color: var(--warn); border-color: rgba(255, 209, 102, 0.2); }}
     .empty {{
       padding: 18px;
-      border: 1px dashed rgba(173, 201, 235, 0.2);
+      border: 1px dashed var(--border);
       border-radius: 18px;
-      color: #c6d4e4;
-      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.01);
       line-height: 1.55;
     }}
     .footer {{
@@ -871,7 +991,7 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
     }}
     .log-card {{
       margin-top: 26px;
-      background: var(--panel);
+      background: linear-gradient(165deg, #0a0a0a, #000000);
       border: 1px solid var(--border);
       border-radius: 22px;
       box-shadow: var(--shadow);
@@ -889,10 +1009,11 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
       margin: 0;
       font-size: 1.35rem;
       letter-spacing: -0.03em;
+      color: var(--silver-bright);
     }}
     .log-copy {{
       margin: 6px 0 0;
-      color: #c1d0e2;
+      color: var(--muted);
       line-height: 1.5;
     }}
     .log-meta {{
@@ -931,7 +1052,7 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
     <section class="hero">
       <div class="hero-inner">
         <div>
-          <div class="eyebrow">Motorcade Specialist Monitor</div>
+          <div class="eyebrow">IT BETTER BE GREEN</div>
           <h1>Vertical Sidecar Performance Dashboard</h1>
           <p class="lede">
             Executed fills, resolved outcomes, and sidecar calibration in one place for the three live specialist paths.
@@ -1217,77 +1338,96 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
             this section will fill in automatically the next time the dashboard snapshot is rendered.
           </div>
         `;
+
+        const winrateClass = tradeSummary.winRate !== null && tradeSummary.winRate >= 50 ? "good" : "bad";
+        const pnlClass = cssForSigned(tradeSummary.pnl);
+        const calibrationClass = predSummary.brierLiftPct !== null && predSummary.brierLiftPct >= 0 ? "good" : "bad";
+
         return `
-          <article class="section-card" style="--accent: ${{sidecar.accent}}">
-            <div class="section-header">
-              <div>
-                <h2 class="section-title">${{sidecar.label}}</h2>
-                <p class="section-copy">${{sidecar.description}}</p>
+          <article class="section-card collapsed" style="--accent: ${{sidecar.accent}}" id="section-${{sidecar.key}}">
+            <div class="section-header-top">
+              <h2 class="section-title">${{sidecar.label}}</h2>
+              ${{renderStatusPill(PAYLOAD.status.sidecars[sidecar.key])}}
+            </div>
+
+            <div class="section-header-stats">
+              <div class="header-stat-item">
+                <span class="header-stat-label">resolved/open</span>
+                <span class="header-stat-value">${{tradeSummary.resolvedCount}} / ${{tradeSummary.openCount}}</span>
               </div>
-              <div>
-                <div class="badge">${{tradeSummary.tradeCount}} fills</div>
-                <div style="height:8px"></div>
-                ${{renderStatusPill(PAYLOAD.status.sidecars[sidecar.key])}}
+              <div class="header-stat-item">
+                <span class="header-stat-label">win rate</span>
+                <span class="header-stat-value ${{winrateClass}}">${{pct(tradeSummary.winRate)}}</span>
+              </div>
+              <div class="header-stat-item">
+                <span class="header-stat-label">net pnl</span>
+                <span class="header-stat-value ${{pnlClass}}">${{signedCurrency(tradeSummary.pnl)}}</span>
+              </div>
+              <div class="header-stat-item">
+                <span class="header-stat-label">avg edge</span>
+                <span class="header-stat-value">${{pct(tradeSummary.avgEdgePct)}}</span>
+              </div>
+              <div class="header-stat-item">
+                <span class="header-stat-label">calibration</span>
+                <span class="header-stat-value ${{calibrationClass}}">${{pct(predSummary.brierLiftPct)}}</span>
               </div>
             </div>
-            <div class="mini-grid">
-              <div class="mini-card">
-                <div class="mini-label">Resolved / Open</div>
-                <div class="mini-value">${{tradeSummary.resolvedCount}} / ${{tradeSummary.openCount}}</div>
-                <div class="mini-sub">${{tradeSummary.winCount}} wins, ${{tradeSummary.lossCount}} losses</div>
+
+            <button class="toggle-trades-btn" onclick="document.getElementById('section-${{sidecar.key}}').classList.toggle('collapsed')">
+              <span class="icon">▼</span>
+              <span class="btn-text">Trades</span>
+            </button>
+
+            <div class="trades-content">
+              <div class="mini-grid" style="margin-top: 16px;">
+                <div class="mini-card">
+                  <div class="mini-label">ROI</div>
+                  <div class="mini-value">${{tradeSummary.roi === null ? "—" : pct(tradeSummary.roi)}}</div>
+                  <div class="mini-sub">on ${{currency.format(tradeSummary.deployed || 0)}} deployed</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Confidence</div>
+                  <div class="mini-value">${{pct(tradeSummary.avgConfidencePct)}}</div>
+                  <div class="mini-sub">Avg signal confidence</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Brier / Accuracy</div>
+                  <div class="mini-value">${{predSummary.brier === null ? "—" : number2.format(predSummary.brier)}}</div>
+                  <div class="mini-sub">Accuracy ${{pct(predSummary.directionalAccuracy)}}</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-label">Coverage</div>
+                  <div class="mini-value">${{predictionSource.prediction_count || 0}}</div>
+                  <div class="mini-sub">${{predictionSource.file_count || 0}} prediction files</div>
+                </div>
               </div>
-              <div class="mini-card">
-                <div class="mini-label">Win Rate</div>
-                <div class="mini-value ${{tradeSummary.winRate !== null && tradeSummary.winRate >= 50 ? "good" : "bad"}}">${{pct(tradeSummary.winRate)}}</div>
-                <div class="mini-sub">Resolved executed trades only</div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-label">Net PnL / ROI</div>
-                <div class="mini-value ${{cssForSigned(tradeSummary.pnl)}}">${{signedCurrency(tradeSummary.pnl)}}</div>
-                <div class="mini-sub">${{tradeSummary.roi === null ? "No resolved notional yet" : `ROI ${{pct(tradeSummary.roi)}} on ${{currency.format(tradeSummary.deployed || 0)}}`}}</div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-label">Avg Edge / Confidence</div>
-                <div class="mini-value">${{pct(tradeSummary.avgEdgePct)}}</div>
-                <div class="mini-sub">Confidence ${{pct(tradeSummary.avgConfidencePct)}}</div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-label">Calibration</div>
-                <div class="mini-value ${{predSummary.brierLiftPct !== null && predSummary.brierLiftPct >= 0 ? "good" : "bad"}}">${{pct(predSummary.brierLiftPct)}}</div>
-                <div class="mini-sub">${{predSummary.brier === null ? "No resolved prediction logs" : `Brier ${{number2.format(predSummary.brier)}} / accuracy ${{pct(predSummary.directionalAccuracy)}}`}}</div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-label">Prediction Log Coverage</div>
-                <div class="mini-value">${{predictionSource.prediction_count || 0}}</div>
-                <div class="mini-sub">${{predictionSource.file_count || 0}} prediction files scanned</div>
-              </div>
+              ${{
+                recentTrades.length
+                  ? `<div class="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Result</th>
+                            <th>Time</th>
+                            <th>Ticker</th>
+                            <th>Order</th>
+                            <th>Fill</th>
+                            <th>Qty</th>
+                            <th>Notional</th>
+                            <th>Edge</th>
+                            <th>Conf.</th>
+                            <th>Sidecar Prob</th>
+                            <th>PnL</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${{recentTrades.map(tradeRowMarkup).join("")}}
+                        </tbody>
+                      </table>
+                    </div>`
+                  : emptyState
+              }}
             </div>
-            ${{
-              recentTrades.length
-                ? `<div class="table-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Result</th>
-                          <th>Time</th>
-                          <th>Ticker</th>
-                          <th>Order</th>
-                          <th>Fill</th>
-                          <th>Qty</th>
-                          <th>Notional</th>
-                          <th>Edge</th>
-                          <th>Conf.</th>
-                          <th>Sidecar Prob</th>
-                          <th>PnL</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${{recentTrades.map(tradeRowMarkup).join("")}}
-                      </tbody>
-                    </table>
-                  </div>`
-                : emptyState
-            }}
           </article>
         `;
       }}).join("");
@@ -1387,6 +1527,7 @@ def render_html(payload: dict[str, Any], auto_refresh_seconds: int) -> str:
 </body>
 </html>
 """
+
 
 
 def main() -> None:
