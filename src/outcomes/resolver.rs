@@ -19,6 +19,10 @@ pub struct OutcomeResolverConfig {
     pub api_base_url: String,
     pub research_dir: PathBuf,
     pub lookback_days: i64,
+    /// Max null-outcome tickers to re-fetch per run. Spreads the one-time
+    /// cleanup across several cycles to avoid a sudden burst of API calls.
+    /// 0 = unlimited. Tune via BOT_OUTCOME_NULL_RETRY_LIMIT. Default 500.
+    pub null_retry_limit: usize,
 }
 
 impl OutcomeResolverConfig {
@@ -41,6 +45,10 @@ impl OutcomeResolverConfig {
                 .and_then(|v| v.parse::<i64>().ok())
                 .unwrap_or(14)
                 .max(1),
+            null_retry_limit: std::env::var("BOT_OUTCOME_NULL_RETRY_LIMIT")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .unwrap_or(500),
         }
     }
 }
@@ -64,12 +72,25 @@ pub async fn run_outcome_backfill(cfg: &OutcomeResolverConfig) -> Result<(), Exe
     }
 
     let resolved = load_existing_outcomes(cfg)?;
+    // Load the broader set of tickers that have any record (including nulls) so
+    // we can tell the difference between "never seen" and "null retry" candidates.
+    let any_record = load_all_seen_tickers(cfg)?;
     let client = Client::new();
     let mut new_records = Vec::new();
+    let mut null_retried = 0usize;
 
     for (ticker, close_time) in candidates {
         if resolved.contains(&ticker) {
             continue;
+        }
+        // Apply per-run limit only to null retries (tickers we've seen before
+        // but got null outcome), not to brand-new tickers.
+        let is_null_retry = any_record.contains(&ticker);
+        if is_null_retry {
+            if cfg.null_retry_limit > 0 && null_retried >= cfg.null_retry_limit {
+                continue;
+            }
+            null_retried += 1;
         }
         match fetch_outcome_record(&client, &cfg.api_base_url, &ticker, close_time).await {
             Ok(Some(record)) => {
@@ -82,6 +103,9 @@ pub async fn run_outcome_backfill(cfg: &OutcomeResolverConfig) -> Result<(), Exe
             Ok(None) => {}
             Err(err) => eprintln!("outcome backfill warning for {}: {}", ticker, err),
         }
+    }
+    if null_retried > 0 {
+        println!("outcome backfill: retried {} null-outcome tickers (limit={})", null_retried, cfg.null_retry_limit);
     }
 
     if new_records.is_empty() {
@@ -133,10 +157,15 @@ fn collect_candidate_tickers(
                         Ok(v) => v,
                         Err(_) => continue,
                     };
+                    // Include markets whose close_time has passed OR whose close_time
+                    // is unknown (None). Markets recorded without a close_time are
+                    // typically already past their settlement window — fetch and let
+                    // the API determine whether they're resolved. If not yet settled,
+                    // fetch_outcome_record returns Ok(None) and nothing is written.
                     let should_consider = event
                         .close_time
                         .map(|close| close <= Utc::now())
-                        .unwrap_or(false);
+                        .unwrap_or(true);
                     if should_consider {
                         out.entry(event.ticker).or_insert(event.close_time);
                     }
@@ -188,7 +217,11 @@ fn collect_candidate_tickers(
     Ok(out)
 }
 
-fn load_existing_outcomes(cfg: &OutcomeResolverConfig) -> Result<BTreeSet<String>, ExecutionError> {
+/// Returns the set of ALL tickers that have any record in outcomes.jsonl — including
+/// those whose `outcome_yes` is still null. This is the broader "seen" set used to
+/// distinguish brand-new candidates (never fetched before) from null retries (fetched
+/// before but the API hadn't posted the outcome yet).
+fn load_all_seen_tickers(cfg: &OutcomeResolverConfig) -> Result<BTreeSet<String>, ExecutionError> {
     let mut out = BTreeSet::new();
     let path = outcomes_path(cfg);
     if !path.exists() {
@@ -201,6 +234,31 @@ fn load_existing_outcomes(cfg: &OutcomeResolverConfig) -> Result<BTreeSet<String
         }
         if let Ok(record) = serde_json::from_str::<MarketOutcomeRecord>(line) {
             out.insert(record.ticker);
+        }
+    }
+    Ok(out)
+}
+
+fn load_existing_outcomes(cfg: &OutcomeResolverConfig) -> Result<BTreeSet<String>, ExecutionError> {
+    let mut out = BTreeSet::new();
+    let path = outcomes_path(cfg);
+    if !path.exists() {
+        return Ok(out);
+    }
+    let text = fs::read_to_string(path).map_err(|e| ExecutionError::Exchange(e.to_string()))?;
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        if let Ok(record) = serde_json::from_str::<MarketOutcomeRecord>(line) {
+            // Only skip re-fetching if we actually have the outcome or the market
+            // was canceled. A null outcome_yes means the API returned "resolved"
+            // before populating the result fields — we must re-fetch those.
+            let fully_settled = record.outcome_yes.is_some()
+                || record.resolution_status == "canceled";
+            if fully_settled {
+                out.insert(record.ticker);
+            }
         }
     }
     Ok(out)
@@ -458,6 +516,7 @@ mod tests {
             api_base_url: "http://localhost".to_string(),
             research_dir,
             lookback_days: 14,
+            null_retry_limit: 500,
         };
 
         let candidates = collect_candidate_tickers(&cfg).unwrap();

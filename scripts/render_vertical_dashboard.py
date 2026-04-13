@@ -134,9 +134,9 @@ def vertical_for_ticker(ticker: str) -> str | None:
 def effective_prob(ticker: str, probability: float | None) -> float | None:
     if probability is None:
         return None
-    parts = ticker.split("-")
-    if len(parts) >= 3 and parts[-1].startswith("B"):
-        return 1.0 - probability
+    # Both sidecars (weather, crypto) already log P(YES) directly — the weather
+    # sidecar does `if below: prob = 1 - prob` before writing, and the crypto
+    # predictor does the same. No inversion is needed here.
     return probability
 
 

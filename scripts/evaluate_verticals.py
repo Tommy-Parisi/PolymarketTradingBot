@@ -95,16 +95,12 @@ def load_sidecar_predictions(pred_dir: Path, since: str) -> dict[str, dict]:
 
 def effective_prob(ticker: str, prob: float) -> float:
     """
-    Normalize sidecar probability to P(outcome YES).
+    Return P(outcome YES) from a sidecar prediction record.
 
-    Weather sidecars always return P(high > threshold). For BELOW markets
-    (ticker threshold segment starts with 'B', e.g. KXHIGHTBOS-26APR07-B46.5),
-    outcome YES means the high stayed *under* the threshold, so we invert.
-    Crypto and FED tickers always express P(outcome YES) directly.
+    All sidecars store P(outcome YES) directly — the weather sidecar already
+    inverts for BELOW markets before logging (sidecar.py: `if below: prob = 1 - prob`).
+    No additional inversion is needed here.
     """
-    parts = ticker.split("-")
-    if len(parts) >= 3 and parts[-1].startswith("B"):
-        return 1.0 - prob
     return prob
 
 

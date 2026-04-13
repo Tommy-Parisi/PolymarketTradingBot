@@ -50,6 +50,7 @@ def predict(
     floor_strike_f: float,
     target_date: Optional[date] = None,
     members: Optional[list[str]] = None,
+    city_bias_f: float = 0.0,
 ) -> float:
     """
     Compute P(daily_high > floor_strike_f) from ensemble member forecasts.
@@ -61,6 +62,9 @@ def predict(
     target_date    : used to look up the correct month for bias correction
     members        : member identifiers ("c00", "p01", ...) matching member_highs_f.
                      If None, bias correction is skipped (all corrections = 0.0).
+    city_bias_f    : per-city warm bias correction (°F). Positive = GEFS runs cold
+                     for this city, so add to each member's forecast before voting.
+                     Derived empirically from GEFS-vs-NOAA-TMAX residuals.
 
     Returns
     -------
@@ -74,7 +78,7 @@ def predict(
     corrected = []
     for i, raw_f in enumerate(member_highs_f):
         member = members[i] if members and i < len(members) else ""
-        corrected.append(_apply_bias(member, month, raw_f))
+        corrected.append(_apply_bias(member, month, raw_f) + city_bias_f)
 
     votes_yes = sum(1 for t in corrected if t > floor_strike_f)
     raw_prob  = votes_yes / len(corrected)

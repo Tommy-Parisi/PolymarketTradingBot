@@ -36,6 +36,12 @@ pub struct ValuationConfig {
     pub adaptive_spread_weight: f64,
     pub fee_bps: f64,
     pub slippage_bps: f64,
+    /// Minimum absolute edge (|specialist_prob - market_mid|) required before
+    /// the specialist probability is used as a hard override. Below this floor
+    /// the specialist prediction is too close to the market mid to justify the
+    /// 0.90 confidence it would receive — the heuristic fallback is used instead.
+    /// Default 0.05. Tune via BOT_SPECIALIST_MIN_EDGE.
+    pub specialist_min_edge: f64,
 }
 
 impl Default for ValuationConfig {
@@ -70,6 +76,7 @@ impl Default for ValuationConfig {
             adaptive_spread_weight: 0.25,
             fee_bps: 5.0,
             slippage_bps: 5.0,
+            specialist_min_edge: 0.05,
         }
     }
 }
@@ -136,6 +143,11 @@ impl ValuationConfig {
         if let Ok(v) = std::env::var("BOT_SLIPPAGE_BPS") {
             if let Ok(parsed) = v.parse::<f64>() {
                 cfg.slippage_bps = parsed.max(0.0);
+            }
+        }
+        if let Ok(v) = std::env::var("BOT_SPECIALIST_MIN_EDGE") {
+            if let Ok(parsed) = v.parse::<f64>() {
+                cfg.specialist_min_edge = parsed.clamp(0.0, 1.0);
             }
         }
         if let Ok(v) = std::env::var("BOT_VALUATION_BATCH_SIZE") {
@@ -626,19 +638,32 @@ impl ClaudeValuationEngine {
                 // If a specialist sidecar returned a calibrated probability, use it
                 // directly and skip the heuristic bias. Mirrors the override in
                 // src/models/forecast.rs so paper trades benefit from the sidecar too.
+                //
+                // Edge floor: only treat specialist as authoritative when its probability
+                // meaningfully differs from the market mid. Below specialist_min_edge the
+                // mispricing is too small to survive single-contract variance (e.g. weather
+                // sidecar returning 19.4% vs 17¢ market = 2.4 cent edge), so we fall
+                // through to the heuristic path instead.
                 if let Some(prob) = i.enrichment.as_ref().and_then(|e| e.specialist_prob_yes) {
-                    return MarketValuation {
-                        ticker: i.market.ticker.clone(),
-                        fair_prob_yes: prob,
-                        market_mid_prob_yes: mid,
-                        yes_ask_cents: i.market.yes_ask_cents,
-                        yes_bid_cents: i.market.yes_bid_cents,
-                        market_volume: i.market.volume,
-                        spread_cents: i.market.spread_cents(),
-                        confidence: 0.90,
-                        rationale: "specialist_sidecar".to_string(),
-                        stale_after: Utc::now() + chrono::Duration::minutes(10),
-                    };
+                    let edge = (prob - mid).abs();
+                    if edge >= self.cfg.specialist_min_edge {
+                        return MarketValuation {
+                            ticker: i.market.ticker.clone(),
+                            fair_prob_yes: prob,
+                            market_mid_prob_yes: mid,
+                            yes_ask_cents: i.market.yes_ask_cents,
+                            yes_bid_cents: i.market.yes_bid_cents,
+                            market_volume: i.market.volume,
+                            spread_cents: i.market.spread_cents(),
+                            confidence: 0.90,
+                            rationale: "specialist_sidecar".to_string(),
+                            stale_after: Utc::now() + chrono::Duration::minutes(10),
+                        };
+                    }
+                    eprintln!(
+                        "specialist_sidecar: edge below floor for {} |{:.4} - {:.4}| = {:.4} < {:.4}, using heuristic",
+                        i.market.ticker, prob, mid, edge, self.cfg.specialist_min_edge
+                    );
                 }
 
                 let enrich_bias = i

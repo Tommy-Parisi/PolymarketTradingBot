@@ -257,6 +257,19 @@ def predict(ticker: str):
     closes_1m          = candles_1m[0] if candles_1m else None
     closes_1h          = candles_1h[0] if candles_1h else None
 
+    if seconds_remaining == 0:
+        # Market is at or past settlement — current spot is irrelevant to the
+        # settled outcome. Skip logging (would corrupt Brier calibration) and
+        # return a neutral non-OK response so the caller falls back to the
+        # bucket model rather than acting on a stale price comparison.
+        logger.info(f"predict: past settlement, skipping  ticker={ticker}")
+        return {
+            "probability":    0.5,
+            "data_age_secs":  age_secs,
+            "data_source_ok": False,
+            "model_version":  MODEL_VERSION,
+        }
+
     prob = gbm_predict(
         spot=spot,
         strike=strike,

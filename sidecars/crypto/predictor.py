@@ -53,6 +53,7 @@ Example:
 
 import math
 import logging
+import os
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,15 @@ CANDLES_PER_YEAR_1H = 365.25 * 24          # one-hour candles
 
 # Floor for σ to prevent division-by-zero in degenerate cases (0.1% annualized).
 MIN_VOL = 0.001
+
+# Probability dampening: shrinks the raw GBM probability toward 0.5 before
+# returning. The GBM model is correct in expectation but severely overconfident
+# in practice — it assumes log-normal prices with no fat tails or jumps, so
+# near-1 and near-0 outputs cause catastrophic Brier loss when the market
+# moves against the model. A dampening factor of 0.75 compresses the distance
+# from 0.5 by 25%: raw 0.97 → 0.854, raw 0.03 → 0.146.
+# Tune via CRYPTO_PROB_DAMPENING env var after accumulating shadow predictions.
+PROB_DAMPENING = float(os.getenv("CRYPTO_PROB_DAMPENING", "0.75"))
 
 # Optional bias-correction table: asset → additive adjustment to d.
 # Start at zero; tune after shadow accumulation.
@@ -193,6 +203,10 @@ def predict(
     if below:
         prob = 1.0 - prob
 
+    prob = max(0.001, min(0.999, prob))
+
+    # Shrink toward 0.5 to correct GBM overconfidence (fat tails, vol jumps).
+    prob = 0.5 + (prob - 0.5) * PROB_DAMPENING
     prob = max(0.001, min(0.999, prob))
 
     logger.debug(

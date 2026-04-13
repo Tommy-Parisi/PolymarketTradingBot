@@ -70,7 +70,20 @@ GEFS_REFRESH_SECS  = int(os.getenv("GEFS_REFRESH_SECS",      "7200"))
 MAX_DATA_AGE_SECS  = int(os.getenv("GEFS_MAX_DATA_AGE_SECS", "7200"))
 PREDICTION_LOG_DIR = Path(os.getenv("GEFS_PREDICTION_LOG_DIR", "var/logs/gefs_predictions"))
 
-MODEL_VERSION = "gefs_v1"
+# Minimum corrected-ensemble-mean distance from threshold (°F).
+# When |corrected_mean - threshold| < this value the ensemble is straddling
+# the threshold — forecast is near-coinflip and not actionable.
+# Tune via GEFS_MIN_SPREAD_F. Default 5.0°F.
+# Raised from 3.0 → 5.0 after Apr-10 analysis: all high-confidence ABOVE losses had
+# ensemble overshoot of +0.2–+3.4°F — a 5°F filter blocks all of them.
+GEFS_MIN_SPREAD_F = float(os.getenv("GEFS_MIN_SPREAD_F", "5.0"))
+
+# Path for the on-disk cache snapshot. Loaded at startup so predictions are
+# available immediately after a restart without waiting for warmup to complete.
+# Set GEFS_CACHE_PATH to an absolute path for reliability.
+GEFS_CACHE_PATH = Path(os.getenv("GEFS_CACHE_PATH", "var/cache/gefs_cache.json"))
+
+MODEL_VERSION = "gefs_v2"
 
 # ── City map ───────────────────────────────────────────────────────────────────
 #
@@ -88,6 +101,40 @@ def _bbox(lat: float, lon: float, pad: float = 1.5) -> dict:
         "leftlon":   str(round(lon - pad, 1)),
         "rightlon":  str(round(lon + pad, 1)),
     }
+
+# ── Per-city bias corrections ──────────────────────────────────────────────────
+#
+# Applied to each ensemble member's raw forecast before voting.
+# Format: { city_code: { month_int: bias_f } }
+#
+# Sign convention (matches ensemble_predictor.py which ADDS city_bias_f):
+#   Positive = GEFS runs cold for this city/month → add degrees to warm up.
+#   Negative = GEFS runs warm for this city/month → subtract degrees to cool down.
+#
+# Evidence-based values (derived from GEFS ensemble mean vs resolved outcomes,
+# Apr 2026 data). All unlisted cities default to 0.0 until data is available.
+#
+# Confirmed GEFS warm bias (ensemble mean above threshold, outcome = NO):
+#   Dallas  Apr-10: ensemble +3.4°F above T78, actual below. Correction: -3.5°F.
+#   Houston Apr-10: ensemble +2.7°F above T77, actual below. Correction: -3.0°F.
+#   OKC     Apr-10: ensemble +0.2°F above T78, actual below. Correction: -1.5°F.
+#   LV      Apr-10: ensemble +0.3°F above T80, actual below. Correction: -1.0°F.
+#   Atlanta Apr-10: ensemble +3.4°F above T76, actual below. Correction: -2.5°F (1 data point).
+#
+# Cities with insufficient data are set to 0.0 to avoid introducing new bias.
+# Refine monthly as more GEFS prediction logs accumulate against resolved outcomes.
+CITY_WARM_BIAS_F: dict[str, dict[int, float]] = {
+    "TDAL":  {4: -3.5, 3: -3.5},
+    "THOU":  {4: -3.0, 3: -3.0},
+    "TOKC":  {4: -1.5, 3: -1.5},
+    "TLV":   {4: -1.0, 3: -1.0},
+    # ATL Apr-10: ensemble +3.4°F above T76, actual below. One data point — conservative.
+    "TATL":  {4: -2.5, 3: -2.5},
+    # All other cities: 0.0 (no correction) until more data is available.
+    # Previous values for TBOS, TSEA, TPHX, TSATX, TMIN, TNOLA, TDC, TSFO
+    # were positive (warm-up) but lacked confirming evidence and may have been
+    # counterproductive. Re-add only after GEFS-vs-outcome residuals confirm direction.
+}
 
 CITY_MAP: dict[str, CityConfig] = {
     # ── New-format cities (KXHIGHT prefix) ──────────────────────────────────
@@ -139,6 +186,65 @@ _cache: dict[tuple[str, date], GEFSResult] = {}
 _cache_lock = threading.Lock()
 
 
+def _save_disk_cache() -> None:
+    """Persist current cache to GEFS_CACHE_PATH as JSON. Called after every refresh."""
+    try:
+        GEFS_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        snapshot = {}
+        with _cache_lock:
+            for (city_code, target_date), result in _cache.items():
+                key = f"{city_code}|{target_date}"
+                snapshot[key] = {
+                    "city_code":           city_code,
+                    "target_date":         str(target_date),
+                    "member_highs_f":      result.member_highs_f,
+                    "run_time":            result.run_time.isoformat(),
+                    "fetch_time":          result.fetch_time.isoformat(),
+                    "n_members":           result.n_members,
+                    "city":                result.city,
+                    "forecast_hours_used": result.forecast_hours_used,
+                }
+        tmp = GEFS_CACHE_PATH.with_suffix(".tmp")
+        tmp.write_text(json.dumps(snapshot))
+        tmp.replace(GEFS_CACHE_PATH)
+    except Exception as exc:
+        logger.warning(f"disk cache save failed: {exc}")
+
+
+def _load_disk_cache() -> int:
+    """Load cache from GEFS_CACHE_PATH into _cache. Skips entries older than MAX_DATA_AGE_SECS.
+    Returns the number of entries loaded."""
+    if not GEFS_CACHE_PATH.exists():
+        return 0
+    try:
+        snapshot = json.loads(GEFS_CACHE_PATH.read_text())
+        now = datetime.now(timezone.utc)
+        loaded = 0
+        with _cache_lock:
+            for key, rec in snapshot.items():
+                fetch_time = datetime.fromisoformat(rec["fetch_time"])
+                age_secs = (now - fetch_time).total_seconds()
+                if age_secs > MAX_DATA_AGE_SECS:
+                    continue
+                target_date = date.fromisoformat(rec["target_date"])
+                result = GEFSResult(
+                    member_highs_f      = rec["member_highs_f"],
+                    run_time            = datetime.fromisoformat(rec["run_time"]),
+                    target_date         = target_date,
+                    fetch_time          = fetch_time,
+                    n_members           = rec["n_members"],
+                    city                = rec["city"],
+                    forecast_hours_used = rec.get("forecast_hours_used", []),
+                )
+                city_code = rec["city_code"]
+                _cache[(city_code, target_date)] = result
+                loaded += 1
+        return loaded
+    except Exception as exc:
+        logger.warning(f"disk cache load failed: {exc}")
+        return 0
+
+
 def _refresh(city_code: str, target_date: date) -> None:
     """Fetch GEFS data for one (city, target_date) and store in cache."""
     city_cfg = CITY_MAP[city_code]
@@ -151,6 +257,7 @@ def _refresh(city_code: str, target_date: date) -> None:
             f"GEFS cache updated: city={city_cfg.name} date={target_date} "
             f"members={result.n_members}"
         )
+        _save_disk_cache()
     else:
         logger.warning(f"GEFS refresh failed: city={city_cfg.name} date={target_date}")
 
@@ -238,8 +345,13 @@ def _startup_warmup() -> None:
 
 @app.on_event("startup")
 def on_startup():
+    # Load disk cache first — gives immediate coverage while warmup fetches fresh data.
+    n = _load_disk_cache()
+    if n:
+        logger.info(f"Startup: loaded {n} entries from disk cache ({GEFS_CACHE_PATH})")
+    else:
+        logger.info(f"Startup: no usable disk cache found at {GEFS_CACHE_PATH}")
     # Warmup runs in background — uvicorn is ready to serve immediately.
-    # Predict calls before warmup finishes return data_source_ok=false (cache miss).
     threading.Thread(target=_startup_warmup, daemon=True).start()
     threading.Thread(target=_background_refresh, daemon=True).start()
     logger.info("Startup: warmup + background refresh threads started")
@@ -297,18 +409,44 @@ def predict(ticker: str):
             "model_version":  MODEL_VERSION,
         }
 
+    month = target_date.month
+    city_bias = CITY_WARM_BIAS_F.get(city_code, {}).get(month, 0.0)
+
+    # Spread filter: reject predictions where the corrected ensemble mean is too
+    # close to the threshold. At ±3°F the ensemble straddles the line — accuracy
+    # drops sharply and the signal is near-coinflip. Return data_source_ok=false
+    # so the Rust bot falls back to the bucket model rather than acting on noise.
+    corrected_mean = (
+        sum(result.member_highs_f) / len(result.member_highs_f)
+    ) + city_bias
+    ensemble_spread = abs(corrected_mean - floor_strike_f)
+    if ensemble_spread < GEFS_MIN_SPREAD_F:
+        logger.warning(
+            f"predict: spread too small for {ticker} "
+            f"(corrected_mean={corrected_mean:.1f}°F threshold={floor_strike_f}°F "
+            f"spread={ensemble_spread:.1f}°F < min={GEFS_MIN_SPREAD_F}°F) — suppressing"
+        )
+        return {
+            "probability":    0.5,
+            "data_age_secs":  data_age_secs,
+            "data_source_ok": False,
+            "model_version":  MODEL_VERSION,
+        }
+
     prob = ensemble_predict(
         member_highs_f=result.member_highs_f,
         floor_strike_f=floor_strike_f,
         target_date=target_date,
         members=MEMBERS[:result.n_members],
+        city_bias_f=city_bias,
     )
     if below:
         prob = 1.0 - prob
 
     logger.info(
         f"predict  ticker={ticker}  city={city_code}  threshold={floor_strike_f}°F  "
-        f"below={below}  prob={prob:.4f}  members={result.n_members}  age={data_age_secs}s"
+        f"below={below}  prob={prob:.4f}  members={result.n_members}  "
+        f"city_bias={city_bias:+.1f}°F  age={data_age_secs}s"
     )
 
     _write_prediction_log({
@@ -322,6 +460,7 @@ def predict(ticker: str):
         "member_highs_f": result.member_highs_f,
         "run_time":       result.run_time.isoformat(),
         "data_age_secs":  data_age_secs,
+        "city_bias_f":    city_bias,
         "model_version":  MODEL_VERSION,
     })
 
